@@ -1,16 +1,15 @@
 #include <iostream>
 #include "lexer.h"
-#include <sstream>
+#include "token.h"
 
-int main() {
-    testNextToken();
-    return 0;
-}
+// int main() {
+//     testNextToken();
+//     return 0;
+// }
 
 
 token nextToken(Lexer* lp) {
     token tok;
-
     skipWhitespace(lp);
 
     switch (lp->ch) {

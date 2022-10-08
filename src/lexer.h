@@ -1,4 +1,16 @@
+#ifndef STRING
+#define STRING
+
+#include <string>
+
+#endif // STRING
+
+
 #include "token.h"
+
+
+#ifndef LEXER_H
+#define LEXER_H
 
 typedef struct Lexer {
     std::string input;
@@ -18,3 +30,6 @@ token newToken(std::string, char);
 std::string readIdentifier(Lexer*);
 std::string lookupIdentifier(std::string);
 char peekChar(Lexer*);
+
+#endif // LEXER
+

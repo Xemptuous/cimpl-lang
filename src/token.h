@@ -1,45 +1,56 @@
-#include <unordered_map>
+#ifndef STRING
+#define STRING
+
 #include <string>
 
-using namespace std;
+#endif // STRING
 
+#ifndef UNORD_MAP
+#define UNORD_MAP
+
+#include <unordered_map>
+
+#endif // UNORDERED MAP
+
+#ifndef TOKEN_H
+#define TOKEN_H
 
 const struct TokenType {
-    string ILLEGAL;
-    string _EOF;
+    std::string ILLEGAL;
+    std::string _EOF;
 
     // Identifiers + Literals
-    string IDENT;
-    string INT;
+    std::string IDENT;
+    std::string INT;
 
     // Keywords
-    string LET;
-    string FUNCTION;
-    string TRUE;
-    string FALSE;
-    string IF;
-    string ELSE;
-    string RETURN;
+    std::string LET;
+    std::string FUNCTION;
+    std::string TRUE;
+    std::string FALSE;
+    std::string IF;
+    std::string ELSE;
+    std::string RETURN;
 
     // Operators
-    string EQ;
-    string NOT_EQ;
-    string ASSIGN;
-    string PLUS;
-    string MINUS;
-    string ASTERISK;
-    string SLASH;
+    std::string EQ;
+    std::string NOT_EQ;
+    std::string ASSIGN;
+    std::string PLUS;
+    std::string MINUS;
+    std::string ASTERISK;
+    std::string SLASH;
 
     // Delimiters
-    string COMMA;
-    string SEMILCOLON;
-    string BANG;
-    string LPAREN;
-    string RPAREN;
-    string LBRACE;
-    string RBRACE;
-    string LT;
-    string GT;
+    std::string COMMA;
+    std::string SEMILCOLON;
+    std::string BANG;
+    std::string LPAREN;
+    std::string RPAREN;
+    std::string LBRACE;
+    std::string RBRACE;
+    std::string LT;
+    std::string GT;
 }
 TokenType = {
     "ILLEGAL",
@@ -80,11 +91,12 @@ TokenType = {
 };
 
 typedef struct token {
-    string type;
-    string literal;
+    std::string type;
+    std::string literal;
 }
 token;
-const unordered_map<string, string> keywords = {
+
+const std::unordered_map<std::string, std::string> keywords = {
     {"fn", TokenType.FUNCTION},
     {"let", TokenType.LET},
     {"true", TokenType.TRUE},
@@ -95,4 +107,4 @@ const unordered_map<string, string> keywords = {
     {"==", TokenType.EQ},
     {"!=", TokenType.NOT_EQ},
 };
-
+#endif // TOKEN
