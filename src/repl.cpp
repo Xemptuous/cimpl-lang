@@ -7,11 +7,12 @@ using namespace std;
 void start(string input) {
     Lexer* lp = createLexer(input);
     token tok = nextToken(lp);
+
     vector<string> tokenVector;
 
     while (tok.type != TokenType._EOF) 
     {
-        string curr ="{Type:" + tok.type + " Literal: " + tok.literal + '\n';
+        string curr = "{Type:" + tok.type + " Literal: " + tok.literal + '\n';
         tokenVector.push_back(curr);
         tok = nextToken(lp);
     }
@@ -19,5 +20,8 @@ void start(string input) {
     for (string& i : tokenVector) {
         cout << i;
     }
+
+    tokenVector.clear();
+    delete lp;
 }
 

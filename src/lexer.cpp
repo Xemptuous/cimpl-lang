@@ -63,6 +63,12 @@ token nextToken(Lexer* lp) {
         case '}':
             tok = newToken(TokenType.RBRACE, lp->ch);
             break;
+        case '[':
+            tok = newToken(TokenType.LBRACKET, lp->ch);
+            break;
+        case ']':
+            tok = newToken(TokenType.RBRACKET, lp->ch);
+            break;
         case '<':
             tok = newToken(TokenType.LT, lp->ch);
             break;
@@ -72,6 +78,15 @@ token nextToken(Lexer* lp) {
         case '\0':
             tok.literal = {};
             tok.type = TokenType._EOF;
+            break;
+        case '\"': {
+            std::string str = readString(lp);
+            tok.literal = str;
+            tok.type = TokenType.STRINGS;
+            break;
+        }
+        case '\'':
+            tok = newToken(TokenType.APOSTROPHE, lp->ch);
             break;
         default:
             if (isalpha(lp->ch) || lp->ch == '_') {
@@ -114,6 +129,18 @@ std::string readNumber(Lexer* lp) {
     std::string result = lp->input.substr(position, diff);
     return result;
 }
+
+
+std::string readString(Lexer* lp) {
+    int position = lp->position;
+    while(lp->ch != '\"') {
+        readChar(lp);
+    }
+    int diff = lp->position - position;
+    std::string result = lp->input.substr(position, diff);
+    return result;
+}
+
 
 void readChar(Lexer* lp) {
     if (lp->readPosition >= lp->input.length()) {
@@ -164,10 +191,9 @@ token newToken(std::string type, char ch) {
 
 
 Lexer* createLexer(std::string input) {
-    Lexer* lex = new Lexer;
-    lex->input = input;
-    lex->ch = input[0];
+    Lexer* lex = new Lexer(input);
     readChar(lex);
+
     return lex;
 }
 

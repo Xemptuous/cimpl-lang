@@ -4,7 +4,7 @@
 using namespace std;
 
 int main() {
-    system("cls");
+    system("clear");
     string input;
 
     cout << "Hello! Welcome to cimpl.\n";

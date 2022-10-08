@@ -14,22 +14,27 @@
 
 typedef struct Lexer {
     std::string input;
-    int position;
-    int readPosition;
-    char ch;
+    int position = 0;
+    int readPosition = 0;
+    char ch = input[0];
+
+    Lexer(std::string _input) {
+        input = _input;
+    }
 }
 Lexer;
 
-void readChar(Lexer*);
-std::string readNumber(Lexer*);
-Lexer* createLexer(std::string);
 void skipWhitespace(Lexer*);
 void testNextToken();
+void readChar(Lexer*);
+char peekChar(Lexer*);
+std::string lookupIdentifier(std::string);
+std::string readIdentifier(Lexer*);
+std::string readString(Lexer*);
+std::string readNumber(Lexer*);
+Lexer* createLexer(std::string);
 token nextToken(Lexer*);
 token newToken(std::string, char);
-std::string readIdentifier(Lexer*);
-std::string lookupIdentifier(std::string);
-char peekChar(Lexer*);
 
 #endif // LEXER
 

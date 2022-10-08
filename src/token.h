@@ -21,7 +21,24 @@ const struct TokenType {
 
     // Identifiers + Literals
     std::string IDENT;
+    std::string IDENT_INT;
+    std::string IDENT_LONG;
+    std::string IDENT_FLOAT;
+    std::string IDENT_CHAR;
+    std::string IDENT_STRINGS;
+    std::string IDENT_ARRAY;
+    std::string IDENT_VECTOR;
+    std::string IDENT_MAP;
+
+    // Data Types
     std::string INT;
+    std::string LONG;
+    std::string FLOAT;
+    std::string CHAR;
+    std::string STRINGS;
+    std::string ARRAY;
+    std::string VECTOR;
+    std::string MAP;
 
     // Keywords
     std::string LET;
@@ -49,8 +66,12 @@ const struct TokenType {
     std::string RPAREN;
     std::string LBRACE;
     std::string RBRACE;
+    std::string LBRACKET;
+    std::string RBRACKET;
     std::string LT;
     std::string GT;
+    std::string APOSTROPHE;
+    std::string QUOTE;
 }
 TokenType = {
     "ILLEGAL",
@@ -58,7 +79,24 @@ TokenType = {
 
     // Identifiers
     "IDENT",
+    "IDENT_INT",
+    "IDENT_LONG",
+    "IDENT_FLOAT",
+    "IDENT_CHAR",
+    "IDENT_STRINGS",
+    "IDENT_ARRAY",
+    "IDENT_VECTOR",
+    "IDENT_MAP",
+
+    // Data Types
     "INT",
+    "LONG",
+    "FLOAT",
+    "CHAR",
+    "STRINGS",
+    "ARRAY",
+    "VECTOR",
+    "MAP",
 
     // Keywords
     "LET",
@@ -86,8 +124,12 @@ TokenType = {
     ")",
     "{",
     "}",
+    "[",
+    "]",
     "<",
     ">"
+    "\'",
+    "\"",
 };
 
 typedef struct token {
@@ -106,5 +148,12 @@ const std::unordered_map<std::string, std::string> keywords = {
     {"return", TokenType.RETURN},
     {"==", TokenType.EQ},
     {"!=", TokenType.NOT_EQ},
+    {"int", TokenType.IDENT_INT},
+    {"long", TokenType.IDENT_LONG},
+    {"float", TokenType.IDENT_FLOAT},
+    {"char", TokenType.IDENT_CHAR},
+    {"string", TokenType.IDENT_STRINGS},
+    {"vector", TokenType.IDENT_VECTOR},
+    {"map", TokenType.IDENT_MAP},
 };
 #endif // TOKEN
