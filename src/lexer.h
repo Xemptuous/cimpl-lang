@@ -17,3 +17,4 @@ token nextToken(Lexer*);
 token newToken(std::string, char);
 std::string readIdentifier(Lexer*);
 std::string lookupIdentifier(std::string);
+char peekChar(Lexer*);

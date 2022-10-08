@@ -1,41 +1,73 @@
 #include <unordered_map>
 #include <string>
 
+using namespace std;
+
 
 const struct TokenType {
-    std::string ILLEGAL;
-    std::string IDENT;
-    std::string _EOF;
-    std::string LET;
-    std::string FUNCTION;
-    std::string INT;
-    std::string ASSIGN;
-    std::string PLUS;
-    std::string MINUS;
-    std::string ASTERISK;
-    std::string SLASH;
-    std::string COMMA;
-    std::string SEMILCOLON;
-    std::string BANG;
-    std::string LPAREN;
-    std::string RPAREN;
-    std::string LBRACE;
-    std::string RBRACE;
-    std::string LT;
-    std::string GT;
-}   
+    string ILLEGAL;
+    string _EOF;
+
+    // Identifiers + Literals
+    string IDENT;
+    string INT;
+
+    // Keywords
+    string LET;
+    string FUNCTION;
+    string TRUE;
+    string FALSE;
+    string IF;
+    string ELSE;
+    string RETURN;
+
+    // Operators
+    string EQ;
+    string NOT_EQ;
+    string ASSIGN;
+    string PLUS;
+    string MINUS;
+    string ASTERISK;
+    string SLASH;
+
+    // Delimiters
+    string COMMA;
+    string SEMILCOLON;
+    string BANG;
+    string LPAREN;
+    string RPAREN;
+    string LBRACE;
+    string RBRACE;
+    string LT;
+    string GT;
+}
 TokenType = {
     "ILLEGAL",
-    "IDENT",
     "EOF",
+
+    // Identifiers
+    "IDENT",
+    "INT",
+
+    // Keywords
     "LET",
     "FUNCTION",
-    "INT",
+    "TRUE",
+    "FALSE",
+    "IF",
+    "ELSE",
+    "RETURN",
+
+    // Operators
+    "==",
+    "!=",
     "=",
     "+",
     "-",
     "*",
     "/",
+
+    // Delimiters
     ",",
     ";",
     "!",
@@ -48,13 +80,19 @@ TokenType = {
 };
 
 typedef struct token {
-    std::string type;
-    std::string literal;
+    string type;
+    string literal;
 }
 token;
-
-const std::unordered_map<std::string, std::string> keywords = {
+const unordered_map<string, string> keywords = {
     {"fn", TokenType.FUNCTION},
     {"let", TokenType.LET},
+    {"true", TokenType.TRUE},
+    {"false", TokenType.FALSE},
+    {"if", TokenType.IF},
+    {"else", TokenType.ELSE},
+    {"return", TokenType.RETURN},
+    {"==", TokenType.EQ},
+    {"!=", TokenType.NOT_EQ},
 };
 

@@ -1,5 +1,6 @@
 #include <iostream>
 #include "lexer.h"
+#include <sstream>
 
 int main() {
     testNextToken();
@@ -14,7 +15,14 @@ token nextToken(Lexer* lp) {
 
     switch (lp->ch) {
         case '=':
-            tok = newToken(TokenType.ASSIGN, lp->ch);
+            if (peekChar(lp) == '=') {
+                readChar(lp);
+                tok.literal = "==";
+                tok.type = lookupIdentifier(tok.literal);
+            }
+            else {
+                tok = newToken(TokenType.ASSIGN, lp->ch);
+            }
             break;
         case '+':
             tok = newToken(TokenType.PLUS, lp->ch);
@@ -35,7 +43,14 @@ token nextToken(Lexer* lp) {
             tok = newToken(TokenType.SEMILCOLON, lp->ch);
             break;
         case '!':
-            tok = newToken(TokenType.BANG, lp->ch);
+            if (peekChar(lp) == '=') {
+                readChar(lp);
+                tok.literal = "!=";
+                tok.type = lookupIdentifier(tok.literal);
+            }
+            else {
+                tok = newToken(TokenType.BANG, lp->ch);
+            }
             break;
         case '(':
             tok = newToken(TokenType.LPAREN, lp->ch);
@@ -112,6 +127,15 @@ void readChar(Lexer* lp) {
     lp->readPosition += 1;
 }
 
+char peekChar(Lexer* lp) {
+    if (lp->readPosition >= lp->input.length()) {
+        return '\0';
+    }
+    else {
+        return lp->input[lp->readPosition];
+    }
+}
+
 
 std::string lookupIdentifier(std::string ident) {
     try 
@@ -152,9 +176,10 @@ Lexer* createLexer(std::string input) {
 void testNextToken() {
     // std::string input = "=+-*/,;(){}";
     std::string input = "let five = 5; \nlet ten = 10; \n\n let add = fn(x, y)"
-        " {\n\tx + y;\n};\n\nlet result = add(five, ten);";
+        " {\n\tx + y;\n};\n\nlet result = add(five, ten);\n!-/*5;\n5 < 10 > 5;"
+        "if (5 < 10) { return true;} else { return false;} 10 == 10;\n10 != 9;";
     Lexer* lex = createLexer(input);
-    token tests[37] = {
+    token tests[74] = {
         {TokenType.LET, "let"},
         {TokenType.IDENT, "five"},
         {TokenType.ASSIGN, "="},
@@ -191,6 +216,43 @@ void testNextToken() {
         {TokenType.IDENT, "ten"},
         {TokenType.RPAREN, ")"},
         {TokenType.SEMILCOLON, ";"},
+        {TokenType.BANG, "!"},
+        {TokenType.MINUS, "-"},
+        {TokenType.SLASH, "/"},
+        {TokenType.ASTERISK, "*"},
+        {TokenType.INT, "5"},
+        {TokenType.SEMILCOLON, ";"},
+        {TokenType.INT, "5"},
+        {TokenType.LT, "<"},
+        {TokenType.INT, "10"},
+        {TokenType.GT, ">"},
+        {TokenType.INT, "5"},
+        {TokenType.SEMILCOLON, ";"},
+        {TokenType.IF, "if"},
+        {TokenType.LPAREN, "("},
+        {TokenType.INT, "5"},
+        {TokenType.LT, "<"},
+        {TokenType.INT, "10"},
+        {TokenType.RPAREN, ")"},
+        {TokenType.LBRACE, "{"},
+        {TokenType.RETURN, "return"},
+        {TokenType.TRUE, "true"},
+        {TokenType.SEMILCOLON, ";"},
+        {TokenType.RBRACE, "}"},
+        {TokenType.ELSE, "else"},
+        {TokenType.LBRACE, "{"},
+        {TokenType.RETURN, "return"},
+        {TokenType.FALSE, "false"},
+        {TokenType.SEMILCOLON, ";"},
+        {TokenType.RBRACE, "}"},
+        {TokenType.INT, "10"},
+        {TokenType.EQ, "=="},
+        {TokenType.INT, "10"},
+        {TokenType.SEMILCOLON, ";"},
+        {TokenType.INT, "10"},
+        {TokenType.NOT_EQ, "!="},
+        {TokenType.INT, "9"},
+        {TokenType.SEMILCOLON, ";"},
         {TokenType._EOF, ""}
     };
     for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
@@ -208,8 +270,7 @@ void testNextToken() {
             return;
         }
     }
-    std::cout << "All Tests Passed for input:" << std::endl;
-    std::cout << input << std::endl;
+    std::cout << "All Tests Passed" << std::endl;
     delete lex;
     return;
 }
