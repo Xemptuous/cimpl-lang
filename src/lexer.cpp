@@ -1,11 +1,7 @@
 #include <iostream>
+#include <algorithm>
 #include "lexer.h"
 #include "token.h"
-
-// int main() {
-//     testNextToken();
-//     return 0;
-// }
 
 
 token nextToken(Lexer* lp) {
@@ -33,10 +29,27 @@ token nextToken(Lexer* lp) {
             tok = newToken(TokenType.ASTERISK, lp->ch);
             break;
         case '/':
-            tok = newToken(TokenType.SLASH, lp->ch);
+            if (peekChar(lp) == '/') {
+                readChar(lp);
+                std::string comment = readComment(lp);
+                tok.type = TokenType.COMMENT;
+                tok.literal = comment;
+            }
+            else if (peekChar(lp) == '*') {
+                readChar(lp);
+                std::string comment = readBlockComment(lp);
+                tok.type = TokenType.BLOCK_COMMENT;
+                tok.literal = comment;
+            }
+            else {
+                tok = newToken(TokenType.SLASH, lp->ch);
+            }
             break;
         case ',':
             tok = newToken(TokenType.COMMA, lp->ch);
+            break;
+        case '.':
+            tok = newToken(TokenType.PERIOD, lp->ch);
             break;
         case ';':
             tok = newToken(TokenType.SEMILCOLON, lp->ch);
@@ -80,9 +93,10 @@ token nextToken(Lexer* lp) {
             tok.type = TokenType._EOF;
             break;
         case '\"': {
+            readChar(lp);
             std::string str = readString(lp);
             tok.literal = str;
-            tok.type = TokenType.STRINGS;
+            tok.type = TokenType._STRING;
             break;
         }
         case '\'':
@@ -95,8 +109,7 @@ token nextToken(Lexer* lp) {
                 return tok;
             }
             else if (isdigit(lp->ch)) {
-                tok.type = TokenType.INT;
-                tok.literal = readNumber(lp);
+                tok = evaluateNumber(lp);
                 return tok;
             }
             else {
@@ -106,6 +119,26 @@ token nextToken(Lexer* lp) {
     }
     readChar(lp);
     return tok;
+}
+
+
+token evaluateNumber(Lexer* lp) {
+    token tok;
+    std::string result = readNumber(lp);
+    tok.literal = result;
+    if (result.find('.') != std::string::npos) {
+        int c = std::count(result.begin(), result.end(), '.');
+        if (c > 1) {
+            tok.type = TokenType.ILLEGAL;
+            return tok;
+        }
+        tok.type = TokenType.FLOAT;
+        return tok;
+    }
+    else {
+        tok.type = TokenType.INT;
+        return tok;
+    }
 }
 
 
@@ -122,7 +155,8 @@ std::string readIdentifier(Lexer* lp) {
 
 std::string readNumber(Lexer* lp) {
     int position = lp->position;
-    while (isdigit(lp->ch)) {
+    int decimals = 0;
+    while (isdigit(lp->ch) || lp->ch == '.') {
         readChar(lp);
     }
     int diff = lp->position - position;
@@ -142,9 +176,37 @@ std::string readString(Lexer* lp) {
 }
 
 
+std::string readComment(Lexer* lp) {
+    int position = lp->position + 1;
+    while (lp->ch != '\0') {
+        if (lp->ch == '\n')
+            break;
+        readChar(lp);
+    }
+    int diff = lp->position - position;
+    std::string result = lp->input.substr(position, diff + 2);
+    return result;
+}
+
+std::string readBlockComment(Lexer* lp) {
+    int position = lp->position + 1;
+    while (lp->ch != '\0') {
+        if (lp->ch == '*' && peekChar(lp) == '/') {
+            readChar(lp);
+            break;
+        }
+        readChar(lp);
+    }
+    int diff = lp->position - position;
+    std::string result = lp->input.substr(position, diff - 1);
+    return result;
+}
+
+
 void readChar(Lexer* lp) {
     if (lp->readPosition >= lp->input.length()) {
         lp->ch = '\0';
+        return;
     }
     else {
         lp->ch = lp->input[lp->readPosition];
@@ -152,6 +214,7 @@ void readChar(Lexer* lp) {
     lp->position = lp->readPosition;
     lp->readPosition += 1;
 }
+
 
 char peekChar(Lexer* lp) {
     if (lp->readPosition >= lp->input.length()) {

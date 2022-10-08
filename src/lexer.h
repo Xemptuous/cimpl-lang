@@ -30,9 +30,12 @@ void readChar(Lexer*);
 char peekChar(Lexer*);
 std::string lookupIdentifier(std::string);
 std::string readIdentifier(Lexer*);
+std::string readBlockComment(Lexer*);
+std::string readComment(Lexer*);
 std::string readString(Lexer*);
 std::string readNumber(Lexer*);
 Lexer* createLexer(std::string);
+token evaluateNumber(Lexer*);
 token nextToken(Lexer*);
 token newToken(std::string, char);
 

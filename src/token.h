@@ -25,7 +25,7 @@ const struct TokenType {
     std::string IDENT_LONG;
     std::string IDENT_FLOAT;
     std::string IDENT_CHAR;
-    std::string IDENT_STRINGS;
+    std::string IDENT_STRING;
     std::string IDENT_ARRAY;
     std::string IDENT_VECTOR;
     std::string IDENT_MAP;
@@ -35,8 +35,7 @@ const struct TokenType {
     std::string LONG;
     std::string FLOAT;
     std::string CHAR;
-    std::string STRINGS;
-    std::string ARRAY;
+    std::string _STRING;
     std::string VECTOR;
     std::string MAP;
 
@@ -60,6 +59,7 @@ const struct TokenType {
 
     // Delimiters
     std::string COMMA;
+    std::string PERIOD;
     std::string SEMILCOLON;
     std::string BANG;
     std::string LPAREN;
@@ -72,6 +72,10 @@ const struct TokenType {
     std::string GT;
     std::string APOSTROPHE;
     std::string QUOTE;
+
+    // Comments
+    std::string COMMENT;
+    std::string BLOCK_COMMENT;
 }
 TokenType = {
     "ILLEGAL",
@@ -83,7 +87,7 @@ TokenType = {
     "IDENT_LONG",
     "IDENT_FLOAT",
     "IDENT_CHAR",
-    "IDENT_STRINGS",
+    "IDENT_STRING",
     "IDENT_ARRAY",
     "IDENT_VECTOR",
     "IDENT_MAP",
@@ -93,8 +97,7 @@ TokenType = {
     "LONG",
     "FLOAT",
     "CHAR",
-    "STRINGS",
-    "ARRAY",
+    "STRING",
     "VECTOR",
     "MAP",
 
@@ -108,28 +111,33 @@ TokenType = {
     "RETURN",
 
     // Operators
-    "==",
-    "!=",
-    "=",
-    "+",
-    "-",
-    "*",
-    "/",
+    "EQ",
+    "NOT_EQ",
+    "ASSIGN",
+    "PLUS",
+    "MINUS",
+    "ASTERISK",
+    "SLASH",
 
     // Delimiters
-    ",",
-    ";",
-    "!",
-    "(",
-    ")",
-    "{",
-    "}",
-    "[",
-    "]",
-    "<",
-    ">"
-    "\'",
-    "\"",
+    "COMMA",
+    "PERIOD",
+    "SEMICOLON",
+    "BANG",
+    "LPAREN",
+    "RPAREN",
+    "LBRACE",
+    "RBRACE",
+    "LBRACKET",
+    "RBRACKET",
+    "LT",
+    "GT",
+    "APOSTROPHE",
+    "QUOTE",
+
+    // Comments
+    "COMMENT",
+    "BLOCK_COMMENT",
 };
 
 typedef struct token {
@@ -148,11 +156,13 @@ const std::unordered_map<std::string, std::string> keywords = {
     {"return", TokenType.RETURN},
     {"==", TokenType.EQ},
     {"!=", TokenType.NOT_EQ},
+    {"//", TokenType.COMMENT},
+    {"/*", TokenType.BLOCK_COMMENT},
     {"int", TokenType.IDENT_INT},
     {"long", TokenType.IDENT_LONG},
     {"float", TokenType.IDENT_FLOAT},
     {"char", TokenType.IDENT_CHAR},
-    {"string", TokenType.IDENT_STRINGS},
+    {"string", TokenType.IDENT_STRING},
     {"vector", TokenType.IDENT_VECTOR},
     {"map", TokenType.IDENT_MAP},
 };
