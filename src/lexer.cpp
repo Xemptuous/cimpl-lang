@@ -155,7 +155,6 @@ std::string readIdentifier(Lexer* lp) {
 
 std::string readNumber(Lexer* lp) {
     int position = lp->position;
-    int decimals = 0;
     while (isdigit(lp->ch) || lp->ch == '.') {
         readChar(lp);
     }
@@ -204,7 +203,7 @@ std::string readBlockComment(Lexer* lp) {
 
 
 void readChar(Lexer* lp) {
-    if (lp->readPosition >= lp->input.length()) {
+    if (lp->readPosition > lp->input.length()) {
         lp->ch = '\0';
         return;
     }
@@ -217,7 +216,7 @@ void readChar(Lexer* lp) {
 
 
 char peekChar(Lexer* lp) {
-    if (lp->readPosition >= lp->input.length()) {
+    if (lp->readPosition > lp->input.length()) {
         return '\0';
     }
     else {

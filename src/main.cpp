@@ -11,10 +11,15 @@ int main() {
     cout << "Try typing some commands:\n";
 
     while (true) {
+    start:
         cout << ">> ";
         getline(cin, input);
         if (input == "quit") {
             return 0;
+        }
+        if (input == "clear") {
+            system("clear");
+            goto start;
         }
         start(input);
     }
