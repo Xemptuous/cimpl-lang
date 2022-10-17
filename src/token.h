@@ -114,11 +114,11 @@ TokenType = {
     "BLOCK_COMMENT",
 };
 
-typedef struct token {
+typedef struct Token {
     std::string type;
     std::string literal;
 }
-token;
+Token;
 
 const std::unordered_map<std::string, std::string> keywords = {
     {"fn", TokenType.FUNCTION},

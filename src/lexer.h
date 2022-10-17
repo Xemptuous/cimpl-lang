@@ -27,7 +27,7 @@ std::string readComment(Lexer*);
 std::string readString(Lexer*);
 std::string readNumber(Lexer*);
 Lexer* createLexer(std::string);
-token evaluateNumber(Lexer*);
-token nextToken(Lexer*);
-token newToken(std::string, char);
+Token evaluateNumber(Lexer*);
+Token nextToken(Lexer*);
+Token newToken(std::string, char);
 

@@ -3,8 +3,8 @@
 #include <algorithm>
 
 
-token nextToken(Lexer* lp) {
-    token tok;
+Token nextToken(Lexer* lp) {
+    Token tok;
     skipWhitespace(lp);
 
     switch (lp->ch) {
@@ -121,8 +121,8 @@ token nextToken(Lexer* lp) {
 }
 
 
-token evaluateNumber(Lexer* lp) {
-    token tok;
+Token evaluateNumber(Lexer* lp) {
+    Token tok;
     std::string result = readNumber(lp);
     tok.literal = result;
     if (result.find('.') != std::string::npos) {
@@ -244,9 +244,9 @@ void skipWhitespace(Lexer* lp) {
 }
 
 
-token newToken(std::string type, char ch) {
+Token newToken(std::string type, char ch) {
     std::string str(1, ch);
-    token tok = {type, str};
+    Token tok = {type, str};
     return tok;
 }
 
@@ -265,7 +265,7 @@ void testNextToken() {
         " {\n\tx + y;\n};\n\nlet result = add(five, ten);\n!-/*5;\n5 < 10 > 5;"
         "if (5 < 10) { return true;} else { return false;} 10 == 10;\n10 != 9;";
     Lexer* lex = createLexer(input);
-    token tests[74] = {
+    Token tests[74] = {
         {TokenType.LET, "let"},
         {TokenType.IDENT, "five"},
         {TokenType.ASSIGN, "="},
@@ -342,7 +342,7 @@ void testNextToken() {
         {TokenType._EOF, ""}
     };
     for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
-        token tok = nextToken(lex);
+        Token tok = nextToken(lex);
         if (tok.type != tests[i].type) {
             std::cout << "Test " << i << " Failed" << std::endl;
             std::cout << "Test Token type of " << tests[i].type <<
