@@ -1,7 +1,6 @@
-#include <iostream>
-#include <algorithm>
 #include "lexer.h"
 #include "token.h"
+#include <algorithm>
 
 
 token nextToken(Lexer* lp) {

@@ -1,19 +1,7 @@
-#ifndef STRING
-#define STRING
+#pragma once
 
 #include <string>
-
-#endif // STRING
-
-#ifndef UNORD_MAP
-#define UNORD_MAP
-
 #include <unordered_map>
-
-#endif // UNORDERED MAP
-
-#ifndef TOKEN_H
-#define TOKEN_H
 
 const struct TokenType {
     std::string ILLEGAL;
@@ -21,14 +9,7 @@ const struct TokenType {
 
     // Identifiers + Literals
     std::string IDENT;
-    std::string IDENT_INT;
-    std::string IDENT_LONG;
-    std::string IDENT_FLOAT;
-    std::string IDENT_CHAR;
-    std::string IDENT_STRING;
-    std::string IDENT_ARRAY;
-    std::string IDENT_VECTOR;
-    std::string IDENT_MAP;
+    std::string DATATYPE;
 
     // Data Types
     std::string INT;
@@ -83,14 +64,7 @@ TokenType = {
 
     // Identifiers
     "IDENT",
-    "IDENT_INT",
-    "IDENT_LONG",
-    "IDENT_FLOAT",
-    "IDENT_CHAR",
-    "IDENT_STRING",
-    "IDENT_ARRAY",
-    "IDENT_VECTOR",
-    "IDENT_MAP",
+    "DATATYPE",
 
     // Data Types
     "INT",
@@ -158,12 +132,11 @@ const std::unordered_map<std::string, std::string> keywords = {
     {"!=", TokenType.NOT_EQ},
     {"//", TokenType.COMMENT},
     {"/*", TokenType.BLOCK_COMMENT},
-    {"int", TokenType.IDENT_INT},
-    {"long", TokenType.IDENT_LONG},
-    {"float", TokenType.IDENT_FLOAT},
-    {"char", TokenType.IDENT_CHAR},
-    {"string", TokenType.IDENT_STRING},
-    {"vector", TokenType.IDENT_VECTOR},
-    {"map", TokenType.IDENT_MAP},
+    {"int", TokenType.DATATYPE},
+    {"long", TokenType.DATATYPE},
+    {"float", TokenType.DATATYPE},
+    {"char", TokenType.DATATYPE},
+    {"string", TokenType.DATATYPE},
+    {"vector", TokenType.DATATYPE},
+    {"map", TokenType.DATATYPE},
 };
-#endif // TOKEN

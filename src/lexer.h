@@ -1,16 +1,8 @@
-#ifndef STRING
-#define STRING
-
+#pragma once
 #include <string>
-
-#endif // STRING
-
-
+#include <iostream>
 #include "token.h"
 
-
-#ifndef LEXER_H
-#define LEXER_H
 
 typedef struct Lexer {
     std::string input;
@@ -38,6 +30,4 @@ Lexer* createLexer(std::string);
 token evaluateNumber(Lexer*);
 token nextToken(Lexer*);
 token newToken(std::string, char);
-
-#endif // LEXER
 
