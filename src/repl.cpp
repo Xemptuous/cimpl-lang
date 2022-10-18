@@ -1,12 +1,12 @@
 #include "lexer.h"
-#include <iostream>
 #include <vector>
+#include <iostream>
 
 using namespace std;
 
 void start(string input) {
-    Lexer* lp = createLexer(input);
-    token tok = nextToken(lp);
+    unique_ptr<Lexer> lexer ( new Lexer(input) );
+    Token tok = lexer->nextToken();
 
     vector<string> tokenVector;
 
@@ -14,7 +14,7 @@ void start(string input) {
     {
         string curr = "{Type:" + tok.type + " Literal: " + tok.literal + '\n';
         tokenVector.push_back(curr);
-        tok = nextToken(lp);
+        tok = lexer->nextToken();
     }
 
     for (string& i : tokenVector) {
@@ -22,6 +22,5 @@ void start(string input) {
     }
 
     tokenVector.clear();
-    delete lp;
 }
 

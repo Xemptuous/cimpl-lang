@@ -1,33 +1,33 @@
 #pragma once
-#include <string>
-#include <iostream>
 #include "token.h"
+#include <memory>
 
 
-typedef struct Lexer {
-    std::string input;
-    int position = 0;
-    int readPosition = 0;
-    char ch = input[0];
+class Lexer {
+    public:
+        std::string input;
+        int position = 0;
+        int readPosition = 0;
+        char ch = input[0];
 
-    Lexer(std::string _input) {
-        input = _input;
-    }
-}
-Lexer;
+        Lexer(std::string _input) {
+            input = _input;
+            this->readChar();
+        }
 
-void skipWhitespace(Lexer*);
-void testNextToken();
-void readChar(Lexer*);
-char peekChar(Lexer*);
+        void skipWhitespace();
+        void testNextToken();
+        void readChar();
+        char peekChar();
+        std::string readIdentifier();
+        std::string readBlockComment();
+        std::string readComment();
+        std::string readString();
+        std::string readNumber();
+        Token evaluateNumber();
+        Token nextToken();
+};
+
 std::string lookupIdentifier(std::string);
-std::string readIdentifier(Lexer*);
-std::string readBlockComment(Lexer*);
-std::string readComment(Lexer*);
-std::string readString(Lexer*);
-std::string readNumber(Lexer*);
-Lexer* createLexer(std::string);
-Token evaluateNumber(Lexer*);
-Token nextToken(Lexer*);
 Token newToken(std::string, char);
 

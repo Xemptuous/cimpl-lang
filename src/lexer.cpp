@@ -1,129 +1,131 @@
+#include <iostream>
+#include <algorithm>
 #include "lexer.h"
 #include "token.h"
-#include <algorithm>
 
+using namespace std;
 
-Token nextToken(Lexer* lp) {
+Token Lexer::nextToken() {
     Token tok;
-    skipWhitespace(lp);
+    this->skipWhitespace();
 
-    switch (lp->ch) {
+    switch (this->ch) {
         case '=':
-            if (peekChar(lp) == '=') {
-                readChar(lp);
+            if (this->peekChar() == '=') {
+                this->readChar();
                 tok.literal = "==";
                 tok.type = lookupIdentifier(tok.literal);
             }
             else {
-                tok = newToken(TokenType.ASSIGN, lp->ch);
+                tok = newToken(TokenType.ASSIGN, this->ch);
             }
             break;
         case '+':
-            tok = newToken(TokenType.PLUS, lp->ch);
+            tok = newToken(TokenType.PLUS, this->ch);
             break;
         case '-':
-            tok = newToken(TokenType.MINUS, lp->ch);
+            tok = newToken(TokenType.MINUS, this->ch);
             break;
         case '*':
-            tok = newToken(TokenType.ASTERISK, lp->ch);
+            tok = newToken(TokenType.ASTERISK, this->ch);
             break;
         case '/':
-            if (peekChar(lp) == '/') {
-                readChar(lp);
-                std::string comment = readComment(lp);
+            if (this->peekChar() == '/') {
+                this->readChar();
+                std::string comment = this->readComment();
                 tok.type = TokenType.COMMENT;
                 tok.literal = comment;
             }
-            else if (peekChar(lp) == '*') {
-                readChar(lp);
-                std::string comment = readBlockComment(lp);
+            else if (this->peekChar() == '*') {
+                this->readChar();
+                std::string comment = this->readBlockComment();
                 tok.type = TokenType.BLOCK_COMMENT;
                 tok.literal = comment;
             }
             else {
-                tok = newToken(TokenType.SLASH, lp->ch);
+                tok = newToken(TokenType.SLASH, this->ch);
             }
             break;
         case ',':
-            tok = newToken(TokenType.COMMA, lp->ch);
+            tok = newToken(TokenType.COMMA, this->ch);
             break;
         case '.':
-            tok = newToken(TokenType.PERIOD, lp->ch);
+            tok = newToken(TokenType.PERIOD, this->ch);
             break;
         case ';':
-            tok = newToken(TokenType.SEMILCOLON, lp->ch);
+            tok = newToken(TokenType.SEMICOLON, this->ch);
             break;
         case '!':
-            if (peekChar(lp) == '=') {
-                readChar(lp);
+            if (this->peekChar() == '=') {
+                this->readChar();
                 tok.literal = "!=";
                 tok.type = lookupIdentifier(tok.literal);
             }
             else {
-                tok = newToken(TokenType.BANG, lp->ch);
+                tok = newToken(TokenType.BANG, this->ch);
             }
             break;
         case '(':
-            tok = newToken(TokenType.LPAREN, lp->ch);
+            tok = newToken(TokenType.LPAREN, this->ch);
             break;
         case ')':
-            tok = newToken(TokenType.RPAREN, lp->ch);
+            tok = newToken(TokenType.RPAREN, this->ch);
             break;
         case '{':
-            tok = newToken(TokenType.LBRACE, lp->ch);
+            tok = newToken(TokenType.LBRACE, this->ch);
             break;
         case '}':
-            tok = newToken(TokenType.RBRACE, lp->ch);
+            tok = newToken(TokenType.RBRACE, this->ch);
             break;
         case '[':
-            tok = newToken(TokenType.LBRACKET, lp->ch);
+            tok = newToken(TokenType.LBRACKET, this->ch);
             break;
         case ']':
-            tok = newToken(TokenType.RBRACKET, lp->ch);
+            tok = newToken(TokenType.RBRACKET, this->ch);
             break;
         case '<':
-            tok = newToken(TokenType.LT, lp->ch);
+            tok = newToken(TokenType.LT, this->ch);
             break;
         case '>':
-            tok = newToken(TokenType.GT, lp->ch);
+            tok = newToken(TokenType.GT, this->ch);
             break;
         case '\0':
             tok.literal = {};
             tok.type = TokenType._EOF;
             break;
         case '\"': {
-            readChar(lp);
-            std::string str = readString(lp);
+            this->readChar();
+            std::string str = this->readString();
             tok.literal = str;
             tok.type = TokenType._STRING;
             break;
         }
         case '\'':
-            tok = newToken(TokenType.APOSTROPHE, lp->ch);
+            tok = newToken(TokenType.APOSTROPHE, this->ch);
             break;
         default:
-            if (isalpha(lp->ch) || lp->ch == '_') {
-                tok.literal = readIdentifier(lp);
+            if (isalpha(this->ch) || this->ch == '_') {
+                tok.literal = this->readIdentifier();
                 tok.type = lookupIdentifier(tok.literal);
                 return tok;
             }
-            else if (isdigit(lp->ch)) {
-                tok = evaluateNumber(lp);
+            else if (isdigit(this->ch)) {
+                tok = this->evaluateNumber();
                 return tok;
             }
             else {
-                tok = newToken(TokenType.ILLEGAL, lp->ch);
+                tok = newToken(TokenType.ILLEGAL, this->ch);
                 return tok;
             }
     }
-    readChar(lp);
+    this->readChar();
     return tok;
 }
 
 
-Token evaluateNumber(Lexer* lp) {
+Token Lexer::evaluateNumber() {
     Token tok;
-    std::string result = readNumber(lp);
+    std::string result = this->readNumber();
     tok.literal = result;
     if (result.find('.') != std::string::npos) {
         int c = std::count(result.begin(), result.end(), '.');
@@ -141,85 +143,93 @@ Token evaluateNumber(Lexer* lp) {
 }
 
 
-std::string readIdentifier(Lexer* lp) {
-    int position = lp->position;
-    while (isalpha(lp->ch) || lp->ch == '_') {
-        readChar(lp);
+std::string Lexer::readIdentifier() {
+    int position = this->position;
+    while (isalpha(this->ch) || this->ch == '_') {
+        this->readChar();
     }
-    int diff = lp->position - position;
-    std::string result = lp->input.substr(position, diff);
+    int diff = this->position - position;
+    std::string result = this->input.substr(position, diff);
     return result;
 }
 
 
-std::string readNumber(Lexer* lp) {
-    int position = lp->position;
-    while (isdigit(lp->ch) || lp->ch == '.') {
-        readChar(lp);
+std::string Lexer::readNumber() {
+    int position = this->position;
+    while (isdigit(this->ch) || this->ch == '.') {
+        this->readChar();
     }
-    int diff = lp->position - position;
-    std::string result = lp->input.substr(position, diff);
+    int diff = this->position - position;
+    std::string result = this->input.substr(position, diff);
     return result;
 }
 
 
-std::string readString(Lexer* lp) {
-    int position = lp->position;
-    while(lp->ch != '\"') {
-        readChar(lp);
+std::string Lexer::readString() {
+    int position = this->position;
+    while(this->ch != '\"') {
+        this->readChar();
     }
-    int diff = lp->position - position;
-    std::string result = lp->input.substr(position, diff);
+    int diff = this->position - position;
+    std::string result = this->input.substr(position, diff);
     return result;
 }
 
 
-std::string readComment(Lexer* lp) {
-    int position = lp->position + 1;
-    while (lp->ch != '\0') {
-        if (lp->ch == '\n')
+std::string Lexer::readComment() {
+    int position = this->position + 1;
+    while (this->ch != '\0') {
+        if (this->ch == '\n')
             break;
-        readChar(lp);
+        this->readChar();
     }
-    int diff = lp->position - position;
-    std::string result = lp->input.substr(position, diff + 2);
+    int diff = this->position - position;
+    std::string result = this->input.substr(position, diff + 2);
     return result;
 }
 
-std::string readBlockComment(Lexer* lp) {
-    int position = lp->position + 1;
-    while (lp->ch != '\0') {
-        if (lp->ch == '*' && peekChar(lp) == '/') {
-            readChar(lp);
+std::string Lexer::readBlockComment() {
+    int position = this->position + 1;
+    while (this->ch != '\0') {
+        if (this->ch == '*' && this->peekChar() == '/') {
+            this->readChar();
             break;
         }
-        readChar(lp);
+        this->readChar();
     }
-    int diff = lp->position - position;
-    std::string result = lp->input.substr(position, diff - 1);
+    int diff = this->position - position;
+    std::string result = this->input.substr(position, diff - 1);
     return result;
 }
 
 
-void readChar(Lexer* lp) {
-    if (lp->readPosition > lp->input.length()) {
-        lp->ch = '\0';
+void Lexer::readChar() {
+    if (this->readPosition > this->input.length()) {
+        this->ch = '\0';
         return;
     }
     else {
-        lp->ch = lp->input[lp->readPosition];
+        this->ch = this->input[this->readPosition];
     }
-    lp->position = lp->readPosition;
-    lp->readPosition += 1;
+    this->position = this->readPosition;
+    this->readPosition += 1;
 }
 
 
-char peekChar(Lexer* lp) {
-    if (lp->readPosition > lp->input.length()) {
+char Lexer::peekChar() {
+    if (this->readPosition > this->input.length()) {
         return '\0';
     }
     else {
-        return lp->input[lp->readPosition];
+        return this->input[this->readPosition];
+    }
+}
+
+
+void Lexer::skipWhitespace() {
+    while (this->ch == ' ' || this->ch == '\t' || this->ch == '\n' || this->ch == '\r') 
+    {
+        this->readChar();
     }
 }
 
@@ -236,128 +246,9 @@ std::string lookupIdentifier(std::string ident) {
 }
 
 
-void skipWhitespace(Lexer* lp) {
-    while (lp->ch == ' ' || lp->ch == '\t' || lp->ch == '\n' || lp->ch == '\r') 
-    {
-        readChar(lp);
-    }
-}
-
-
 Token newToken(std::string type, char ch) {
     std::string str(1, ch);
     Token tok = {type, str};
     return tok;
-}
-
-
-Lexer* createLexer(std::string input) {
-    Lexer* lex = new Lexer(input);
-    readChar(lex);
-
-    return lex;
-}
-
-
-void testNextToken() {
-    // std::string input = "=+-*/,;(){}";
-    std::string input = "let five = 5; \nlet ten = 10; \n\n let add = fn(x, y)"
-        " {\n\tx + y;\n};\n\nlet result = add(five, ten);\n!-/*5;\n5 < 10 > 5;"
-        "if (5 < 10) { return true;} else { return false;} 10 == 10;\n10 != 9;";
-    Lexer* lex = createLexer(input);
-    Token tests[74] = {
-        {TokenType.LET, "let"},
-        {TokenType.IDENT, "five"},
-        {TokenType.ASSIGN, "="},
-        {TokenType.INT, "5"},
-        {TokenType.SEMILCOLON, ";"},
-        {TokenType.LET, "let"},
-        {TokenType.IDENT, "ten"},
-        {TokenType.ASSIGN, "="},
-        {TokenType.INT, "10"},
-        {TokenType.SEMILCOLON, ";"},
-        {TokenType.LET, "let"},
-        {TokenType.IDENT, "add"},
-        {TokenType.ASSIGN, "="},
-        {TokenType.FUNCTION, "fn"},
-        {TokenType.LPAREN, "("},
-        {TokenType.IDENT, "x"},
-        {TokenType.COMMA, ","},
-        {TokenType.IDENT, "y"},
-        {TokenType.RPAREN, ")"},
-        {TokenType.LBRACE, "{"},
-        {TokenType.IDENT, "x"},
-        {TokenType.PLUS, "+"},
-        {TokenType.IDENT, "y"},
-        {TokenType.SEMILCOLON, ";"},
-        {TokenType.RBRACE, "}"},
-        {TokenType.SEMILCOLON, ";"},
-        {TokenType.LET, "let"},
-        {TokenType.IDENT, "result"},
-        {TokenType.ASSIGN, "="},
-        {TokenType.IDENT, "add"},
-        {TokenType.LPAREN, "("},
-        {TokenType.IDENT, "five"},
-        {TokenType.COMMA, ","},
-        {TokenType.IDENT, "ten"},
-        {TokenType.RPAREN, ")"},
-        {TokenType.SEMILCOLON, ";"},
-        {TokenType.BANG, "!"},
-        {TokenType.MINUS, "-"},
-        {TokenType.SLASH, "/"},
-        {TokenType.ASTERISK, "*"},
-        {TokenType.INT, "5"},
-        {TokenType.SEMILCOLON, ";"},
-        {TokenType.INT, "5"},
-        {TokenType.LT, "<"},
-        {TokenType.INT, "10"},
-        {TokenType.GT, ">"},
-        {TokenType.INT, "5"},
-        {TokenType.SEMILCOLON, ";"},
-        {TokenType.IF, "if"},
-        {TokenType.LPAREN, "("},
-        {TokenType.INT, "5"},
-        {TokenType.LT, "<"},
-        {TokenType.INT, "10"},
-        {TokenType.RPAREN, ")"},
-        {TokenType.LBRACE, "{"},
-        {TokenType.RETURN, "return"},
-        {TokenType.TRUE, "true"},
-        {TokenType.SEMILCOLON, ";"},
-        {TokenType.RBRACE, "}"},
-        {TokenType.ELSE, "else"},
-        {TokenType.LBRACE, "{"},
-        {TokenType.RETURN, "return"},
-        {TokenType.FALSE, "false"},
-        {TokenType.SEMILCOLON, ";"},
-        {TokenType.RBRACE, "}"},
-        {TokenType.INT, "10"},
-        {TokenType.EQ, "=="},
-        {TokenType.INT, "10"},
-        {TokenType.SEMILCOLON, ";"},
-        {TokenType.INT, "10"},
-        {TokenType.NOT_EQ, "!="},
-        {TokenType.INT, "9"},
-        {TokenType.SEMILCOLON, ";"},
-        {TokenType._EOF, ""}
-    };
-    for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
-        Token tok = nextToken(lex);
-        if (tok.type != tests[i].type) {
-            std::cout << "Test " << i << " Failed" << std::endl;
-            std::cout << "Test Token type of " << tests[i].type <<
-                " does not match type " << tok.type << std::endl;
-            return;
-        }
-        if (tok.literal != tests[i].literal) {
-            std::cout << "Test " << i << " Failed" << std::endl;
-            std::cout << "Test Token literal of " << tests[i].literal <<
-                " does not match literal " << tok.literal << std::endl;
-            return;
-        }
-    }
-    std::cout << "All Tests Passed" << std::endl;
-    delete lex;
-    return;
 }
 

@@ -3,116 +3,116 @@
 #include <string>
 #include <unordered_map>
 
-const struct TokenType {
-    std::string ILLEGAL;
-    std::string _EOF;
+const struct Tokentype {
+    std::string ILLEGAL = {"ILLEGAL"};
+    std::string _EOF = {"_EOF"};
 
     // Identifiers + Literals
-    std::string IDENT;
-    std::string DATATYPE;
+    std::string IDENT = {"IDENT"};
+    std::string DATATYPE = {"DATATYPE"};
 
     // Data Types
-    std::string INT;
-    std::string LONG;
-    std::string FLOAT;
-    std::string CHAR;
-    std::string _STRING;
-    std::string VECTOR;
-    std::string MAP;
+    std::string INT = {"INT"};
+    std::string LONG = {"LONG"};
+    std::string FLOAT = {"FLOAT"};
+    std::string CHAR = {"CHAR"};
+    std::string _STRING = {"_STRING"};
+    std::string VECTOR = {"VECTOR"};
+    std::string MAP = {"MAP"};
 
     // Keywords
-    std::string LET;
-    std::string FUNCTION;
-    std::string TRUE;
-    std::string FALSE;
-    std::string IF;
-    std::string ELSE;
-    std::string RETURN;
+    std::string LET = {"LET"};
+    std::string FUNCTION = {"FUNCTION"};
+    std::string TRUE = {"TRUE"};
+    std::string FALSE = {"FALSE"};
+    std::string IF = {"IF"};
+    std::string ELSE = {"ELSE"};
+    std::string RETURN = {"RETURN"}; 
 
     // Operators
-    std::string EQ;
-    std::string NOT_EQ;
-    std::string ASSIGN;
-    std::string PLUS;
-    std::string MINUS;
-    std::string ASTERISK;
-    std::string SLASH;
+    std::string EQ = {"EQ"};
+    std::string NOT_EQ = {"NOT_EQ"};
+    std::string ASSIGN = {"ASSIGN"};
+    std::string PLUS = {"PLUS"};
+    std::string MINUS = {"MINUS"};
+    std::string ASTERISK = {"ASTERISK"};
+    std::string SLASH = {"SLASH"};
 
     // Delimiters
-    std::string COMMA;
-    std::string PERIOD;
-    std::string SEMILCOLON;
-    std::string BANG;
-    std::string LPAREN;
-    std::string RPAREN;
-    std::string LBRACE;
-    std::string RBRACE;
-    std::string LBRACKET;
-    std::string RBRACKET;
-    std::string LT;
-    std::string GT;
-    std::string APOSTROPHE;
-    std::string QUOTE;
+    std::string COMMA = {"COMMA"};
+    std::string PERIOD = {"PERIOD"};
+    std::string SEMICOLON = {"SEMICOLON"};
+    std::string BANG = {"BANG"};
+    std::string LPAREN = {"LPAREN"};
+    std::string RPAREN = {"RPAREN"};
+    std::string LBRACE = {"LBRACE"};
+    std::string RBRACE = {"RBRACE"};
+    std::string LBRACKET = {"LBRACKET"};
+    std::string RBRACKET = {"RBRACKET"};
+    std::string LT = {"LT"};
+    std::string GT = {"GT"};
+    std::string APOSTROPHE = {"APOSTROPHE"};
+    std::string QUOTE = {"QUOTE"};
 
     // Comments
-    std::string COMMENT;
-    std::string BLOCK_COMMENT;
-}
-TokenType = {
-    "ILLEGAL",
-    "EOF",
-
-    // Identifiers
-    "IDENT",
-    "DATATYPE",
-
-    // Data Types
-    "INT",
-    "LONG",
-    "FLOAT",
-    "CHAR",
-    "STRING",
-    "VECTOR",
-    "MAP",
-
-    // Keywords
-    "LET",
-    "FUNCTION",
-    "TRUE",
-    "FALSE",
-    "IF",
-    "ELSE",
-    "RETURN",
-
-    // Operators
-    "EQ",
-    "NOT_EQ",
-    "ASSIGN",
-    "PLUS",
-    "MINUS",
-    "ASTERISK",
-    "SLASH",
-
-    // Delimiters
-    "COMMA",
-    "PERIOD",
-    "SEMICOLON",
-    "BANG",
-    "LPAREN",
-    "RPAREN",
-    "LBRACE",
-    "RBRACE",
-    "LBRACKET",
-    "RBRACKET",
-    "LT",
-    "GT",
-    "APOSTROPHE",
-    "QUOTE",
-
-    // Comments
-    "COMMENT",
-    "BLOCK_COMMENT",
-};
+    std::string COMMENT = {"COMMENT"};
+    std::string BLOCK_COMMENT = {"BLOCK_COMMENT"};
+} TokenType{}; 
+// TokenType = {
+//     "ILLEGAL",
+//     "EOF",
+//
+//     // Identifiers
+//     "IDENT",
+//     "DATATYPE",
+//
+//     // Data Types
+//     "INT",
+//     "LONG",
+//     "FLOAT",
+//     "CHAR",
+//     "STRING",
+//     "VECTOR",
+//     "MAP",
+//
+//     // Keywords
+//     "LET",
+//     "FUNCTION",
+//     "TRUE",
+//     "FALSE",
+//     "IF",
+//     "ELSE",
+//     "RETURN",
+//
+//     // Operators
+//     "EQ",
+//     "NOT_EQ",
+//     "ASSIGN",
+//     "PLUS",
+//     "MINUS",
+//     "ASTERISK",
+//     "SLASH",
+//
+//     // Delimiters
+//     "COMMA",
+//     "PERIOD",
+//     "SEMICOLON",
+//     "BANG",
+//     "LPAREN",
+//     "RPAREN",
+//     "LBRACE",
+//     "RBRACE",
+//     "LBRACKET",
+//     "RBRACKET",
+//     "LT",
+//     "GT",
+//     "APOSTROPHE",
+//     "QUOTE",
+//
+//     // Comments
+//     "COMMENT",
+//     "BLOCK_COMMENT",
+// };
 
 typedef struct Token {
     std::string type;
