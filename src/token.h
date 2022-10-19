@@ -58,67 +58,14 @@ const struct Tokentype {
     std::string COMMENT = {"COMMENT"};
     std::string BLOCK_COMMENT = {"BLOCK_COMMENT"};
 } TokenType{}; 
-// TokenType = {
-//     "ILLEGAL",
-//     "EOF",
-//
-//     // Identifiers
-//     "IDENT",
-//     "DATATYPE",
-//
-//     // Data Types
-//     "INT",
-//     "LONG",
-//     "FLOAT",
-//     "CHAR",
-//     "STRING",
-//     "VECTOR",
-//     "MAP",
-//
-//     // Keywords
-//     "LET",
-//     "FUNCTION",
-//     "TRUE",
-//     "FALSE",
-//     "IF",
-//     "ELSE",
-//     "RETURN",
-//
-//     // Operators
-//     "EQ",
-//     "NOT_EQ",
-//     "ASSIGN",
-//     "PLUS",
-//     "MINUS",
-//     "ASTERISK",
-//     "SLASH",
-//
-//     // Delimiters
-//     "COMMA",
-//     "PERIOD",
-//     "SEMICOLON",
-//     "BANG",
-//     "LPAREN",
-//     "RPAREN",
-//     "LBRACE",
-//     "RBRACE",
-//     "LBRACKET",
-//     "RBRACKET",
-//     "LT",
-//     "GT",
-//     "APOSTROPHE",
-//     "QUOTE",
-//
-//     // Comments
-//     "COMMENT",
-//     "BLOCK_COMMENT",
-// };
+
 
 typedef struct Token {
     std::string type;
     std::string literal;
 }
 Token;
+
 
 const std::unordered_map<std::string, std::string> keywords = {
     {"fn", TokenType.FUNCTION},
