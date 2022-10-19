@@ -23,16 +23,13 @@ bool Parser::expectPeek(std::string tokentype) {
 Statement* Parser::parseStatement() {
     std::string curr = this->currentToken.type;
     if (curr == TokenType.LET) {
-        LetStatement* ptr = this->parseLetStatement();
-        return ptr;
+        return this->parseLetStatement();
     }
     else if (curr == TokenType.RETURN) {
-        ReturnStatement* ptr = this->parseReturnStatement();
-        return ptr;
+        return this->parseReturnStatement();
     }
     else {
-        ExpressionStatement* ptr = this->parseExpressionStatement();
-        return ptr;
+        return this->parseExpressionStatement();
     }
     return NULL;
 }
@@ -41,10 +38,9 @@ Statement* Parser::parseStatement() {
 LetStatement* Parser::parseLetStatement() {
     // Initializing statement values
     LetStatement* stmt = new LetStatement;
-    stmt->token = this->currentToken;
-    stmt->node.type = this->currentToken.type;
-    stmt->node.literal = this->currentToken.literal;
+    stmt->setStatementNode(this->currentToken);
 
+    // If no identifier found
     if (!(this->expectPeek(TokenType.IDENT))) {
         std::ostringstream ss;
         ss << "Could not parse " << this->currentToken.literal << "; no identifier given";
@@ -68,6 +64,7 @@ LetStatement* Parser::parseLetStatement() {
     this->nextToken();
     stmt->value = this->parseExpression();
 
+    // Read to end of line/file
     while (this->currentToken.type != TokenType.SEMICOLON) {
         if (this->currentToken.type == TokenType._EOF) {
             std::ostringstream ss;
@@ -86,7 +83,7 @@ LetStatement* Parser::parseLetStatement() {
 
 ReturnStatement* Parser::parseReturnStatement() {
     ReturnStatement* stmt = new ReturnStatement;
-    stmt->token = this->currentToken;
+    stmt->setStatementNode(this->currentToken);
     this->nextToken();
 
     stmt->returnValue = this->parseExpression();
@@ -108,16 +105,15 @@ ReturnStatement* Parser::parseReturnStatement() {
 
 Identifier* Parser::parseIdentifier() {
     Identifier* idp = new Identifier;
-    idp->token = this->currentToken;
-    idp->value = this->currentToken.literal;
+    idp->setExpressionNode(this->currentToken);
     return idp;
 }
 
 
 ExpressionStatement* Parser::parseExpressionStatement() {
     ExpressionStatement* stmt = new ExpressionStatement;
-    stmt->token = this->currentToken;
-    stmt->expression = parseExpression();
+    stmt->setStatementNode(this->currentToken);
+    stmt->expression = this->parseExpression();
 
     if (this->peekToken.type == TokenType.SEMICOLON) {
         this->nextToken();
@@ -146,9 +142,8 @@ Expression* Parser::parseExpression() {
 
 IntegerLiteral* Parser::parseIntegerLiteral() {
     IntegerLiteral* expr = new IntegerLiteral;
-    expr->token = this->currentToken;
-    expr->node.literal = this->currentToken.literal;
-    expr->node.type = this->currentToken.type;
+    expr->setExpressionNode(this->currentToken);
+
     int value;
     try {
         value = stoi(this->currentToken.literal);
@@ -167,10 +162,7 @@ IntegerLiteral* Parser::parseIntegerLiteral() {
 
 StringLiteral* Parser::parseStringLiteral() {
     StringLiteral* expr = new StringLiteral;
-    expr->token = this->currentToken;
-    expr->value = this->currentToken.literal;
-    expr->node.literal = this->currentToken.literal;
-    expr->node.type = this->currentToken.type;
+    expr->setExpressionNode(this->currentToken);
     return expr;
 }
 

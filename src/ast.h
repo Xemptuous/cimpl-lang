@@ -30,25 +30,33 @@ enum ExpressionType {
 
 typedef struct Statement {
     Node node{};
+    Token token;
     StatementType type;
     
     Statement() = default;
     virtual ~Statement() = default; 
+
+    virtual void setStatementNode(Token);
 } Statement;
 
 
 typedef struct Expression {
     Node node{};
+    Token token;
     ExpressionType type;
     
     Expression() = default;
     virtual ~Expression() = default; 
+
+    virtual void setExpressionNode(Token);
 } Expression;
 
 
 typedef struct Identifier : Expression {
     Token token;
     std::string value;
+
+    void setExpressionNode(Token);
 } Identifier;
 
 
@@ -116,6 +124,8 @@ typedef struct StringLiteral : Expression {
     StringLiteral() {
         this->type = stringLiteral;
     }
+
+    void setExpressionNode(Token);
 } StringLiteral;
 
 

@@ -57,7 +57,35 @@ void AST::checkParserErrors() {
 }
 
 
+void Statement::setStatementNode(Token tok) {
+    this->node.literal = tok.literal;
+    this->token.literal = tok.literal;
+    this->node.type = tok.type;
+}
 
+
+void Expression::setExpressionNode(Token tok) {
+    this->token = tok;
+    this->node.literal = tok.literal;
+    this->node.type = tok.type;
+}
+
+
+void StringLiteral::setExpressionNode(Token tok) {
+    this->token = tok;
+    this->node.literal = tok.literal;
+    this->node.type = tok.type;
+    this->value = tok.literal;
+
+}
+
+
+void Identifier::setExpressionNode(Token tok) {
+    this->token = tok;
+    this->node.literal = tok.literal;
+    this->node.type = tok.type;
+    this->value = tok.literal;
+}
 
 // void AST::convertTypes() {
 //     for (auto stmt : this->Statements) {
