@@ -69,6 +69,14 @@ LetStatement* Parser::parseLetStatement() {
     stmt->value = this->parseExpression();
 
     while (this->currentToken.type != TokenType.SEMICOLON) {
+        if (this->currentToken.type == TokenType._EOF) {
+            std::ostringstream ss;
+            ss << "No Semicolon present at end of line for " << StatementMap.at(stmt->type) << 
+                " with value " << stmt->value->node.literal;
+            std::string msg = ss.str();
+            this->errors.push_back(msg);
+            return NULL;
+        }
         this->nextToken();
     }
 
@@ -84,6 +92,14 @@ ReturnStatement* Parser::parseReturnStatement() {
     stmt->returnValue = this->parseExpression();
 
     while (this->currentToken.type != TokenType.SEMICOLON) {
+        if (this->currentToken.type == TokenType._EOF) {
+            std::ostringstream ss;
+            ss << "No Semicolon present at end of line for " << StatementMap.at(stmt->type) << 
+                " with value " << stmt->returnValue->node.literal;
+            std::string msg = ss.str();
+            this->errors.push_back(msg);
+            return NULL;
+        }
         this->nextToken();
     }
     return stmt;
