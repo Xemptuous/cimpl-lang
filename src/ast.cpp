@@ -147,6 +147,16 @@ std::string ExpressionStatement::printString() {
 }
 
 
+std::string PrefixExpression::printString() {
+    std::ostringstream ss;
+
+    ss << "(" << this->_operator << this->_right->printString() << ")";
+
+    std::string msg = ss.str();
+    return msg;
+}
+
+
 std::string AST::printString() {
     std::ostringstream ss;
     for (auto stmt : this->Statements) {

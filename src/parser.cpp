@@ -62,7 +62,7 @@ LetStatement* Parser::parseLetStatement() {
 
     // Setting expression value
     this->nextToken();
-    stmt->value = this->parseExpression();
+    stmt->value = this->parseExpression(Precedences.LOWEST);
 
     // Read to end of line/file
     while (this->currentToken.type != TokenType.SEMICOLON) {
@@ -86,7 +86,7 @@ ReturnStatement* Parser::parseReturnStatement() {
     stmt->setStatementNode(this->currentToken);
     this->nextToken();
 
-    stmt->returnValue = this->parseExpression();
+    stmt->returnValue = this->parseExpression(Precedences.LOWEST);
 
     while (this->currentToken.type != TokenType.SEMICOLON) {
         if (this->currentToken.type == TokenType._EOF) {
@@ -113,7 +113,7 @@ Identifier* Parser::parseIdentifier() {
 ExpressionStatement* Parser::parseExpressionStatement() {
     ExpressionStatement* stmt = new ExpressionStatement;
     stmt->setStatementNode(this->currentToken);
-    stmt->expression = this->parseExpression();
+    stmt->expression = this->parseExpression(Precedences.LOWEST);
 
     if (this->peekToken.type == TokenType.SEMICOLON) {
         this->nextToken();
@@ -122,7 +122,7 @@ ExpressionStatement* Parser::parseExpressionStatement() {
 }
 
 
-Expression* Parser::parseExpression() {
+Expression* Parser::parseExpression(int precedence) {
     std::string curr = this->currentToken.type;
     if (curr == TokenType.IDENT) {
         Identifier* leftExp = this->parseIdentifier();
@@ -136,7 +136,25 @@ Expression* Parser::parseExpression() {
         StringLiteral* leftExp = this->parseStringLiteral();
         return leftExp;
     }
+    else if (curr == TokenType.BANG || curr == TokenType.MINUS) {
+        PrefixExpression* prefix = this->parsePrefixExpression(); 
+        return prefix;
+    }
+    std::ostringstream ss;
+    ss << "No prefix parse function found for " << curr << '\n';
+    std::string msg = ss.str();
+    this->errors.push_back(msg);
     return NULL;
+}
+
+
+PrefixExpression* Parser::parsePrefixExpression() {
+    PrefixExpression* expr = new PrefixExpression;
+    expr->token = this->currentToken;
+    expr->_operator = this->currentToken.literal;
+    this->nextToken();
+    expr->_right = this->parseExpression(Precedences.PREFIX);
+    return expr;
 }
 
 

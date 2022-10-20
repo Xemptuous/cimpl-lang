@@ -10,6 +10,7 @@ struct Statement;
 struct LetStatement;
 struct ReturnStatement;
 struct ExpressionStatement;
+struct PrefixExpression;
 
 class Parser {
     public:
@@ -34,8 +35,9 @@ class Parser {
         void peekErrors(std::string);
 
         Identifier* parseIdentifier();
-        Expression* parseExpression();
+        Expression* parseExpression(int);
         IntegerLiteral* parseIntegerLiteral();
+        PrefixExpression* parsePrefixExpression();
         StringLiteral* parseStringLiteral();
         Statement* parseStatement();
         LetStatement* parseLetStatement();

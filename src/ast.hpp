@@ -23,6 +23,7 @@ enum ExpressionType {
     integerLiteral,
     stringLiteral,
     identifier,
+    prefixExpression,
     // functionCall,
     // binaryExpression
 };
@@ -112,6 +113,15 @@ typedef struct ExpressionStatement : Statement {
     }
     std::string printString();
 } ExpressionStatement;
+
+
+typedef struct PrefixExpression : Expression {
+    Token token;
+    std::string _operator;
+    Expression* _right;
+
+    std::string printString();
+} PrefixExpression;
 
 
 typedef struct IntegerLiteral : Expression {
