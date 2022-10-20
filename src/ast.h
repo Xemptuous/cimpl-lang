@@ -159,3 +159,14 @@ typedef struct AST {
     void convertTypes();
     void checkParserErrors();
 } AST;
+
+
+const struct Precedences {
+    int LOWEST {1};
+    int EQUALS {2};
+    int LESSGREATER {3};
+    int SUM {4};
+    int PRODUCT {5};
+    int PREFIX {6};
+    int CALL {7};
+} Precedences{};
