@@ -1,6 +1,7 @@
 #include "ast.hpp"
 #include "parser.hpp"
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 
@@ -21,21 +22,24 @@ void AST::parseProgram() {
         switch (stmt->type) {
             case letStatement: {
                 LetStatement* ls = static_cast<LetStatement*>(stmt);
-                cout << StatementMap.at(ls->type) << "\n Identifier: " << ls->name->value << '\n';
-                cout << " Value: \n  " << "Type: " << ExpressionMap.at(ls->value->type) << '\n';
-                cout << "  Value: " << ls->value->node.literal << '\n';
+                cout << ls->printString() << '\n';
+                // cout << StatementMap.at(ls->type) << "\n Identifier: " << ls->name->value << '\n';
+                // cout << " Value: \n  " << "Type: " << ExpressionMap.at(ls->value->type) << '\n';
+                // cout << "  Value: " << ls->value->node.literal << '\n';
                 break;
             }
             case returnStatement: {
                 ReturnStatement* rs = static_cast<ReturnStatement*>(stmt);
-                cout << "Return Statement:\n" << " Value: " << rs->token.literal << '\n'; 
-                cout << " Type: " << ExpressionMap.at(rs->returnValue->type) << '\n';
-                cout << " Value: " << rs->returnValue->node.literal << '\n';
+                cout << rs->printString() << '\n';
+                // cout << "Return Statement:\n" << " Value: " << rs->token.literal << '\n'; 
+                // cout << " Type: " << ExpressionMap.at(rs->returnValue->type) << '\n';
+                // cout << " Value: " << rs->returnValue->node.literal << '\n';
                 break;
             }
             case expressionStatement: {
                 ExpressionStatement* es = static_cast<ExpressionStatement*>(stmt);
-                cout << "Expression Statement:\n" << "  Type: " << es->type << '\n';
+                cout << es->printString() << '\n';
+                // cout << "Expression Statement:\n" << "  Type: " << es->type << '\n';
                 break;
             }
             default: 
@@ -87,19 +91,74 @@ void Identifier::setExpressionNode(Token tok) {
     this->value = tok.literal;
 }
 
-// void AST::convertTypes() {
-//     for (auto stmt : this->Statements) {
-//         switch (stmt->type) {
-//             case letStatement:
-//                 stmt = static_cast<LetStatement*>(stmt);
-//                 break;
-//             case returnStatement:
-//                 stmt = static_cast<ReturnStatement*>(stmt);
-//                 break;
-//             case expressionStatement:
-//                 stmt = static_cast<ExpressionStatement*>(stmt);
-//                 break;
-//         }
-//     }
-// }
-//
+
+std::string Statement::printString() {
+    std::ostringstream ss;
+    ss << "{ " << this->token.literal << "; }";
+    std::string msg = ss.str();
+    return msg;
+}
+
+
+std::string Expression::printString() {
+    std::ostringstream ss;
+    ss << "{ " << this->token.literal << "; }";
+    std::string msg = ss.str();
+    return msg;
+}
+
+
+std::string LetStatement::printString() {
+    std::ostringstream ss;
+    ss << StatementMap.at(this->type) << "\n Identifier: " << this->name->value << '\n'
+        << " Value: \n  " << "Type: " << ExpressionMap.at(this->value->type) << '\n'
+        << "  Value: " << this->value->node.literal << '\n';
+    ss << " {" << this->token.literal << " " << this->name->printString() << " = ";
+
+    if (this->value != NULL) {
+        ss << this->value->printString();
+    }
+    ss << "; }";
+
+    std::string msg = ss.str();
+    return msg;
+}
+
+
+std::string ReturnStatement::printString() {
+    std::ostringstream ss;
+    ss << "Return Statement:\n" << " Value: " << this->token.literal << '\n'
+        << " Type: " << ExpressionMap.at(this->returnValue->type) << '\n'
+        << " Value: " << this->returnValue->node.literal << '\n';
+    ss << "{ " << this->token.literal << " ";
+
+    if (this->returnValue != NULL) {
+        ss << this->returnValue->printString();
+    }
+    ss << "; }";
+
+    std::string msg = ss.str();
+    return msg;
+}
+
+
+std::string ExpressionStatement::printString() {
+    std::ostringstream ss;
+
+    if (this->expression != NULL) {
+        ss << this->expression->printString();
+    }
+
+    std::string msg = ss.str();
+    return msg;
+}
+
+
+std::string AST::printString() {
+    std::ostringstream ss;
+    for (auto stmt : this->Statements) {
+        ss << stmt->printString();
+    }
+    std::string msg = ss.str();
+    return msg;
+}

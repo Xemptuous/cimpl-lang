@@ -37,6 +37,7 @@ typedef struct Statement {
     virtual ~Statement() = default; 
 
     virtual void setStatementNode(Token);
+    virtual std::string printString();
 } Statement;
 
 
@@ -49,6 +50,7 @@ typedef struct Expression {
     virtual ~Expression() = default; 
 
     virtual void setExpressionNode(Token);
+    virtual std::string printString();
 } Expression;
 
 
@@ -57,6 +59,7 @@ typedef struct Identifier : Expression {
     std::string value;
 
     void setExpressionNode(Token);
+    inline std::string printString() { return this->value; };
 } Identifier;
 
 
@@ -67,7 +70,7 @@ typedef struct LetStatement : Statement {
 
     LetStatement() {
         this->name = NULL;
-        // this->value = NULL;
+        this->value = NULL;
         this->type = letStatement;
     }
 
@@ -75,6 +78,7 @@ typedef struct LetStatement : Statement {
         delete this->name;
         delete this->value;
     }
+    std::string printString();
 } LetStatement;
 
 
@@ -90,6 +94,7 @@ typedef struct ReturnStatement : Statement {
     ~ReturnStatement() {
         delete this->returnValue;
     }
+    std::string printString();
 } ReturnStatement;
 
 
@@ -105,6 +110,7 @@ typedef struct ExpressionStatement : Statement {
     ~ExpressionStatement() {
         delete this->expression;
     }
+    std::string printString();
 } ExpressionStatement;
 
 
@@ -115,6 +121,7 @@ typedef struct IntegerLiteral : Expression {
     IntegerLiteral() {
         this->type = integerLiteral;
     }
+    inline std::string printString() { return std::to_string(this->value); };
 } IntegerLiteral;
 
 
@@ -126,6 +133,7 @@ typedef struct StringLiteral : Expression {
     }
 
     void setExpressionNode(Token);
+    inline std::string printString() { return this->value; };
 } StringLiteral;
 
 
@@ -158,6 +166,7 @@ typedef struct AST {
     void parseProgram();
     void convertTypes();
     void checkParserErrors();
+    std::string printString();
 } AST;
 
 
