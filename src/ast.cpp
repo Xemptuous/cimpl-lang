@@ -23,23 +23,16 @@ void AST::parseProgram() {
             case letStatement: {
                 LetStatement* ls = static_cast<LetStatement*>(stmt);
                 cout << ls->printString() << '\n';
-                // cout << StatementMap.at(ls->type) << "\n Identifier: " << ls->name->value << '\n';
-                // cout << " Value: \n  " << "Type: " << ExpressionMap.at(ls->value->type) << '\n';
-                // cout << "  Value: " << ls->value->node.literal << '\n';
                 break;
             }
             case returnStatement: {
                 ReturnStatement* rs = static_cast<ReturnStatement*>(stmt);
                 cout << rs->printString() << '\n';
-                // cout << "Return Statement:\n" << " Value: " << rs->token.literal << '\n'; 
-                // cout << " Type: " << ExpressionMap.at(rs->returnValue->type) << '\n';
-                // cout << " Value: " << rs->returnValue->node.literal << '\n';
                 break;
             }
             case expressionStatement: {
                 ExpressionStatement* es = static_cast<ExpressionStatement*>(stmt);
                 cout << es->printString() << '\n';
-                // cout << "Expression Statement:\n" << "  Type: " << es->type << '\n';
                 break;
             }
             default: 
