@@ -1,5 +1,5 @@
 #pragma once
-#include "lexer.h"
+#include "lexer.hpp"
 #include <vector>
 
 struct Expression;

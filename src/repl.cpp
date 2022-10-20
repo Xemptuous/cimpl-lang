@@ -1,5 +1,5 @@
-#include "lexer.h"
-#include "ast.h"
+#include "lexer.hpp"
+#include "ast.hpp"
 #include <vector>
 // #include <iostream>
 

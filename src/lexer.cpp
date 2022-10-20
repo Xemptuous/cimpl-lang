@@ -1,7 +1,7 @@
 #include <iostream>
 #include <algorithm>
-#include "lexer.h"
-#include "token.h"
+#include "lexer.hpp"
+#include "token.hpp"
 
 using namespace std;
 

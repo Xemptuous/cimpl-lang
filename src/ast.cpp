@@ -1,5 +1,5 @@
-#include "ast.h"
-#include "parser.h"
+#include "ast.hpp"
+#include "parser.hpp"
 #include <iostream>
 
 using namespace std;
