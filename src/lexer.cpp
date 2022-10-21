@@ -15,22 +15,56 @@ Token Lexer::nextToken() {
                 this->readChar();
                 tok.literal = "==";
                 tok.type = lookupIdentifier(tok.literal);
+                break;
             }
-            else {
-                tok = newToken(TokenType.ASSIGN, this->ch);
-            }
+            tok = newToken(TokenType.ASSIGN, this->ch);
             break;
         case '+':
-            tok = newToken(TokenType.PLUS, this->ch);
+            if (this->peekChar() == '+') {
+                this->readChar();
+                tok.literal = "++";
+                tok.type = lookupIdentifier(tok.literal);
+            }
+            else if (this->peekChar() == '=') {
+                this->readChar();
+                tok.literal = "+=";
+                tok.type = lookupIdentifier(tok.literal);
+            }
+            else {
+                tok = newToken(TokenType.PLUS, this->ch);
+            }
             break;
         case '-':
-            tok = newToken(TokenType.MINUS, this->ch);
+            if (this->peekChar() == '-') {
+                this->readChar();
+                tok.literal = "--";
+                tok.type = lookupIdentifier(tok.literal);
+            }
+            else if (this->peekChar() == '=') {
+                this->readChar();
+                tok.literal = "-=";
+                tok.type = lookupIdentifier(tok.literal);
+            }
+            else {
+                tok = newToken(TokenType.MINUS, this->ch);
+            }
             break;
         case '*':
+            if (this->peekChar() == '=') {
+                this->readChar();
+                tok.literal = "*=";
+                tok.type = lookupIdentifier(tok.literal);
+                break;
+            }
             tok = newToken(TokenType.ASTERISK, this->ch);
             break;
         case '/':
-            if (this->peekChar() == '/') {
+            if (this->peekChar() == '=') {
+                this->readChar();
+                tok.literal = "/=";
+                tok.type = lookupIdentifier(tok.literal);
+            }
+            else if (this->peekChar() == '/') {
                 this->readChar();
                 std::string comment = this->readComment();
                 tok.type = TokenType.COMMENT;

@@ -46,6 +46,12 @@ const struct Tokentype {
     std::string MINUS = {"MINUS"};
     std::string ASTERISK = {"ASTERISK"};
     std::string SLASH = {"SLASH"};
+    std::string INCREMENT = {"INCREMENT"};
+    std::string DECREMENT = {"DECREMENT"};
+    std::string PLUS_EQ = {"PLUS_EQ"};
+    std::string MINUS_EQ = {"MINUS_EQ"};
+    std::string MULT_EQ = {"MULT_EQ"};
+    std::string DIV_EQ = {"DIV_EQ"};
 
     // Delimiters
     std::string COMMA = {"COMMA"};
@@ -88,6 +94,12 @@ const std::unordered_map<std::string, std::string> keywords = {
     {"!=", TokenType.NOT_EQ},
     {"//", TokenType.COMMENT},
     {"/*", TokenType.BLOCK_COMMENT},
+    {"++", TokenType.INCREMENT},
+    {"--", TokenType.DECREMENT},
+    {"+=", TokenType.PLUS_EQ},
+    {"-=", TokenType.MINUS_EQ},
+    {"*=", TokenType.MULT_EQ},
+    {"/=", TokenType.DIV_EQ},
     {"int", TokenType.DATATYPE},
     {"long", TokenType.DATATYPE},
     {"float", TokenType.DATATYPE},
