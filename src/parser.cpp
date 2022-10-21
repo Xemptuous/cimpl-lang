@@ -122,17 +122,18 @@ ExpressionStatement* Parser::parseExpressionStatement() {
 }
 
 
-Expression* Parser::parseLeftPrefix(std::string prefix) {
-    if (prefix == "ident") {
-        return this->parseIdentifier();
+Expression* Parser::parseLeftPrefix(int prefix) {
+    switch (prefix) {
+        case PREFIX_IDENT:
+            return this->parseIdentifier();
+            break;
+        case PREFIX_INT:
+            return this->parseIntegerLiteral();
+            break;
+        default:
+            return this->parsePrefixExpression();
+            break;
     }
-    else if (prefix == "int") {
-        return this->parseIntegerLiteral();
-    }
-    else if (prefix == "prefix") {
-        return this->parsePrefixExpression();
-    }
-    return NULL;
 }
 
 
