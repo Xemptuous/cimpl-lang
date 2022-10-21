@@ -7,14 +7,17 @@
 struct Expression;
 struct PrefixExpression;
 struct InfixExpression;
+struct IfExpression;
 struct IntegerLiteral;
 struct StringLiteral;
 struct Boolean;
 struct Identifier;
+
 struct Statement;
 struct LetStatement;
 struct ReturnStatement;
 struct ExpressionStatement;
+struct BlockStatement;
 
 
 class Parser {
@@ -47,6 +50,7 @@ class Parser {
         Expression* parseExpression(int);
         Expression* parseLeftPrefix(int);
         Expression* parseGroupedExpression();
+        IfExpression* parseIfExpression();
         PrefixExpression* parsePrefixExpression();
         InfixExpression* parseInfixExpression(Expression*);
         Identifier* parseIdentifier();
@@ -56,6 +60,7 @@ class Parser {
 
         Statement* parseStatement();
         LetStatement* parseLetStatement();
+        BlockStatement* parseBlockStatement();
         ReturnStatement* parseReturnStatement();
         ExpressionStatement* parseExpressionStatement();
 };
@@ -66,6 +71,7 @@ enum prefix {
     PREFIX_INT,
     PREFIX_STRING,
     PREFIX_BOOL,
+    PREFIX_IF,
     PREFIX_INCREMENT,
     PREFIX_DECREMENT,
     PREFIX_GROUPED_EXPR,
@@ -82,6 +88,7 @@ const std::unordered_map<std::string, int> prefixFunctions = {
     {TokenType.INCREMENT, PREFIX_INCREMENT},
     {TokenType.DECREMENT, PREFIX_DECREMENT},
     {TokenType.LPAREN, PREFIX_GROUPED_EXPR},
+    {TokenType.IF, PREFIX_IF},
 };
 
 enum infix {

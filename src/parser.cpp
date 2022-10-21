@@ -22,7 +22,6 @@ bool Parser::expectPeek(std::string tokentype) {
 
 Statement* Parser::parseStatement() {
     std::string curr = this->currentToken.type;
-    std::cout << curr << '\n';
     if (curr == TokenType.LET) {
         return this->parseLetStatement();
     }
@@ -116,7 +115,7 @@ ExpressionStatement* Parser::parseExpressionStatement() {
     stmt->setStatementNode(this->currentToken);
     stmt->expression = this->parseExpression(Precedences.LOWEST);
 
-    if (this->peekToken.type == TokenType.SEMICOLON) {
+    if (this->peekToken.type == TokenType.SEMICOLON || this->peekToken.type == TokenType._EOF) {
         this->nextToken();
     }
     return stmt;
@@ -133,6 +132,8 @@ Expression* Parser::parseLeftPrefix(int prefix) {
             return this->parseStringLiteral();
         case PREFIX_BOOL:
             return this->parseBoolean();
+        case PREFIX_IF:
+            return this->parseIfExpression();
         case PREFIX_GROUPED_EXPR:
             return this->parseGroupedExpression();
         default:
@@ -153,8 +154,7 @@ Expression* Parser::parseExpression(int precedence) {
 
     Expression* leftExp = this->parseLeftPrefix(prefix->second);
 
-    std::string ptype = this->peekToken.type;
-    while (ptype != TokenType.SEMICOLON && precedence < this->peekPrecedence()) 
+    while (this->peekToken.type != TokenType.SEMICOLON && precedence < this->peekPrecedence()) 
     {
         auto infix = infixFunctions.find(this->peekToken.type);
         if (infix == infixFunctions.end()) {
@@ -198,6 +198,55 @@ Expression* Parser::parseGroupedExpression() {
     Expression* expr = this->parseExpression(Precedences.LOWEST);
     if (!(this->expectPeek(TokenType.RPAREN))) {
         return NULL;
+    }
+    return expr;
+}
+
+BlockStatement* Parser::parseBlockStatement() {
+    BlockStatement* block = new BlockStatement;
+    block->setStatementNode(this->currentToken);
+
+    this->nextToken();
+
+    while (this->currentToken.type != TokenType.RBRACE && this->currentToken.type != TokenType._EOF) {
+        // if (this->currentToken.type == TokenType._EOF) { break; }
+        Statement* stmt = this->parseStatement();
+
+        if (stmt != NULL) {
+            block->statements.push_back(stmt);
+        }
+        this->nextToken();
+    }
+    return block;
+}
+
+
+IfExpression* Parser::parseIfExpression() {
+    IfExpression* expr = new IfExpression;
+    expr->setExpressionNode(this->currentToken);
+
+    if (!(expectPeek(TokenType.LPAREN))) {
+        return NULL;
+    }
+
+    this->nextToken();
+    expr->condition = this->parseExpression(Precedences.LOWEST);
+
+    if (!(expectPeek(TokenType.RPAREN))) {
+        return NULL;
+    }
+
+    if (!(expectPeek(TokenType.LBRACE))) {
+        return NULL;
+    }
+    expr->consequence = this->parseBlockStatement();
+
+    if (this->peekToken.type == TokenType.ELSE) {
+        this->nextToken();
+        if (!(expectPeek(TokenType.LBRACE))) {
+            return NULL;
+        }
+        expr->alternative = this->parseBlockStatement();
     }
     return expr;
 }
