@@ -24,6 +24,9 @@ enum ExpressionType {
     stringLiteral,
     identifier,
     prefixExpression,
+    infixExpression,
+    groupedExpression,
+    booleanExpression,
     // functionCall,
     // binaryExpression
 };
@@ -122,6 +125,7 @@ typedef struct PrefixExpression : Expression {
 
     PrefixExpression() {
         this->_right = NULL;
+        this->type = prefixExpression;
     }
 
     ~PrefixExpression() {
@@ -142,6 +146,7 @@ typedef struct InfixExpression : Expression {
     InfixExpression() {
         this->_left = NULL;
         this->_right = NULL;
+        this->type = infixExpression;
     }
 
     ~InfixExpression() {
@@ -178,6 +183,19 @@ typedef struct StringLiteral : Expression {
 } StringLiteral;
 
 
+typedef struct Boolean : Expression {
+    Token token;
+    bool value;
+
+    Boolean() {
+        this->type = booleanExpression;
+    }
+
+    void setExpressionNode(Token);
+    std::string printString();
+} Boolean;
+
+
 const std::unordered_map<int, std::string> StatementMap = {
     {0, "Let Statement"},
     {1, "Return Statement"},
@@ -188,7 +206,11 @@ const std::unordered_map<int, std::string> StatementMap = {
 const std::unordered_map<int, std::string> ExpressionMap = {
     {0, "Integer Literal"},
     {1, "String Literal"},
-    {2, "Identifier"}
+    {2, "Identifier"},
+    {3, "Prefix Expression"},
+    {4, "Infix Expression"},
+    {5, "Grouped Expression"},
+    {6, "Boolean"}
 };
 
 

@@ -99,6 +99,14 @@ void InfixExpression::setExpressionNode(Token tok) {
     this->node.type = tok.type;
 }
 
+
+void Boolean::setExpressionNode(Token tok) {
+    this->token = tok;
+    this->node.literal = tok.literal;
+    this->node.type = tok.type;
+    this->value = (tok.type == TokenType._TRUE || tok.type == TokenType._FALSE);
+}
+
 std::string Statement::printString() {
     std::ostringstream ss;
     ss << "{ " << this->token.literal << "; }";
@@ -176,6 +184,21 @@ std::string InfixExpression::printString() {
 
     ss << "(" << this->_left->printString() << " " + this->_operator + " " <<
         this->_right->printString() << ")";
+
+    std::string msg = ss.str();
+    return msg;
+}
+
+
+std::string Boolean::printString() {
+    std::ostringstream ss;
+
+    if (this->value) {
+        ss << "( true )";
+    }
+    else {
+        ss << "( false )";
+    }
 
     std::string msg = ss.str();
     return msg;

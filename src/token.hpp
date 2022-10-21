@@ -32,8 +32,8 @@ const struct Tokentype {
     // Keywords
     std::string LET = {"LET"};
     std::string FUNCTION = {"FUNCTION"};
-    std::string TRUE = {"TRUE"};
-    std::string FALSE = {"FALSE"};
+    std::string _TRUE = {"TRUE"};
+    std::string _FALSE = {"FALSE"};
     std::string IF = {"IF"};
     std::string ELSE = {"ELSE"};
     std::string RETURN = {"RETURN"}; 
@@ -85,8 +85,8 @@ Token;
 const std::unordered_map<std::string, std::string> keywords = {
     {"fn", TokenType.FUNCTION},
     {"let", TokenType.LET},
-    {"true", TokenType.TRUE},
-    {"false", TokenType.FALSE},
+    {"true", TokenType._TRUE},
+    {"false", TokenType._FALSE},
     {"if", TokenType.IF},
     {"else", TokenType.ELSE},
     {"return", TokenType.RETURN},

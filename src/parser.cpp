@@ -22,6 +22,7 @@ bool Parser::expectPeek(std::string tokentype) {
 
 Statement* Parser::parseStatement() {
     std::string curr = this->currentToken.type;
+    std::cout << curr << '\n';
     if (curr == TokenType.LET) {
         return this->parseLetStatement();
     }
@@ -126,13 +127,16 @@ Expression* Parser::parseLeftPrefix(int prefix) {
     switch (prefix) {
         case PREFIX_IDENT:
             return this->parseIdentifier();
-            break;
         case PREFIX_INT:
             return this->parseIntegerLiteral();
-            break;
+        case PREFIX_STRING:
+            return this->parseStringLiteral();
+        case PREFIX_BOOL:
+            return this->parseBoolean();
+        case PREFIX_GROUPED_EXPR:
+            return this->parseGroupedExpression();
         default:
             return this->parsePrefixExpression();
-            break;
     }
 }
 
@@ -189,6 +193,16 @@ InfixExpression* Parser::parseInfixExpression(Expression* leftExpr) {
 }
 
 
+Expression* Parser::parseGroupedExpression() {
+    this->nextToken();
+    Expression* expr = this->parseExpression(Precedences.LOWEST);
+    if (!(this->expectPeek(TokenType.RPAREN))) {
+        return NULL;
+    }
+    return expr;
+}
+
+
 IntegerLiteral* Parser::parseIntegerLiteral() {
     IntegerLiteral* expr = new IntegerLiteral;
     expr->setExpressionNode(this->currentToken);
@@ -209,8 +223,16 @@ IntegerLiteral* Parser::parseIntegerLiteral() {
     return expr;
 }
 
+
 StringLiteral* Parser::parseStringLiteral() {
     StringLiteral* expr = new StringLiteral;
+    expr->setExpressionNode(this->currentToken);
+    return expr;
+}
+
+
+Boolean* Parser::parseBoolean() {
+    Boolean* expr = new Boolean;
     expr->setExpressionNode(this->currentToken);
     return expr;
 }

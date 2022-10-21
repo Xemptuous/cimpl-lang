@@ -5,15 +5,16 @@
 
 // Forward Declarations
 struct Expression;
+struct PrefixExpression;
+struct InfixExpression;
 struct IntegerLiteral;
 struct StringLiteral;
+struct Boolean;
 struct Identifier;
 struct Statement;
 struct LetStatement;
 struct ReturnStatement;
 struct ExpressionStatement;
-struct PrefixExpression;
-struct InfixExpression;
 
 
 class Parser {
@@ -43,13 +44,16 @@ class Parser {
         int currentPrecedence();
         int peekPrecedence();
 
-        Identifier* parseIdentifier();
         Expression* parseExpression(int);
-        IntegerLiteral* parseIntegerLiteral();
         Expression* parseLeftPrefix(int);
+        Expression* parseGroupedExpression();
         PrefixExpression* parsePrefixExpression();
         InfixExpression* parseInfixExpression(Expression*);
+        Identifier* parseIdentifier();
+        IntegerLiteral* parseIntegerLiteral();
         StringLiteral* parseStringLiteral();
+        Boolean* parseBoolean();
+
         Statement* parseStatement();
         LetStatement* parseLetStatement();
         ReturnStatement* parseReturnStatement();
@@ -60,17 +64,24 @@ enum prefix {
     PREFIX_STD,
     PREFIX_IDENT,
     PREFIX_INT,
+    PREFIX_STRING,
+    PREFIX_BOOL,
     PREFIX_INCREMENT,
     PREFIX_DECREMENT,
+    PREFIX_GROUPED_EXPR,
 };
 
 const std::unordered_map<std::string, int> prefixFunctions = {
     {TokenType.IDENT, PREFIX_IDENT},
     {TokenType.INT, PREFIX_INT},
+    {TokenType._STRING, PREFIX_STRING},
     {TokenType.BANG, PREFIX_STD},
     {TokenType.MINUS, PREFIX_STD},
+    {TokenType._TRUE, PREFIX_BOOL},
+    {TokenType._FALSE, PREFIX_BOOL},
     {TokenType.INCREMENT, PREFIX_INCREMENT},
     {TokenType.DECREMENT, PREFIX_DECREMENT},
+    {TokenType.LPAREN, PREFIX_GROUPED_EXPR},
 };
 
 enum infix {
