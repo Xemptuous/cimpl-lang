@@ -2,6 +2,15 @@
 
 #include <string>
 #include <unordered_map>
+enum DATATYPE {
+    INT,
+    LONG,
+    FLOAT,
+    CHAR,
+    _STRING,
+    VECTOR,
+    MAP
+};
 
 const struct Tokentype {
     std::string ILLEGAL = {"ILLEGAL"};
