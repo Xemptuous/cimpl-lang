@@ -122,38 +122,68 @@ ExpressionStatement* Parser::parseExpressionStatement() {
 }
 
 
-Expression* Parser::parseExpression(int precedence) {
-    std::string curr = this->currentToken.type;
-    if (curr == TokenType.IDENT) {
-        Identifier* leftExp = this->parseIdentifier();
-        return leftExp;
+Expression* Parser::parseLeftPrefix(std::string prefix) {
+    if (prefix == "ident") {
+        return this->parseIdentifier();
     }
-    else if (curr == TokenType.INT) {
-        IntegerLiteral* leftExp = this->parseIntegerLiteral();
-        return leftExp;
+    else if (prefix == "int") {
+        return this->parseIntegerLiteral();
     }
-    else if (curr == TokenType._STRING) {
-        StringLiteral* leftExp = this->parseStringLiteral();
-        return leftExp;
+    else if (prefix == "prefix") {
+        return this->parsePrefixExpression();
     }
-    else if (curr == TokenType.BANG || curr == TokenType.MINUS) {
-        PrefixExpression* prefix = this->parsePrefixExpression(); 
-        return prefix;
-    }
-    std::ostringstream ss;
-    ss << "No prefix parse function found for " << curr << '\n';
-    std::string msg = ss.str();
-    this->errors.push_back(msg);
     return NULL;
+}
+
+
+Expression* Parser::parseExpression(int precedence) {
+    auto prefix = prefixFunctions.find(this->currentToken.type);
+    if (prefix == prefixFunctions.end()) {
+        std::ostringstream ss;
+        ss << "No prefix parse function found for " << this->currentToken.type << '\n';
+        std::string msg = ss.str();
+        this->errors.push_back(msg);
+        return NULL;
+    }
+
+    Expression* leftExp = this->parseLeftPrefix(prefix->second);
+
+    std::string ptype = this->peekToken.type;
+    while (ptype != TokenType.SEMICOLON && precedence < this->peekPrecedence()) 
+    {
+        auto infix = infixFunctions.find(this->peekToken.type);
+        if (infix == infixFunctions.end()) {
+            return leftExp;
+        }
+        this->nextToken();
+
+        leftExp = this->parseInfixExpression(leftExp);
+    }
+    return leftExp;
 }
 
 
 PrefixExpression* Parser::parsePrefixExpression() {
     PrefixExpression* expr = new PrefixExpression;
-    expr->token = this->currentToken;
-    expr->_operator = this->currentToken.literal;
+    expr->setExpressionNode(this->currentToken);
+
     this->nextToken();
+
     expr->_right = this->parseExpression(Precedences.PREFIX);
+    return expr;
+}
+
+
+InfixExpression* Parser::parseInfixExpression(Expression* leftExpr) {
+    InfixExpression* expr = new InfixExpression;
+    expr->setExpressionNode(this->currentToken);
+    expr->_left = leftExpr;
+
+    int precedence = this->currentPrecedence();
+    this->nextToken();
+
+    expr->_right = this->parseExpression(precedence);
+
     return expr;
 }
 
@@ -182,6 +212,30 @@ StringLiteral* Parser::parseStringLiteral() {
     StringLiteral* expr = new StringLiteral;
     expr->setExpressionNode(this->currentToken);
     return expr;
+}
+
+
+int Parser::peekPrecedence() {
+    int p;
+    try {
+        p = precedencesMap.at(this->peekToken.type);
+        return p;
+    }
+    catch (std::out_of_range&) {
+        return Precedences.LOWEST;
+    }
+}
+
+
+int Parser::currentPrecedence() {
+    int p;
+    try {
+        p = precedencesMap.at(this->currentToken.type);
+        return p;
+    }
+    catch (std::out_of_range&) {
+        return Precedences.LOWEST;
+    }
 }
 
 

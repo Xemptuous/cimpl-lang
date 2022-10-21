@@ -73,7 +73,6 @@ void StringLiteral::setExpressionNode(Token tok) {
     this->node.literal = tok.literal;
     this->node.type = tok.type;
     this->value = tok.literal;
-
 }
 
 
@@ -84,6 +83,21 @@ void Identifier::setExpressionNode(Token tok) {
     this->value = tok.literal;
 }
 
+
+void PrefixExpression::setExpressionNode(Token tok) {
+    this->token = tok;
+    this->_operator = tok.literal;
+    this->node.literal = tok.literal;
+    this->node.type = tok.type;
+}
+
+
+void InfixExpression::setExpressionNode(Token tok) {
+    this->token = tok;
+    this->_operator = tok.literal;
+    this->node.literal = tok.literal;
+    this->node.type = tok.type;
+}
 
 std::string Statement::printString() {
     std::ostringstream ss;
@@ -151,6 +165,17 @@ std::string PrefixExpression::printString() {
     std::ostringstream ss;
 
     ss << "(" << this->_operator << this->_right->printString() << ")";
+
+    std::string msg = ss.str();
+    return msg;
+}
+
+
+std::string InfixExpression::printString() {
+    std::ostringstream ss;
+
+    ss << "(" << this->_left->printString() << " " + this->_operator + " " <<
+        this->_right->printString() << ")";
 
     std::string msg = ss.str();
     return msg;

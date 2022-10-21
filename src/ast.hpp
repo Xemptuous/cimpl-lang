@@ -120,8 +120,38 @@ typedef struct PrefixExpression : Expression {
     std::string _operator;
     Expression* _right;
 
+    PrefixExpression() {
+        this->_right = NULL;
+    }
+
+    ~PrefixExpression() {
+        delete this->_right;
+    }
+
+    void setExpressionNode(Token);
     std::string printString();
 } PrefixExpression;
+
+
+typedef struct InfixExpression : Expression {
+    Token token;
+    std::string _operator;
+    Expression* _left;
+    Expression* _right;
+
+    InfixExpression() {
+        this->_left = NULL;
+        this->_right = NULL;
+    }
+
+    ~InfixExpression() {
+        delete this->_left;
+        delete this->_right;
+    }
+
+    void setExpressionNode(Token);
+    std::string printString();
+} InfixExpression;
 
 
 typedef struct IntegerLiteral : Expression {
@@ -131,6 +161,7 @@ typedef struct IntegerLiteral : Expression {
     IntegerLiteral() {
         this->type = integerLiteral;
     }
+
     inline std::string printString() { return std::to_string(this->value); };
 } IntegerLiteral;
 
@@ -189,3 +220,15 @@ const struct Precedences {
     int PREFIX {6};
     int CALL {7};
 } Precedences{};
+
+
+const std::unordered_map<std::string, int> precedencesMap = {
+    {TokenType.EQ, Precedences.EQUALS},
+    {TokenType.NOT_EQ, Precedences.EQUALS},
+    {TokenType.LT, Precedences.LESSGREATER},
+    {TokenType.GT, Precedences.LESSGREATER},
+    {TokenType.PLUS, Precedences.SUM},
+    {TokenType.MINUS, Precedences.SUM},
+    {TokenType.SLASH, Precedences.PRODUCT},
+    {TokenType.ASTERISK, Precedences.PRODUCT},
+};
