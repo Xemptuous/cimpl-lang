@@ -63,8 +63,7 @@ IdentifierStatement* Parser::parseIdentifierStatement() {
         std::ostringstream ss;
         ss << "line:" << this->linenumber << ": Could not parse " << 
             this->currentToken.literal << "; no assignment operator";
-        std::string msg = ss.str();
-        this->errors.push_back(msg);
+        this->errors.push_back(ss.str());
         return NULL;
     }
 
@@ -80,8 +79,7 @@ IdentifierStatement* Parser::parseIdentifierStatement() {
             std::ostringstream ss;
             ss << "No Semicolon present at end of line for " << StatementMap.at(stmt->type) << 
                 " with value " << stmt->value->node.literal;
-            std::string msg = ss.str();
-            this->errors.push_back(msg);
+            this->errors.push_back(ss.str());
             return NULL;
         }
         this->nextToken();
@@ -100,8 +98,7 @@ LetStatement* Parser::parseLetStatement() {
     if (!(this->expectPeek(TokenType.IDENT))) {
         std::ostringstream ss;
         ss << "Could not parse " << this->currentToken.literal << "; no identifier given";
-        std::string msg = ss.str();
-        this->errors.push_back(msg);
+        this->errors.push_back(ss.str());
         return NULL;
     }
 
@@ -111,8 +108,7 @@ LetStatement* Parser::parseLetStatement() {
     if (!(this->expectPeek(TokenType.ASSIGN))) {
         std::ostringstream ss;
         ss << "Could not parse " << this->currentToken.literal << "; no assignment operator";
-        std::string msg = ss.str();
-        this->errors.push_back(msg);
+        this->errors.push_back(ss.str());
         return NULL;
     }
 
@@ -126,8 +122,7 @@ LetStatement* Parser::parseLetStatement() {
             std::ostringstream ss;
             ss << "No Semicolon present at end of line for " << StatementMap.at(stmt->type) << 
                 " with value " << stmt->value->node.literal;
-            std::string msg = ss.str();
-            this->errors.push_back(msg);
+            this->errors.push_back(ss.str());
             return NULL;
         }
         this->nextToken();
@@ -149,8 +144,7 @@ ReturnStatement* Parser::parseReturnStatement() {
             std::ostringstream ss;
             ss << "No Semicolon present at end of line for " << StatementMap.at(stmt->type) << 
                 " with value " << stmt->returnValue->node.literal;
-            std::string msg = ss.str();
-            this->errors.push_back(msg);
+            this->errors.push_back(ss.str());
             return NULL;
         }
         this->nextToken();
@@ -205,8 +199,7 @@ Expression* Parser::parseExpression(int precedence) {
     if (prefix == prefixFunctions.end()) {
         std::ostringstream ss;
         ss << "No prefix parse function found for " << this->currentToken.type << '\n';
-        std::string msg = ss.str();
-        this->errors.push_back(msg);
+        this->errors.push_back(ss.str());
         return NULL;
     }
 
@@ -343,6 +336,7 @@ FunctionLiteral* Parser::parseFunctionLiteral() {
 
 
 std::vector<Identifier*> Parser::parseFunctionParameters() {
+    // TODO: test this and make sure it works
     std::vector<Identifier*> identifiers{};
     if (this->peekToken.type == TokenType.RPAREN) {
         this->nextToken();
@@ -382,8 +376,7 @@ IntegerLiteral* Parser::parseIntegerLiteral() {
     catch (...) {
         std::ostringstream ss;
         ss << "Could not parse " << this->currentToken.literal << " as integer";
-        std::string msg = ss.str();
-        this->errors.push_back(msg);
+        this->errors.push_back(ss.str());
         return NULL;
     }
     expr->value = value;
@@ -403,8 +396,7 @@ FloatLiteral* Parser::parseFloatLiteral() {
     catch (...) {
         std::ostringstream ss;
         ss << "Could not parse " << this->currentToken.literal << " as float";
-        std::string msg = ss.str();
-        this->errors.push_back(msg);
+        this->errors.push_back(ss.str());
         return NULL;
     }
     expr->value = value;
@@ -455,8 +447,7 @@ void Parser::peekErrors(std::string t) {
     std::ostringstream ss;
     ss << "Expected next token to be " << t << ", but got " 
         << this->peekToken.type << " instead" << '\n'; 
-    std::string msg = ss.str();
-    this->errors.push_back(msg);
+    this->errors.push_back(ss.str());
 }
 
 
