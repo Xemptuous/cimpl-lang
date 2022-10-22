@@ -137,6 +137,9 @@ Token Lexer::nextToken() {
         case '\'':
             tok = newToken(TokenType.APOSTROPHE, this->ch);
             break;
+        case '\n':
+            tok = newToken(TokenType.NEWLINE, this->ch);
+            break;
         default:
             if (isalpha(this->ch) || this->ch == '_') {
                 tok.literal = this->readIdentifier();

@@ -7,10 +7,12 @@
 typedef struct Node {
     std::string type;
     std::string literal;
+    int datatype;
 } Node;
 
 
 enum StatementType {
+    identifierStatement,
     letStatement,
     returnStatement,
     expressionStatement,
@@ -22,13 +24,14 @@ enum StatementType {
 
 enum ExpressionType {
     integerLiteral,
+    floatLiteral,
+    booleanExpression,
     stringLiteral,
     identifier,
     prefixExpression,
     infixExpression,
     ifExpression,
     groupedExpression,
-    booleanExpression,
     // functionCall,
     // binaryExpression
 };
@@ -44,6 +47,7 @@ typedef struct Statement {
 
     virtual void setStatementNode(Token);
     virtual std::string printString();
+    void setDataType(std::string);
 } Statement;
 
 
@@ -57,6 +61,7 @@ typedef struct Expression {
 
     virtual void setExpressionNode(Token);
     virtual std::string printString();
+    void setDataType(std::string);
 } Expression;
 
 
@@ -71,6 +76,25 @@ typedef struct Identifier : Expression {
     void setExpressionNode(Token);
     inline std::string printString() { return this->value; };
 } Identifier;
+
+
+typedef struct IdentifierStatement : Statement {
+    Token token;
+    Identifier* name;
+    Expression* value;
+
+    IdentifierStatement() {
+        this->name = NULL;
+        this->value = NULL;
+        this->type = identifierStatement;
+    }
+
+    ~IdentifierStatement() {
+        delete this->name;
+        delete this->value;
+    }
+    std::string printString();
+} IdentifierStatement;
 
 
 typedef struct LetStatement : Statement {
@@ -177,6 +201,18 @@ typedef struct IntegerLiteral : Expression {
 } IntegerLiteral;
 
 
+typedef struct FloatLiteral : Expression {
+    Token token;
+    float value;
+
+    FloatLiteral() {
+        this->type = floatLiteral;
+    }
+
+    inline std::string printString() { return std::to_string(this->value); };
+} FloatLiteral;
+
+
 typedef struct StringLiteral : Expression {
     Token token;
     std::string value;
@@ -243,52 +279,46 @@ typedef struct IfExpression : Expression {
         for (auto stmt : conditions) {
             delete stmt;
         }
-        // delete this->alternative;
     }
 
     std::string printString();
 
 } IfExpression;
-// typedef struct IfExpression : Expression {
-//     Token token;
-//     Expression* condition;
-//     BlockStatement* consequence;
-//     BlockStatement* alternative;
-//
-//     IfExpression() {
-//         this->type = ifExpression;
-//         this->condition = NULL;
-//         this->consequence = NULL;
-//         this->alternative = NULL;
-//     }
-//     ~IfExpression() {
-//         delete this->condition;
-//         delete this->consequence;
-//         delete this->alternative;
-//     }
-//
-//     std::string printString();
-//
-// } IfExpression;
 
 
 const std::unordered_map<int, std::string> StatementMap = {
-    {0, "Let Statement"},
-    {1, "Return Statement"},
-    {2, "Expression Statement"},
+    {0, "Identifier Statement"},
+    {1, "Let Statement"},
+    {2, "Return Statement"},
+    {3, "Expression Statement"},
     {4, "Block Statement"}
 };
 
 
 const std::unordered_map<int, std::string> ExpressionMap = {
     {0, "Integer Literal"},
-    {1, "String Literal"},
-    {2, "Identifier"},
-    {3, "Prefix Expression"},
-    {4, "Infix Expression"},
-    {5, "If Expression"},
-    {6, "Grouped Expression"},
-    {7, "Boolean"}
+    {1, "Float Literal"},
+    {2, "Boolean"},
+    {3, "String Literal"},
+    {4, "Identifier"},
+    {5, "Prefix Expression"},
+    {6, "Infix Expression"},
+    {7, "If Expression"},
+    {8, "Grouped Expression"},
+    {9, "Boolean"}
+};
+
+
+const std::unordered_map<int, std::string> DatatypeMap = {
+    {0, "Int"},
+    // {1, "Long"},
+    // {2, "Double"},
+    {1, "Float"},
+    {2, "Boolean"},
+    // {5, "Char"},
+    {3, "String"},
+    // {7, "Vector"},
+    // {8, "Map"},
 };
 
 

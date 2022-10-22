@@ -20,6 +20,11 @@ void AST::parseProgram() {
 
     for (auto stmt : this->Statements) {
         switch (stmt->type) {
+            case identifierStatement: {
+                IdentifierStatement* is = static_cast<IdentifierStatement*>(stmt);
+                cout << is->printString() << '\n';
+                break;
+            }
             case letStatement: {
                 LetStatement* ls = static_cast<LetStatement*>(stmt);
                 cout << ls->printString() << '\n';
@@ -56,6 +61,56 @@ void AST::checkParserErrors() {
         cout << "parser error: " << this->parser->errors[i] << '\n';
     }
     exit(1);
+}
+
+
+void Statement::setDataType(std::string lit) {
+    if (lit == "int") {
+        this->node.datatype = INT;
+    }
+    // else if (lit == "long") {
+    //     this->node.datatype = LONG;
+    // }
+    // else if (lit == "double") {
+    //     this->node.datatype = DOUBLE;
+    // }
+    else if (lit == "float") {
+        this->node.datatype = FLOAT;
+    }
+    else if (lit == "bool") {
+        this->node.datatype = BOOLEAN;
+    }
+    // else if (lit == "char") {
+    //     this->node.datatype = CHAR;
+    // }
+    else if (lit == "string") {
+        this->node.datatype = _STRING;
+    }
+}
+
+
+void Expression::setDataType(std::string lit) {
+    if (lit == "int") {
+        this->node.datatype = INT;
+    }
+    // else if (lit == "long") {
+    //     this->node.datatype = LONG;
+    // }
+    // else if (lit == "double") {
+    //     this->node.datatype = DOUBLE;
+    // }
+    else if (lit == "float") {
+        this->node.datatype = FLOAT;
+    }
+    else if (lit == "bool") {
+        this->node.datatype = BOOLEAN;
+    }
+    // else if (lit == "char") {
+    //     this->node.datatype = CHAR;
+    // }
+    else if (lit == "string") {
+        this->node.datatype = _STRING;
+    }
 }
 
 
@@ -125,6 +180,24 @@ std::string Statement::printString() {
 std::string Expression::printString() {
     std::ostringstream ss;
     ss << "{ " << this->token.literal << "; }";
+    std::string msg = ss.str();
+    return msg;
+}
+
+
+std::string IdentifierStatement::printString() {
+    std::ostringstream ss;
+    ss << StatementMap.at(this->type) << "\n Identifier: " << this->name->value << '\n'
+        << " DataType: " << DatatypeMap.at(this->node.datatype) << '\n'
+        << " Value: \n  " << "Type: " << ExpressionMap.at(this->value->type) << '\n'
+        << "  Value: " << this->value->node.literal << '\n';
+    ss << " {" << this->token.literal << " " << this->name->printString() << " = ";
+
+    if (this->value != NULL) {
+        ss << this->value->printString();
+    }
+    ss << "; }";
+
     std::string msg = ss.str();
     return msg;
 }
