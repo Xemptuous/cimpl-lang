@@ -26,7 +26,6 @@ struct BlockStatement;
 class Parser {
     public:
         // Attributes
-        Lexer* lexer;
         Token currentToken;
         Token peekToken;
         int linenumber{1};
@@ -48,10 +47,17 @@ class Parser {
         void nextToken();
         bool expectPeek(std::string);
         void peekErrors(std::string);
+        Statement* parseStatement();
+    private:
+        // Attributes
+        Lexer* lexer;
+
+        // Methods
         int currentPrecedence();
         int peekPrecedence();
         void checkIdentifierDataType(IdentifierStatement*);
 
+        // Expression Methods
         Expression* parseExpression(int);
         Expression* parseLeftPrefix(int);
         Expression* parseGroupedExpression();
@@ -66,7 +72,7 @@ class Parser {
         StringLiteral* parseStringLiteral();
         Boolean* parseBoolean();
 
-        Statement* parseStatement();
+        // Statement Methods
         LetStatement* parseLetStatement();
         BlockStatement* parseBlockStatement();
         ReturnStatement* parseReturnStatement();
