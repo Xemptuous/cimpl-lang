@@ -4,10 +4,29 @@
 #include <iostream>
 
 using namespace std;
+void printParserErrors(vector<string>);
+
 
 void start(string input) {
     AST* ast = new AST(input);
     ast->parseProgram();
+    if (ast->parser->errors.size() != 0) {
+        printParserErrors(ast->parser->errors);
+        return;
+    }
+    cout << ast->printString() << '\n';
+}
+
+
+void printParserErrors(vector<string> errs) {
+    cout << "===============================";
+    for (auto err : errs) {
+        cout << '\t' << err << '\n';
+    }
+}
+
+// Tokenizer Print
+// void start(string input) {
     // unique_ptr<Lexer> lexer ( new Lexer(input) );
     // Token tok = lexer->nextToken();
     //
@@ -25,5 +44,5 @@ void start(string input) {
     // }
     //
     // tokenVector.clear();
-}
+// }
 

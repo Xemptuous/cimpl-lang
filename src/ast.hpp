@@ -314,7 +314,7 @@ typedef struct CallExpression : Expression {
     std::vector<Expression*> arguments;
 
     CallExpression() {
-        this->type = callExpression;
+        
         this->_function = NULL;
     }
     ~CallExpression() {
@@ -354,13 +354,13 @@ const std::unordered_map<int, std::string> ExpressionMap = {
 
 
 const std::unordered_map<int, std::string> DatatypeMap = {
-    {0, "Int"},
+    {0, "int"},
     // {1, "Long"},
     // {2, "Double"},
-    {1, "Float"},
-    {2, "Boolean"},
+    {1, "float"},
+    {2, "boolean"},
     // {5, "Char"},
-    {3, "String"},
+    {3, "string"},
     // {7, "Vector"},
     // {8, "Map"},
 };

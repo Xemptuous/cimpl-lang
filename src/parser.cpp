@@ -500,7 +500,7 @@ void Parser::peekErrors(std::string t) {
 void Parser::checkIdentifierDataType(IdentifierStatement* stmt) {
     switch (stmt->node.datatype) {
         case INT:
-            if (DatatypeMap.at(stmt->value->type) != "Int") {
+            if (DatatypeMap.at(stmt->value->type) != "int") {
                 std::ostringstream ss;
                 ss << "Mismatched DataType: " << DatatypeMap.at(stmt->value->type)
                     << " is not equal to: " << "Integer Literal\n";
@@ -508,7 +508,7 @@ void Parser::checkIdentifierDataType(IdentifierStatement* stmt) {
             }
             break;
         case FLOAT:
-            if (DatatypeMap.at(stmt->value->type) != "Float") {
+            if (DatatypeMap.at(stmt->value->type) != "float") {
                 std::ostringstream ss;
                 ss << "Mismatched DataType: " << DatatypeMap.at(stmt->value->type)
                     << " is not equal to: " << "Float \n";
@@ -516,7 +516,7 @@ void Parser::checkIdentifierDataType(IdentifierStatement* stmt) {
             }
             break;
         case BOOLEAN:
-            if (DatatypeMap.at(stmt->value->type) != "Boolean") {
+            if (DatatypeMap.at(stmt->value->type) != "boolean") {
                 std::ostringstream ss;
                 ss << "Mismatched DataType: " << DatatypeMap.at(stmt->value->type)
                     << " is not equal to: " << "Boolean\n";
@@ -524,7 +524,7 @@ void Parser::checkIdentifierDataType(IdentifierStatement* stmt) {
             }
             break;
         case _STRING:
-            if (DatatypeMap.at(stmt->value->type) != "String") {
+            if (DatatypeMap.at(stmt->value->type) != "string") {
                 std::ostringstream ss;
                 ss << "Mismatched DataType: " << DatatypeMap.at(stmt->value->type)
                     << " is not equal to: " << "String \n";
