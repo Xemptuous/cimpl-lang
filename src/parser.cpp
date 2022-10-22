@@ -225,6 +225,7 @@ IfExpression* Parser::parseIfExpression() {
     IfExpression* expr = new IfExpression;
     expr->setExpressionNode(this->currentToken);
 
+    std::cout << "INSIDE IF\n";
     if (!(expectPeek(TokenType.LPAREN))) {
         return NULL;
     }
@@ -241,14 +242,38 @@ IfExpression* Parser::parseIfExpression() {
     }
     expr->consequence = this->parseBlockStatement();
 
-    if (this->peekToken.type == TokenType.ELSE) {
+    // loop for any else-if conditions
+    while (this->peekToken.type == TokenType.ELSE) {
         this->nextToken();
-        if (!(expectPeek(TokenType.LBRACE))) {
-            return NULL;
+        if (this->peekToken.type == TokenType.IF) {
+            std::cout << "INSIDE ELSE IF\n";
+            this->nextToken();
+            if (!(expectPeek(TokenType.LPAREN))) { return NULL; }
+            this->nextToken();
+            expr->conditions.push_back( this->parseExpression(Precedences.LOWEST) );
+            if (!(expectPeek(TokenType.RPAREN))) { return NULL; }
+            if (!(expectPeek(TokenType.LBRACE))) { return NULL; }
+            expr->alternatives.push_back ( this->parseBlockStatement() );
         }
-        expr->alternative = this->parseBlockStatement();
+        else {
+            std::cout << "INSIDE ELSE\n";
+            if (!(expectPeek(TokenType.LBRACE))) {
+                return NULL;
+            }
+            expr->alternative = this->parseBlockStatement();
+        }
     }
     return expr;
+
+    // if (this->peekToken.type == TokenType.ELSE) {
+    //     this->nextToken();
+    //     if (!(expectPeek(TokenType.LBRACE))) {
+    //         return NULL;
+    //     }
+    //     expr->alternatives.push_back( this->parseBlockStatement() );
+    //     expr->alternative = this->parseBlockStatement();
+    // }
+    // return expr;
 }
 
 

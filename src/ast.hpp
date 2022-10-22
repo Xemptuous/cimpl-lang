@@ -224,6 +224,8 @@ typedef struct IfExpression : Expression {
     Expression* condition;
     BlockStatement* consequence;
     BlockStatement* alternative;
+    std::vector<Expression*> conditions;
+    std::vector<BlockStatement*> alternatives;
 
     IfExpression() {
         this->type = ifExpression;
@@ -235,11 +237,39 @@ typedef struct IfExpression : Expression {
         delete this->condition;
         delete this->consequence;
         delete this->alternative;
+        for (auto stmt : alternatives) {
+            delete stmt;
+        }
+        for (auto stmt : conditions) {
+            delete stmt;
+        }
+        // delete this->alternative;
     }
 
     std::string printString();
 
 } IfExpression;
+// typedef struct IfExpression : Expression {
+//     Token token;
+//     Expression* condition;
+//     BlockStatement* consequence;
+//     BlockStatement* alternative;
+//
+//     IfExpression() {
+//         this->type = ifExpression;
+//         this->condition = NULL;
+//         this->consequence = NULL;
+//         this->alternative = NULL;
+//     }
+//     ~IfExpression() {
+//         delete this->condition;
+//         delete this->consequence;
+//         delete this->alternative;
+//     }
+//
+//     std::string printString();
+//
+// } IfExpression;
 
 
 const std::unordered_map<int, std::string> StatementMap = {

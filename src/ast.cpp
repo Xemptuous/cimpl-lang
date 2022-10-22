@@ -214,6 +214,11 @@ std::string IfExpression::printString() {
 
     ss << "if" << this->condition->printString() << " " << this->consequence->printString();
 
+    for (int i = 0; i < this->conditions.size(); i++) {
+        ss << " else if " << this->conditions[i]->printString() << " " <<
+            this->alternatives[i]->printString();
+    }
+
     if (this->alternative != NULL) {
         ss << " else " << this->alternative->printString();
     }
