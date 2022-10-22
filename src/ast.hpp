@@ -31,6 +31,7 @@ enum ExpressionType {
     prefixExpression,
     infixExpression,
     ifExpression,
+    functionLiteral,
     groupedExpression,
     // functionCall,
     // binaryExpression
@@ -284,6 +285,26 @@ typedef struct IfExpression : Expression {
     std::string printString();
 
 } IfExpression;
+
+
+typedef struct FunctionLiteral : Expression {
+    Token tok;
+    std::vector<Identifier*> parameters;
+    BlockStatement* body;
+
+    FunctionLiteral() {
+        this->type = functionLiteral;
+        this->body = NULL;
+    }
+    ~FunctionLiteral() {
+        delete this->body;
+        for (auto param : parameters) {
+            delete param;
+        }
+    }
+
+    std::string printString();
+} FunctionLiteral;
 
 
 const std::unordered_map<int, std::string> StatementMap = {

@@ -172,16 +172,14 @@ void Boolean::setExpressionNode(Token tok) {
 std::string Statement::printString() {
     std::ostringstream ss;
     ss << "{ " << this->token.literal << "; }";
-    std::string msg = ss.str();
-    return msg;
+    return ss.str();
 }
 
 
 std::string Expression::printString() {
     std::ostringstream ss;
     ss << "{ " << this->token.literal << "; }";
-    std::string msg = ss.str();
-    return msg;
+    return ss.str();
 }
 
 
@@ -198,8 +196,7 @@ std::string IdentifierStatement::printString() {
     }
     ss << "; }";
 
-    std::string msg = ss.str();
-    return msg;
+    return ss.str();
 }
 
 
@@ -215,8 +212,7 @@ std::string LetStatement::printString() {
     }
     ss << "; }";
 
-    std::string msg = ss.str();
-    return msg;
+    return ss.str();
 }
 
 
@@ -232,8 +228,7 @@ std::string ReturnStatement::printString() {
     }
     ss << "; }";
 
-    std::string msg = ss.str();
-    return msg;
+    return ss.str();
 }
 
 
@@ -244,8 +239,7 @@ std::string ExpressionStatement::printString() {
         ss << this->expression->printString();
     }
 
-    std::string msg = ss.str();
-    return msg;
+    return ss.str();
 }
 
 
@@ -254,8 +248,7 @@ std::string PrefixExpression::printString() {
 
     ss << "(" << this->_operator << this->_right->printString() << ")";
 
-    std::string msg = ss.str();
-    return msg;
+    return ss.str();
 }
 
 
@@ -265,8 +258,7 @@ std::string InfixExpression::printString() {
     ss << "(" << this->_left->printString() << " " + this->_operator + " " <<
         this->_right->printString() << ")";
 
-    std::string msg = ss.str();
-    return msg;
+    return ss.str();
 }
 
 
@@ -277,8 +269,7 @@ std::string BlockStatement::printString() {
         ss << this->statements[i]->printString();
     }
 
-    std::string msg = ss.str();
-    return msg;
+    return ss.str();
 }
 
 
@@ -296,8 +287,24 @@ std::string IfExpression::printString() {
         ss << " else " << this->alternative->printString();
     }
 
-    std::string msg = ss.str();
-    return msg;
+    return ss.str();
+}
+
+
+std::string FunctionLiteral::printString() {
+    std::ostringstream ss;
+    std::vector<std::string> params{};
+
+    for (int i = 0; i < this->parameters.size(); i++) {
+        params.push_back(this->parameters[i]->printString());
+    }
+
+    ss << this->node.literal << "(";
+    for (std::string param : params) {
+        ss << param << ", ";
+    }
+    ss << ") " << this->body->printString();
+    return ss.str();
 }
 
 
@@ -311,8 +318,7 @@ std::string Boolean::printString() {
         ss << "( false )";
     }
 
-    std::string msg = ss.str();
-    return msg;
+    return ss.str();
 }
 
 
@@ -321,6 +327,5 @@ std::string AST::printString() {
     for (auto stmt : this->Statements) {
         ss << stmt->printString();
     }
-    std::string msg = ss.str();
-    return msg;
+    return ss.str();
 }
