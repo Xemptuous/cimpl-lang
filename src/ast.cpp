@@ -17,38 +17,6 @@ void AST::parseProgram() {
     }
 
     this->checkParserErrors();
-
-    // for (auto stmt : this->Statements) {
-    //     switch (stmt->type) {
-    //         case identifierStatement: {
-    //             IdentifierStatement* is = static_cast<IdentifierStatement*>(stmt);
-    //             cout << is->printString() << '\n';
-    //             break;
-    //         }
-    //         case letStatement: {
-    //             LetStatement* ls = static_cast<LetStatement*>(stmt);
-    //             cout << ls->printString() << '\n';
-    //             break;
-    //         }
-    //         case returnStatement: {
-    //             ReturnStatement* rs = static_cast<ReturnStatement*>(stmt);
-    //             cout << rs->printString() << '\n';
-    //             break;
-    //         }
-    //         case expressionStatement: {
-    //             ExpressionStatement* es = static_cast<ExpressionStatement*>(stmt);
-    //             cout << es->printString() << '\n';
-    //             break;
-    //         }
-    //         case blockStatement: {
-    //             BlockStatement* bs = static_cast<BlockStatement*>(stmt);
-    //             cout << bs->printString() << '\n';
-    //             break;
-    //         }
-    //         default: 
-    //             break;
-    //     }
-    // }
 }
 
 void AST::checkParserErrors() {
@@ -117,7 +85,7 @@ void Expression::setDataType(std::string lit) {
 void Statement::setStatementNode(Token tok) {
     this->token = tok;
     this->node.literal = tok.literal;
-    // this->token.literal = tok.literal;
+    this->token.literal = tok.literal;
     this->node.type = tok.type;
 }
 
@@ -185,11 +153,6 @@ std::string Expression::printString() {
 
 std::string IdentifierStatement::printString() {
     std::ostringstream ss;
-    // ss << StatementMap.at(this->type) << "\n Identifier: " << this->name->value << '\n'
-    //     << " DataType: " << DatatypeMap.at(this->node.datatype) << '\n'
-    //     << " Value: \n  " << "Type: " << ExpressionMap.at(this->value->type) << '\n'
-    //     << "  Value: " << this->value->node.literal << '\n';
-    // ss << " {" << this->token.literal << " " << this->name->printString() << " = ";
     ss << DatatypeMap.at(this->node.datatype);
     ss << this->token.literal << " ";
     ss << this->name->printString() << " = ";
@@ -205,10 +168,6 @@ std::string IdentifierStatement::printString() {
 
 std::string LetStatement::printString() {
     std::ostringstream ss;
-    // ss << StatementMap.at(this->type) << "\n Identifier: " << this->name->value << '\n'
-    //     << " Value: \n  " << "Type: " << ExpressionMap.at(this->value->type) << '\n'
-    //     << "  Value: " << this->value->node.literal << '\n';
-    // ss << " {" << this->token.literal << " " << this->name->printString() << " = ";
 
     ss << this->token.literal << " ";
     ss << this->name->printString() << " = ";
@@ -224,10 +183,6 @@ std::string LetStatement::printString() {
 
 std::string ReturnStatement::printString() {
     std::ostringstream ss;
-    // ss << "Return Statement:\n" << " Value: " << this->token.literal << '\n'
-    //     << " Type: " << ExpressionMap.at(this->returnValue->type) << '\n'
-    //     << " Value: " << this->returnValue->node.literal << '\n';
-    // ss << "{ " << this->token.literal << " ";
 
     ss << this->token.literal << " ";
 

@@ -6,9 +6,6 @@ void start(string);
 int main() {
     system("clear");
     string input;
-    //
-    // cout << "Hello! Welcome to cimpl.\n";
-    // cout << "Try typing some commands:\n";
 
     while (true) {
     start:
@@ -20,8 +17,6 @@ int main() {
         }
         if (input == "clear") {
             system("clear");
-            // cout << "Hello! Welcome to cimpl.\n";
-            // cout << "Try typing some commands:\n";
             goto start;
         }
         start(input);

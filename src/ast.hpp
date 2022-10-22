@@ -17,9 +17,6 @@ enum StatementType {
     returnStatement,
     expressionStatement,
     blockStatement,
-    // conditionalStatement,
-    // noOpStatement,
-    // loopStatement,
 };
 
 enum ExpressionType {
@@ -34,8 +31,6 @@ enum ExpressionType {
     functionLiteral,
     callExpression,
     groupedExpression,
-    // functionCall,
-    // binaryExpression
 };
 
 

@@ -489,7 +489,7 @@ int Parser::currentPrecedence() {
 }
 
 
-void Parser::peekErrors(std::string t) {
+void Parser::peekErrors(std::string t){
     std::ostringstream ss;
     ss << "Expected next token to be " << t << ", but got " 
         << this->peekToken.type << " instead" << '\n'; 
