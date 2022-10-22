@@ -1,6 +1,6 @@
 #pragma once
-#include "tests.h"
-#include "../lexer.h"
+#include "tests.hpp"
+#include "../lexer.hpp"
 #include <iostream>
 
 
@@ -65,13 +65,13 @@ void testNextToken() {
         {TokenType.RPAREN, ")"},
         {TokenType.LBRACE, "{"},
         {TokenType.RETURN, "return"},
-        {TokenType.TRUE, "true"},
+        {TokenType._TRUE, "true"},
         {TokenType.SEMICOLON, ";"},
         {TokenType.RBRACE, "}"},
         {TokenType.ELSE, "else"},
         {TokenType.LBRACE, "{"},
         {TokenType.RETURN, "return"},
-        {TokenType.FALSE, "false"},
+        {TokenType._FALSE, "false"},
         {TokenType.SEMICOLON, ";"},
         {TokenType.RBRACE, "}"},
         {TokenType.INT, "10"},

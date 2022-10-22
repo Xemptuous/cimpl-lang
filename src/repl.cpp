@@ -1,7 +1,7 @@
 #include "lexer.hpp"
 #include "ast.hpp"
 #include <vector>
-// #include <iostream>
+#include <iostream>
 
 using namespace std;
 

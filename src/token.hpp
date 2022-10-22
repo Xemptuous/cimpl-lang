@@ -19,6 +19,7 @@ enum DATATYPE {
 
 const struct Tokentype {
     std::string ILLEGAL = {"ILLEGAL"};
+    std::string NEWLINE = {"NEWLINE"};
     std::string _EOF = {"_EOF"};
 
     // Identifiers + Literals

@@ -5,6 +5,10 @@
 
 
 void Parser::nextToken() {
+    if (this->peekToken.type == TokenType.NEWLINE) { 
+        this->linenumber++; 
+        this->peekToken = this->lexer->nextToken();
+    }
     this->currentToken = this->peekToken;
     this->peekToken = this->lexer->nextToken();
 }
@@ -31,7 +35,7 @@ Statement* Parser::parseStatement() {
             // TODO: FUNCTION HERE
         }
     }
-    if (curr == TokenType.LET) {
+    else if (curr == TokenType.LET) {
         return this->parseLetStatement();
     }
     else if (curr == TokenType.RETURN) {
@@ -57,7 +61,8 @@ IdentifierStatement* Parser::parseIdentifierStatement() {
 
     if (!(this->expectPeek(TokenType.ASSIGN))) {
         std::ostringstream ss;
-        ss << "Could not parse " << this->currentToken.literal << "; no assignment operator";
+        ss << "line:" << this->linenumber << ": Could not parse " << 
+            this->currentToken.literal << "; no assignment operator";
         std::string msg = ss.str();
         this->errors.push_back(msg);
         return NULL;
@@ -66,12 +71,6 @@ IdentifierStatement* Parser::parseIdentifierStatement() {
     // Setting expression value
     this->nextToken();
     stmt->value = this->parseExpression(Precedences.LOWEST);
-    std::cout << "Statement DataType: " << stmt->node.datatype << '\n';
-    std::cout << "Statement DataType: " << DatatypeMap.at(stmt->node.datatype) << '\n';
-    std::cout << "IdentifierNode DataType: " << stmt->value->node.datatype << '\n';
-    std::cout << "IdentifierNode DataType: " << DatatypeMap.at(stmt->value->node.datatype) << '\n';
-    std::cout << "Identifier DataType: " << stmt->value->node.datatype << '\n';
-    std::cout << "Identifier DataType: " << DatatypeMap.at(stmt->value->node.datatype) << '\n';
 
     this->checkIdentifierDataType(stmt);
 

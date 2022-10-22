@@ -28,6 +28,7 @@ class Parser {
         Lexer* lexer;
         Token currentToken;
         Token peekToken;
+        int linenumber{1};
         std::vector<std::string> errors;
 
         // Constructors
