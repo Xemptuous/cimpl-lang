@@ -36,6 +36,7 @@ const struct Tokentype {
     std::string _FALSE = {"FALSE"};
     std::string IF = {"IF"};
     std::string ELSE = {"ELSE"};
+    std::string ELSEIF = {"ELSEIF"};
     std::string RETURN = {"RETURN"}; 
 
     // Operators
@@ -89,6 +90,7 @@ const std::unordered_map<std::string, std::string> keywords = {
     {"false", TokenType._FALSE},
     {"if", TokenType.IF},
     {"else", TokenType.ELSE},
+    {"else if", TokenType.ELSEIF},
     {"return", TokenType.RETURN},
     {"==", TokenType.EQ},
     {"!=", TokenType.NOT_EQ},

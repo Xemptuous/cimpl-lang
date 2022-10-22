@@ -14,6 +14,7 @@ enum StatementType {
     letStatement,
     returnStatement,
     expressionStatement,
+    blockStatement,
     // conditionalStatement,
     // noOpStatement,
     // loopStatement,
@@ -25,6 +26,7 @@ enum ExpressionType {
     identifier,
     prefixExpression,
     infixExpression,
+    ifExpression,
     groupedExpression,
     booleanExpression,
     // functionCall,
@@ -61,6 +63,10 @@ typedef struct Expression {
 typedef struct Identifier : Expression {
     Token token;
     std::string value;
+
+    Identifier() {
+        this->type = identifier;
+    }
 
     void setExpressionNode(Token);
     inline std::string printString() { return this->value; };
@@ -196,10 +202,81 @@ typedef struct Boolean : Expression {
 } Boolean;
 
 
+typedef struct BlockStatement : Statement {
+    Token token;
+    std::vector<Statement*> statements;
+
+    BlockStatement() {
+        this->type = blockStatement;
+    }
+    ~BlockStatement() {
+        for (auto stmt : this->statements) {
+            delete stmt;
+        }
+    }
+
+    std::string printString();
+} BlockStatement;
+
+
+typedef struct IfExpression : Expression {
+    Token token;
+    Expression* condition;
+    BlockStatement* consequence;
+    BlockStatement* alternative;
+    std::vector<Expression*> conditions;
+    std::vector<BlockStatement*> alternatives;
+
+    IfExpression() {
+        this->type = ifExpression;
+        this->condition = NULL;
+        this->consequence = NULL;
+        this->alternative = NULL;
+    }
+    ~IfExpression() {
+        delete this->condition;
+        delete this->consequence;
+        delete this->alternative;
+        for (auto stmt : alternatives) {
+            delete stmt;
+        }
+        for (auto stmt : conditions) {
+            delete stmt;
+        }
+        // delete this->alternative;
+    }
+
+    std::string printString();
+
+} IfExpression;
+// typedef struct IfExpression : Expression {
+//     Token token;
+//     Expression* condition;
+//     BlockStatement* consequence;
+//     BlockStatement* alternative;
+//
+//     IfExpression() {
+//         this->type = ifExpression;
+//         this->condition = NULL;
+//         this->consequence = NULL;
+//         this->alternative = NULL;
+//     }
+//     ~IfExpression() {
+//         delete this->condition;
+//         delete this->consequence;
+//         delete this->alternative;
+//     }
+//
+//     std::string printString();
+//
+// } IfExpression;
+
+
 const std::unordered_map<int, std::string> StatementMap = {
     {0, "Let Statement"},
     {1, "Return Statement"},
-    {2, "Expression Statement"}
+    {2, "Expression Statement"},
+    {4, "Block Statement"}
 };
 
 
@@ -209,8 +286,9 @@ const std::unordered_map<int, std::string> ExpressionMap = {
     {2, "Identifier"},
     {3, "Prefix Expression"},
     {4, "Infix Expression"},
-    {5, "Grouped Expression"},
-    {6, "Boolean"}
+    {5, "If Expression"},
+    {6, "Grouped Expression"},
+    {7, "Boolean"}
 };
 
 

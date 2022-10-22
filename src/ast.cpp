@@ -35,6 +35,11 @@ void AST::parseProgram() {
                 cout << es->printString() << '\n';
                 break;
             }
+            case blockStatement: {
+                BlockStatement* bs = static_cast<BlockStatement*>(stmt);
+                cout << bs->printString() << '\n';
+                break;
+            }
             default: 
                 break;
         }
@@ -55,8 +60,9 @@ void AST::checkParserErrors() {
 
 
 void Statement::setStatementNode(Token tok) {
+    this->token = tok;
     this->node.literal = tok.literal;
-    this->token.literal = tok.literal;
+    // this->token.literal = tok.literal;
     this->node.type = tok.type;
 }
 
@@ -106,6 +112,7 @@ void Boolean::setExpressionNode(Token tok) {
     this->node.type = tok.type;
     this->value = (tok.type == TokenType._TRUE || tok.type == TokenType._FALSE);
 }
+
 
 std::string Statement::printString() {
     std::ostringstream ss;
@@ -184,6 +191,37 @@ std::string InfixExpression::printString() {
 
     ss << "(" << this->_left->printString() << " " + this->_operator + " " <<
         this->_right->printString() << ")";
+
+    std::string msg = ss.str();
+    return msg;
+}
+
+
+std::string BlockStatement::printString() {
+    std::ostringstream ss;
+
+    for (int i = 0; i < this->statements.size(); i++) {
+        ss << this->statements[i]->printString();
+    }
+
+    std::string msg = ss.str();
+    return msg;
+}
+
+
+std::string IfExpression::printString() {
+    std::ostringstream ss;
+
+    ss << "if" << this->condition->printString() << " " << this->consequence->printString();
+
+    for (int i = 0; i < this->conditions.size(); i++) {
+        ss << " else if " << this->conditions[i]->printString() << " " <<
+            this->alternatives[i]->printString();
+    }
+
+    if (this->alternative != NULL) {
+        ss << " else " << this->alternative->printString();
+    }
 
     std::string msg = ss.str();
     return msg;
