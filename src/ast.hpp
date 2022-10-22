@@ -32,6 +32,7 @@ enum ExpressionType {
     infixExpression,
     ifExpression,
     functionLiteral,
+    callExpression,
     groupedExpression,
     // functionCall,
     // binaryExpression
@@ -307,6 +308,26 @@ typedef struct FunctionLiteral : Expression {
 } FunctionLiteral;
 
 
+typedef struct CallExpression : Expression { 
+    Token tok;
+    Expression* _function;
+    std::vector<Expression*> arguments;
+
+    CallExpression() {
+        this->type = callExpression;
+        this->_function = NULL;
+    }
+    ~CallExpression() {
+        delete this->_function;
+        for (auto arg : arguments) {
+            delete arg;
+        }
+    }
+
+    std::string printString();
+} CallExpression;
+
+
 const std::unordered_map<int, std::string> StatementMap = {
     {0, "Identifier Statement"},
     {1, "Let Statement"},
@@ -325,8 +346,10 @@ const std::unordered_map<int, std::string> ExpressionMap = {
     {5, "Prefix Expression"},
     {6, "Infix Expression"},
     {7, "If Expression"},
-    {8, "Grouped Expression"},
-    {9, "Boolean"}
+    {8, "Function Literal"},
+    {9, "Call Expression"},
+    {10, "Grouped Expression"},
+    {11, "Boolean"}
 };
 
 
@@ -382,4 +405,5 @@ const std::unordered_map<std::string, int> precedencesMap = {
     {TokenType.MINUS, Precedences.SUM},
     {TokenType.SLASH, Precedences.PRODUCT},
     {TokenType.ASTERISK, Precedences.PRODUCT},
+    {TokenType.LPAREN, Precedences.CALL},
 };

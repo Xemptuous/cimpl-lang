@@ -308,6 +308,24 @@ std::string FunctionLiteral::printString() {
 }
 
 
+std::string CallExpression::printString() {
+    std::ostringstream ss;
+    std::vector<std::string> args{};
+
+    for (int i = 0; i < this->arguments.size(); i++) {
+        args.push_back(this->arguments[i]->printString());
+    }
+
+    ss << this->_function->printString();
+    ss << this->node.literal << "(";
+    for (std::string arg : args) {
+        ss << arg << ", ";
+    }
+    ss << ") ";
+    return ss.str();
+}
+
+
 std::string Boolean::printString() {
     std::ostringstream ss;
 

@@ -188,6 +188,8 @@ Expression* Parser::parseLeftPrefix(int prefix) {
             return this->parseIfExpression();
         case PREFIX_GROUPED_EXPR:
             return this->parseGroupedExpression();
+        case PREFIX_FUNCTION:
+            return this->parseFunctionLiteral();
         default:
             return this->parsePrefixExpression();
     }
@@ -213,7 +215,14 @@ Expression* Parser::parseExpression(int precedence) {
         }
         this->nextToken();
 
-        leftExp = this->parseInfixExpression(leftExp);
+        switch (infix->second) {
+            case INFIX_STD:
+                leftExp = this->parseInfixExpression(leftExp);
+                break;
+            case INFIX_CALL:
+                leftExp = this->parseCallExpression(leftExp);
+                break;
+        }
     }
     return leftExp;
 }
@@ -364,6 +373,43 @@ std::vector<Identifier*> Parser::parseFunctionParameters() {
 
     return identifiers;
 }
+
+
+CallExpression* Parser::parseCallExpression(Expression* func) {
+    CallExpression* expr = new CallExpression;
+    expr->setExpressionNode(this->currentToken);
+    expr->_function = func;
+    expr->arguments = this->parseCallArguments();
+    return expr;
+}
+
+
+std::vector<Expression*> Parser::parseCallArguments() {
+    std::vector<Expression*> args{};
+
+    if (this->peekToken.type == TokenType.RPAREN) {
+        this->nextToken();
+        return args;
+    }
+
+    this->nextToken();
+    args.push_back(this->parseExpression(Precedences.LOWEST));
+
+    while (this->peekToken.type == TokenType.COMMA) {
+        this->nextToken();
+        this->nextToken();
+        args.push_back(this->parseExpression(Precedences.LOWEST));
+    }
+
+    if (!(expectPeek(TokenType.RPAREN))) {
+        std::ostringstream ss;
+        ss << "Parenthesis never closed for function call\n";
+        this->errors.push_back(ss.str());
+    }
+
+    return args;
+}
+
 
 IntegerLiteral* Parser::parseIntegerLiteral() {
     IntegerLiteral* expr = new IntegerLiteral;
