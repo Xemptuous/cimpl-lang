@@ -9,12 +9,14 @@ struct PrefixExpression;
 struct InfixExpression;
 struct IfExpression;
 struct IntegerLiteral;
+struct FloatLiteral;
 struct StringLiteral;
 struct Boolean;
 struct Identifier;
 
 struct Statement;
 struct LetStatement;
+struct IdentifierStatement;
 struct ReturnStatement;
 struct ExpressionStatement;
 struct BlockStatement;
@@ -46,6 +48,7 @@ class Parser {
         void peekErrors(std::string);
         int currentPrecedence();
         int peekPrecedence();
+        void checkIdentifierDataType(IdentifierStatement*);
 
         Expression* parseExpression(int);
         Expression* parseLeftPrefix(int);
@@ -55,6 +58,7 @@ class Parser {
         InfixExpression* parseInfixExpression(Expression*);
         Identifier* parseIdentifier();
         IntegerLiteral* parseIntegerLiteral();
+        FloatLiteral* parseFloatLiteral();
         StringLiteral* parseStringLiteral();
         Boolean* parseBoolean();
 
@@ -62,6 +66,7 @@ class Parser {
         LetStatement* parseLetStatement();
         BlockStatement* parseBlockStatement();
         ReturnStatement* parseReturnStatement();
+        IdentifierStatement* parseIdentifierStatement();
         ExpressionStatement* parseExpressionStatement();
 };
 
@@ -69,6 +74,7 @@ enum prefix {
     PREFIX_STD,
     PREFIX_IDENT,
     PREFIX_INT,
+    PREFIX_FLOAT,
     PREFIX_STRING,
     PREFIX_BOOL,
     PREFIX_IF,
@@ -80,6 +86,7 @@ enum prefix {
 const std::unordered_map<std::string, int> prefixFunctions = {
     {TokenType.IDENT, PREFIX_IDENT},
     {TokenType.INT, PREFIX_INT},
+    {TokenType.FLOAT, PREFIX_FLOAT},
     {TokenType._STRING, PREFIX_STRING},
     {TokenType.BANG, PREFIX_STD},
     {TokenType.MINUS, PREFIX_STD},

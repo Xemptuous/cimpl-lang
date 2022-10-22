@@ -22,6 +22,15 @@ bool Parser::expectPeek(std::string tokentype) {
 
 Statement* Parser::parseStatement() {
     std::string curr = this->currentToken.type;
+    std::string peek = this->peekToken.type;
+    if (curr == TokenType.DATATYPE) {
+        if (peek == TokenType.IDENT) {
+            return this->parseIdentifierStatement();
+        }
+        if (peek == TokenType.FUNCTION) {
+            // TODO: FUNCTION HERE
+        }
+    }
     if (curr == TokenType.LET) {
         return this->parseLetStatement();
     }
@@ -32,6 +41,48 @@ Statement* Parser::parseStatement() {
         return this->parseExpressionStatement();
     }
     return NULL;
+}
+
+
+IdentifierStatement* Parser::parseIdentifierStatement() {
+    // Initializing statement values
+    IdentifierStatement* stmt = new IdentifierStatement;
+    stmt->setStatementNode(this->currentToken);
+    stmt->setDataType(this->currentToken.literal);
+
+    this->nextToken();
+
+    // Getting the identifier
+    stmt->name = this->parseIdentifier();
+
+    if (!(this->expectPeek(TokenType.ASSIGN))) {
+        std::ostringstream ss;
+        ss << "Could not parse " << this->currentToken.literal << "; no assignment operator";
+        std::string msg = ss.str();
+        this->errors.push_back(msg);
+        return NULL;
+    }
+
+    // Setting expression value
+    this->nextToken();
+    stmt->value = this->parseExpression(Precedences.LOWEST);
+
+    this->checkIdentifierDataType(stmt);
+
+    // Read to end of line/file
+    while (this->currentToken.type != TokenType.SEMICOLON) {
+        if (this->currentToken.type == TokenType._EOF) {
+            std::ostringstream ss;
+            ss << "No Semicolon present at end of line for " << StatementMap.at(stmt->type) << 
+                " with value " << stmt->value->node.literal;
+            std::string msg = ss.str();
+            this->errors.push_back(msg);
+            return NULL;
+        }
+        this->nextToken();
+    }
+
+    return stmt;
 }
 
 
@@ -128,6 +179,8 @@ Expression* Parser::parseLeftPrefix(int prefix) {
             return this->parseIdentifier();
         case PREFIX_INT:
             return this->parseIntegerLiteral();
+        case PREFIX_FLOAT:
+            return this->parseFloatLiteral();
         case PREFIX_STRING:
             return this->parseStringLiteral();
         case PREFIX_BOOL:
@@ -287,6 +340,27 @@ IntegerLiteral* Parser::parseIntegerLiteral() {
 }
 
 
+FloatLiteral* Parser::parseFloatLiteral() {
+    FloatLiteral* expr = new FloatLiteral;
+    expr->setExpressionNode(this->currentToken);
+
+    float value;
+    try {
+        value = stof(this->currentToken.literal);
+    }
+    catch (...) {
+        std::ostringstream ss;
+        ss << "Could not parse " << this->currentToken.literal << " as float";
+        std::string msg = ss.str();
+        this->errors.push_back(msg);
+        return NULL;
+    }
+    expr->value = value;
+
+    return expr;
+}
+
+
 StringLiteral* Parser::parseStringLiteral() {
     StringLiteral* expr = new StringLiteral;
     expr->setExpressionNode(this->currentToken);
@@ -332,3 +406,42 @@ void Parser::peekErrors(std::string t) {
     std::string msg = ss.str();
     this->errors.push_back(msg);
 }
+
+
+void Parser::checkIdentifierDataType(IdentifierStatement* stmt) {
+    switch (stmt->node.datatype) {
+        case INT:
+            if (ExpressionMap.at(stmt->value->type) != "Integer Literal") {
+                std::ostringstream ss;
+                ss << "Mismatched DataType: " << ExpressionMap.at(stmt->value->type)
+                    << " is not equal to: " << "Integer Literal\n";
+                this->errors.push_back(ss.str());
+            }
+            break;
+        case FLOAT:
+            if (ExpressionMap.at(stmt->value->type) != "Float Literal") {
+                std::ostringstream ss;
+                ss << "Mismatched DataType: " << ExpressionMap.at(stmt->value->type)
+                    << " is not equal to: " << "Float Literal\n";
+                this->errors.push_back(ss.str());
+            }
+            break;
+        case BOOLEAN:
+            if (ExpressionMap.at(stmt->value->type) != "Boolean") {
+                std::ostringstream ss;
+                ss << "Mismatched DataType: " << ExpressionMap.at(stmt->value->type)
+                    << " is not equal to: " << "Boolean\n";
+                this->errors.push_back(ss.str());
+            }
+            break;
+        case _STRING:
+            if (ExpressionMap.at(stmt->value->type) != "String Literal") {
+                std::ostringstream ss;
+                ss << "Mismatched DataType: " << ExpressionMap.at(stmt->value->type)
+                    << " is not equal to: " << "String Literal\n";
+                this->errors.push_back(ss.str());
+            }
+            break;
+    }
+}
+

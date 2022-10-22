@@ -2,15 +2,20 @@
 
 #include <string>
 #include <unordered_map>
+
+
 enum DATATYPE {
     INT,
-    LONG,
+    // LONG,
+    // DOUBLE,
     FLOAT,
-    CHAR,
+    BOOLEAN,
+    // CHAR,
     _STRING,
-    VECTOR,
-    MAP
+    // VECTOR,
+    // MAP
 };
+
 
 const struct Tokentype {
     std::string ILLEGAL = {"ILLEGAL"};
@@ -21,8 +26,10 @@ const struct Tokentype {
     std::string DATATYPE = {"DATATYPE"};
 
     // Data Types
+    std::string BOOLEAN = {"BOOLEAN"};
     std::string INT = {"INT"};
     std::string LONG = {"LONG"};
+    std::string DOUBLE = {"DOUBLE"};
     std::string FLOAT = {"FLOAT"};
     std::string CHAR = {"CHAR"};
     std::string _STRING = {"_STRING"};
@@ -104,7 +111,9 @@ const std::unordered_map<std::string, std::string> keywords = {
     {"/=", TokenType.DIV_EQ},
     {"int", TokenType.DATATYPE},
     {"long", TokenType.DATATYPE},
+    {"double", TokenType.DATATYPE},
     {"float", TokenType.DATATYPE},
+    {"bool", TokenType.DATATYPE},
     {"char", TokenType.DATATYPE},
     {"string", TokenType.DATATYPE},
     {"vector", TokenType.DATATYPE},
