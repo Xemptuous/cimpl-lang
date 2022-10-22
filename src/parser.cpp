@@ -66,6 +66,12 @@ IdentifierStatement* Parser::parseIdentifierStatement() {
     // Setting expression value
     this->nextToken();
     stmt->value = this->parseExpression(Precedences.LOWEST);
+    std::cout << "Statement DataType: " << stmt->node.datatype << '\n';
+    std::cout << "Statement DataType: " << DatatypeMap.at(stmt->node.datatype) << '\n';
+    std::cout << "IdentifierNode DataType: " << stmt->value->node.datatype << '\n';
+    std::cout << "IdentifierNode DataType: " << DatatypeMap.at(stmt->value->node.datatype) << '\n';
+    std::cout << "Identifier DataType: " << stmt->value->node.datatype << '\n';
+    std::cout << "Identifier DataType: " << DatatypeMap.at(stmt->value->node.datatype) << '\n';
 
     this->checkIdentifierDataType(stmt);
 
@@ -411,34 +417,34 @@ void Parser::peekErrors(std::string t) {
 void Parser::checkIdentifierDataType(IdentifierStatement* stmt) {
     switch (stmt->node.datatype) {
         case INT:
-            if (ExpressionMap.at(stmt->value->type) != "Integer Literal") {
+            if (DatatypeMap.at(stmt->value->type) != "Int") {
                 std::ostringstream ss;
-                ss << "Mismatched DataType: " << ExpressionMap.at(stmt->value->type)
+                ss << "Mismatched DataType: " << DatatypeMap.at(stmt->value->type)
                     << " is not equal to: " << "Integer Literal\n";
                 this->errors.push_back(ss.str());
             }
             break;
         case FLOAT:
-            if (ExpressionMap.at(stmt->value->type) != "Float Literal") {
+            if (DatatypeMap.at(stmt->value->type) != "Float") {
                 std::ostringstream ss;
-                ss << "Mismatched DataType: " << ExpressionMap.at(stmt->value->type)
-                    << " is not equal to: " << "Float Literal\n";
+                ss << "Mismatched DataType: " << DatatypeMap.at(stmt->value->type)
+                    << " is not equal to: " << "Float \n";
                 this->errors.push_back(ss.str());
             }
             break;
         case BOOLEAN:
-            if (ExpressionMap.at(stmt->value->type) != "Boolean") {
+            if (DatatypeMap.at(stmt->value->type) != "Boolean") {
                 std::ostringstream ss;
-                ss << "Mismatched DataType: " << ExpressionMap.at(stmt->value->type)
+                ss << "Mismatched DataType: " << DatatypeMap.at(stmt->value->type)
                     << " is not equal to: " << "Boolean\n";
                 this->errors.push_back(ss.str());
             }
             break;
         case _STRING:
-            if (ExpressionMap.at(stmt->value->type) != "String Literal") {
+            if (DatatypeMap.at(stmt->value->type) != "String") {
                 std::ostringstream ss;
-                ss << "Mismatched DataType: " << ExpressionMap.at(stmt->value->type)
-                    << " is not equal to: " << "String Literal\n";
+                ss << "Mismatched DataType: " << DatatypeMap.at(stmt->value->type)
+                    << " is not equal to: " << "String \n";
                 this->errors.push_back(ss.str());
             }
             break;
