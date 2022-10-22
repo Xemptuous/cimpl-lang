@@ -324,6 +324,53 @@ IfExpression* Parser::parseIfExpression() {
 }
 
 
+FunctionLiteral* Parser::parseFunctionLiteral() {
+    FunctionLiteral* expr = new FunctionLiteral;
+    expr->setExpressionNode(this->currentToken);
+
+    if (!(expectPeek(TokenType.LPAREN))) {
+        return NULL;
+    }
+    expr->parameters = this->parseFunctionParameters();
+
+    if (!(expectPeek(TokenType.LBRACE))) {
+        return NULL;
+    }
+    expr->body = this->parseBlockStatement();
+
+    return expr;
+}
+
+
+std::vector<Identifier*> Parser::parseFunctionParameters() {
+    std::vector<Identifier*> identifiers{};
+    if (this->peekToken.type == TokenType.RPAREN) {
+        this->nextToken();
+        return identifiers;
+    }
+
+    this->nextToken();
+    Identifier* ident = new Identifier;
+    ident->setExpressionNode(this->currentToken);
+    identifiers.push_back(ident);
+
+    while (this->peekToken.type == TokenType.COMMA) {
+        this->nextToken();
+        this->nextToken();
+        Identifier* ident = new Identifier;
+        ident->setExpressionNode(this->currentToken);
+        identifiers.push_back(ident);
+    }
+
+    if (!(expectPeek(TokenType.RPAREN))) {
+        std::ostringstream ss;
+        ss << "Parenthesis never closed for function\n";
+        this->errors.push_back(ss.str());
+    }
+
+    return identifiers;
+}
+
 IntegerLiteral* Parser::parseIntegerLiteral() {
     IntegerLiteral* expr = new IntegerLiteral;
     expr->setExpressionNode(this->currentToken);
