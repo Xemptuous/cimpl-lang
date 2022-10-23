@@ -32,7 +32,7 @@ Statement* Parser::parseStatement() {
             return this->parseIdentifierStatement();
         }
         if (peek == TokenType.FUNCTION) {
-            // TODO: FUNCTION HERE
+            return this->parseFunctionStatement();
         }
     }
     else if (curr == TokenType.LET) {
@@ -138,6 +138,12 @@ ReturnStatement* Parser::parseReturnStatement() {
     this->nextToken();
 
     stmt->returnValue = this->parseExpression(Precedences.LOWEST);
+    if (stmt->returnValue == NULL) {
+        stmt->node.datatype = VOID;
+    }
+    else {
+        stmt->node.datatype = stmt->returnValue->node.datatype;
+    }
 
     while (this->currentToken.type != TokenType.SEMICOLON) {
         if (this->currentToken.type == TokenType._EOF) {
@@ -206,6 +212,7 @@ Expression* Parser::parseExpression(int precedence) {
     }
 
     Expression* leftExp = this->parseLeftPrefix(prefix->second);
+    leftExp->setDataType(leftExp->node.literal);
 
     while (this->peekToken.type != TokenType.SEMICOLON && precedence < this->peekPrecedence()) 
     {
@@ -270,7 +277,6 @@ BlockStatement* Parser::parseBlockStatement() {
     this->nextToken();
 
     while (this->currentToken.type != TokenType.RBRACE && this->currentToken.type != TokenType._EOF) {
-        // if (this->currentToken.type == TokenType._EOF) { break; }
         Statement* stmt = this->parseStatement();
 
         if (stmt != NULL) {
@@ -327,9 +333,42 @@ IfExpression* Parser::parseIfExpression() {
 }
 
 
+FunctionStatement* Parser::parseFunctionStatement() {
+    FunctionStatement* stmt = new FunctionStatement;
+    stmt->setStatementNode(this->currentToken);
+    stmt->setDataType(this->currentToken.literal);
+
+    this->nextToken();
+
+    if (!(expectPeek(TokenType.IDENT))) {
+        return NULL;
+    }
+    stmt->name = parseIdentifier();
+    this->nextToken();
+
+    if (!(expectPeek(TokenType.LPAREN))) {
+        return NULL;
+    }
+    stmt->parameters = this->parseFunctionParameters();
+
+    if (!(expectPeek(TokenType.LBRACE))) {
+        return NULL;
+    }
+    stmt->body = this->parseBlockStatement();
+    this->checkFunctionReturn(stmt);
+
+    return stmt;
+}
+
+
 FunctionLiteral* Parser::parseFunctionLiteral() {
     FunctionLiteral* expr = new FunctionLiteral;
     expr->setExpressionNode(this->currentToken);
+
+    if (!(expectPeek(TokenType.IDENT))) {
+        return NULL;
+    }
+    expr->name = parseIdentifier();
 
     if (!(expectPeek(TokenType.LPAREN))) {
         return NULL;
@@ -346,7 +385,6 @@ FunctionLiteral* Parser::parseFunctionLiteral() {
 
 
 std::vector<Identifier*> Parser::parseFunctionParameters() {
-    // TODO: test this and make sure it works
     std::vector<Identifier*> identifiers{};
     if (this->peekToken.type == TokenType.RPAREN) {
         this->nextToken();
@@ -532,6 +570,36 @@ void Parser::checkIdentifierDataType(IdentifierStatement* stmt) {
                 this->errors.push_back(ss.str());
             }
             break;
+        case VOID:
+            std::ostringstream ss;
+            ss << "Cannot use void datatype with identifier initializations.\n";
+            this->errors.push_back(ss.str());
+            break;
+    }
+}
+
+
+void Parser::checkFunctionReturn(FunctionStatement* stmt) {
+    ReturnStatement* returnStmt;
+    int found{0};
+    for (auto st : stmt->body->statements) {
+        if (st->type == returnStatement) {
+            returnStmt = static_cast<ReturnStatement*>(st);
+            found ++;
+            if (stmt->node.datatype != returnStmt->node.datatype) {
+                std::ostringstream ss;
+                ss << "Function return value DataType mismatch.\n";
+                // ss << "Function return value DataType mismatch: " << 
+                //     DatatypeMap.at(stmt->node.datatype) << " != " << 
+                //     DatatypeMap.at(returnStmt->node.datatype);
+                this->errors.push_back(ss.str());
+            }
+        }
+    } 
+    if (!found) {
+        std::ostringstream ss;
+        ss << "No return statement for fn: " << stmt->token.literal << '\n';
+        this->errors.push_back(ss.str());
     }
 }
 

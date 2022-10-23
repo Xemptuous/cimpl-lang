@@ -6,6 +6,7 @@
 
 enum StatementType {
     identifierStatement,
+    functionStatement,
     letStatement,
     returnStatement,
     expressionStatement,
@@ -194,6 +195,7 @@ typedef struct IntegerLiteral : Expression {
         this->type = integerLiteral;
     }
 
+    void setExpressionNode(Token);
     inline std::string printString() { return std::to_string(this->value); };
 } IntegerLiteral;
 
@@ -206,6 +208,7 @@ typedef struct FloatLiteral : Expression {
         this->type = floatLiteral;
     }
 
+    void setExpressionNode(Token);
     inline std::string printString() { return std::to_string(this->value); };
 } FloatLiteral;
 
@@ -283,17 +286,43 @@ typedef struct IfExpression : Expression {
 } IfExpression;
 
 
+typedef struct FunctionStatement : Statement {
+    Token tok;
+    Identifier* name;
+    std::vector<Identifier*> parameters;
+    BlockStatement* body;
+
+    FunctionStatement() {
+        this->type = functionStatement;
+        this->body = NULL;
+        this->name = NULL;
+    }
+    ~FunctionStatement() {
+        delete this->body;
+        delete this->name;
+        for (auto param : parameters) {
+            delete param;
+        }
+    }
+
+    std::string printString();
+} FunctionStatement;
+
+
 typedef struct FunctionLiteral : Expression {
     Token tok;
+    Identifier* name;
     std::vector<Identifier*> parameters;
     BlockStatement* body;
 
     FunctionLiteral() {
         this->type = functionLiteral;
+        this->name = NULL;
         this->body = NULL;
     }
     ~FunctionLiteral() {
         delete this->body;
+        delete this->name;
         for (auto param : parameters) {
             delete param;
         }
@@ -325,10 +354,11 @@ typedef struct CallExpression : Expression {
 
 const std::unordered_map<int, std::string> StatementMap = {
     {0, "Identifier Statement"},
-    {1, "Let Statement"},
-    {2, "Return Statement"},
-    {3, "Expression Statement"},
-    {4, "Block Statement"}
+    {1, "Function Statement"},
+    {2, "Let Statement"},
+    {3, "Return Statement"},
+    {4, "Expression Statement"},
+    {5, "Block Statement"}
 };
 
 
@@ -353,6 +383,7 @@ const std::unordered_map<int, std::string> DatatypeMap = {
     {1, "float"},
     {2, "boolean"},
     {3, "string"},
+    {4, "void"},
 };
 
 

@@ -9,6 +9,7 @@ enum DATATYPE {
     FLOAT,
     BOOLEAN,
     _STRING,
+    VOID,
 };
 
 
@@ -31,13 +32,9 @@ const struct Tokentype {
     // Data Types
     std::string BOOLEAN = {"BOOLEAN"};
     std::string INT = {"INT"};
-    std::string LONG = {"LONG"};
-    std::string DOUBLE = {"DOUBLE"};
     std::string FLOAT = {"FLOAT"};
-    std::string CHAR = {"CHAR"};
     std::string _STRING = {"_STRING"};
-    std::string VECTOR = {"VECTOR"};
-    std::string MAP = {"MAP"};
+    std::string VOID = {"VOID"};
 
     // Keywords
     std::string LET = {"LET"};
@@ -107,11 +104,8 @@ const std::unordered_map<std::string, std::string> keywords = {
     {"/=", TokenType.DIV_EQ},
     {"int", TokenType.DATATYPE},
     {"long", TokenType.DATATYPE},
-    {"double", TokenType.DATATYPE},
     {"float", TokenType.DATATYPE},
     {"bool", TokenType.DATATYPE},
-    {"char", TokenType.DATATYPE},
     {"string", TokenType.DATATYPE},
-    {"vector", TokenType.DATATYPE},
-    {"map", TokenType.DATATYPE},
+    {"void", TokenType.DATATYPE},
 };

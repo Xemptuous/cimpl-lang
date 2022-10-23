@@ -63,6 +63,9 @@ void Expression::setDataType(std::string lit) {
     else if (lit == "string") {
         this->node.datatype = _STRING;
     }
+    else if (lit == "void") {
+        this->node.datatype = VOID;
+    }
 }
 
 
@@ -78,14 +81,6 @@ void Expression::setExpressionNode(Token tok) {
     this->token = tok;
     this->node.literal = tok.literal;
     this->node.type = tok.type;
-}
-
-
-void StringLiteral::setExpressionNode(Token tok) {
-    this->token = tok;
-    this->node.literal = tok.literal;
-    this->node.type = tok.type;
-    this->value = tok.literal;
 }
 
 
@@ -113,11 +108,37 @@ void InfixExpression::setExpressionNode(Token tok) {
 }
 
 
+void IntegerLiteral::setExpressionNode(Token tok) {
+    this->token = tok;
+    this->node.literal = tok.literal;
+    this->node.type = tok.type;
+    this->node.datatype = INT;
+}
+
+
+void StringLiteral::setExpressionNode(Token tok) {
+    this->token = tok;
+    this->node.literal = tok.literal;
+    this->node.type = tok.type;
+    this->value = tok.literal;
+    this->node.datatype = _STRING;
+}
+
+
 void Boolean::setExpressionNode(Token tok) {
     this->token = tok;
     this->node.literal = tok.literal;
     this->node.type = tok.type;
     this->value = (tok.type == TokenType._TRUE || tok.type == TokenType._FALSE);
+    this->node.datatype = BOOLEAN;
+}
+
+
+void FloatLiteral::setExpressionNode(Token tok) {
+    this->token = tok;
+    this->node.literal = tok.literal;
+    this->node.type = tok.type;
+    this->node.datatype = FLOAT;
 }
 
 
@@ -238,6 +259,24 @@ std::string IfExpression::printString() {
 }
 
 
+std::string FunctionStatement::printString() {
+    std::ostringstream ss;
+    std::vector<std::string> params{};
+
+    for (int i = 0; i < this->parameters.size(); i++) {
+        params.push_back(this->parameters[i]->printString());
+    }
+
+    ss << DatatypeMap.at(this->node.datatype) << " " << 
+        this->name->node.literal << "(";
+    for (std::string param : params) {
+        ss << param << ", ";
+    }
+    ss << ") " << this->body->printString();
+    return ss.str();
+}
+
+
 std::string FunctionLiteral::printString() {
     std::ostringstream ss;
     std::vector<std::string> params{};
@@ -246,7 +285,8 @@ std::string FunctionLiteral::printString() {
         params.push_back(this->parameters[i]->printString());
     }
 
-    ss << this->node.literal << "(";
+    ss << DatatypeMap.at(this->node.datatype) << " " << 
+        this->name->node.literal << "(";
     for (std::string param : params) {
         ss << param << ", ";
     }

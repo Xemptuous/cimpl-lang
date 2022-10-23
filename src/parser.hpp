@@ -19,6 +19,7 @@ struct Identifier;
 struct Statement;
 struct LetStatement;
 struct IdentifierStatement;
+struct FunctionStatement;
 struct ReturnStatement;
 struct ExpressionStatement;
 struct BlockStatement;
@@ -57,6 +58,8 @@ class Parser {
         int currentPrecedence();
         int peekPrecedence();
         void checkIdentifierDataType(IdentifierStatement*);
+        void checkFunctionReturn(FunctionStatement*);
+        void checkFunctionReturnDataType(ReturnStatement*);
 
         // Expression Methods
         Expression* parseExpression(int);
@@ -80,6 +83,7 @@ class Parser {
         BlockStatement* parseBlockStatement();
         ReturnStatement* parseReturnStatement();
         IdentifierStatement* parseIdentifierStatement();
+        FunctionStatement* parseFunctionStatement();
         ExpressionStatement* parseExpressionStatement();
 };
 
