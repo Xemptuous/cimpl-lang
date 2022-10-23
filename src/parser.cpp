@@ -262,6 +262,7 @@ Expression* Parser::parseGroupedExpression() {
     return expr;
 }
 
+
 BlockStatement* Parser::parseBlockStatement() {
     BlockStatement* block = new BlockStatement;
     block->setStatementNode(this->currentToken);

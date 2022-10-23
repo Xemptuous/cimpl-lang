@@ -4,13 +4,6 @@
 #include <vector>
 
 
-typedef struct Node {
-    std::string type;
-    std::string literal;
-    int datatype;
-} Node;
-
-
 enum StatementType {
     identifierStatement,
     letStatement,
@@ -32,6 +25,13 @@ enum ExpressionType {
     callExpression,
     groupedExpression,
 };
+
+
+typedef struct Node {
+    std::string type;
+    std::string literal;
+    int datatype;
+} Node;
 
 
 typedef struct Statement {
@@ -350,14 +350,9 @@ const std::unordered_map<int, std::string> ExpressionMap = {
 
 const std::unordered_map<int, std::string> DatatypeMap = {
     {0, "int"},
-    // {1, "Long"},
-    // {2, "Double"},
     {1, "float"},
     {2, "boolean"},
-    // {5, "Char"},
     {3, "string"},
-    // {7, "Vector"},
-    // {8, "Map"},
 };
 
 

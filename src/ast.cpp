@@ -5,6 +5,7 @@
 
 using namespace std;
 
+
 void AST::parseProgram() {
     while (this->parser->currentToken.type != TokenType._EOF) {
         Statement* stmt = this->parser->parseStatement();
@@ -18,6 +19,7 @@ void AST::parseProgram() {
 
     this->checkParserErrors();
 }
+
 
 void AST::checkParserErrors() {
     int len = this->parser->errors.size();
@@ -36,21 +38,12 @@ void Statement::setDataType(std::string lit) {
     if (lit == "int") {
         this->node.datatype = INT;
     }
-    // else if (lit == "long") {
-    //     this->node.datatype = LONG;
-    // }
-    // else if (lit == "double") {
-    //     this->node.datatype = DOUBLE;
-    // }
     else if (lit == "float") {
         this->node.datatype = FLOAT;
     }
     else if (lit == "bool") {
         this->node.datatype = BOOLEAN;
     }
-    // else if (lit == "char") {
-    //     this->node.datatype = CHAR;
-    // }
     else if (lit == "string") {
         this->node.datatype = _STRING;
     }
@@ -61,21 +54,12 @@ void Expression::setDataType(std::string lit) {
     if (lit == "int") {
         this->node.datatype = INT;
     }
-    // else if (lit == "long") {
-    //     this->node.datatype = LONG;
-    // }
-    // else if (lit == "double") {
-    //     this->node.datatype = DOUBLE;
-    // }
     else if (lit == "float") {
         this->node.datatype = FLOAT;
     }
     else if (lit == "bool") {
         this->node.datatype = BOOLEAN;
     }
-    // else if (lit == "char") {
-    //     this->node.datatype = CHAR;
-    // }
     else if (lit == "string") {
         this->node.datatype = _STRING;
     }

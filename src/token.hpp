@@ -6,15 +6,17 @@
 
 enum DATATYPE {
     INT,
-    // LONG,
-    // DOUBLE,
     FLOAT,
     BOOLEAN,
-    // CHAR,
     _STRING,
-    // VECTOR,
-    // MAP
 };
+
+
+typedef struct Token {
+    std::string type;
+    std::string literal;
+}
+Token;
 
 
 const struct Tokentype {
@@ -82,13 +84,6 @@ const struct Tokentype {
     std::string COMMENT = {"COMMENT"};
     std::string BLOCK_COMMENT = {"BLOCK_COMMENT"};
 } TokenType{}; 
-
-
-typedef struct Token {
-    std::string type;
-    std::string literal;
-}
-Token;
 
 
 const std::unordered_map<std::string, std::string> keywords = {

@@ -3,6 +3,7 @@
 using namespace std;
 void start(string);
 
+
 int main() {
     system("clear");
     string input;
