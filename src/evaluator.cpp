@@ -1,14 +1,17 @@
 #include "ast.hpp"
 #include "object.hpp"
 
+// GLOBALS
 Boolean _TRUE_BOOL = Boolean(true);
 Boolean _FALSE_BOOL = Boolean(false);
 Null _NULL = Null{};
 
+// FORWARD DECLARATIONS
 Boolean* nativeToBoolean(bool);
 Object* evalPrefixExpression(std::string, Object*);
 Object* evalBangOperatorExpression(Object*);
 
+// MAIN
 Object* evalNode(Node* node) {
     if (node->nodetype == statement) {
         Statement* stmt = static_cast<Statement*>(node);
