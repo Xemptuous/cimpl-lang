@@ -3,6 +3,7 @@
 
 
 enum ObjectEnum {
+    OBJECT_OBJ,
     INTEGER_OBJ,
     BOOLEAN_TRUE,
     BOOLEAN_FALSE,
@@ -13,6 +14,7 @@ enum ObjectEnum {
 };
 
 const struct Objecttype {
+    std::string OBJECT_OBJ = {"OBJECT"};
     std::string INTEGER_OBJ = {"INTEGER"};
     std::string BOOLEAN_OBJ = {"BOOLEAN"};
     std::string STRING_OBJ = {"STRING"};
@@ -25,10 +27,11 @@ const struct Objecttype {
 typedef struct Object {
     int type;
 
+    Object() = default;
     virtual ~Object() = default;
 
-    virtual std::string inspectObject();
-    virtual std::string inspectType();
+    inline std::string inspectObject() { return "OBJECT"; };
+    inline std::string inspectType() { return ObjectType.OBJECT_OBJ; };
 } Object;
 
 

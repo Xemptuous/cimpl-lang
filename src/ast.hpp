@@ -37,6 +37,7 @@ typedef struct Node {
     int nodetype;
     int datatype;
     std::string literal;
+    ~Node() = default;
 } Node;
 
 

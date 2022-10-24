@@ -15,7 +15,6 @@ shared_ptr<Object> evalBangOperatorExpression(shared_ptr<Object>);
 shared_ptr<Object> evalMinusOperatorExpression(shared_ptr<Object>);
 
 // MAIN
-// Object* evalNode(Node* node) {
 shared_ptr<Object> evalNode(Node* node) {
     if (node->nodetype == statement) {
         Statement* stmt = static_cast<Statement*>(node);
@@ -46,24 +45,29 @@ shared_ptr<Object> evalNode(Node* node) {
         switch (expr->type) {
             case integerLiteral: {
                 IntegerLiteral* i = static_cast<IntegerLiteral*>(expr);
-                shared_ptr<Object> newi = make_shared<Object>(new Integer(i->value));
-                return newi;
+                shared_ptr<Integer> newi ( new Integer(i->value) );
+                shared_ptr<Object> newptr = static_pointer_cast<Integer>(newi);
+                return newptr;
             }   
             case floatLiteral: {
                 FloatLiteral* f = static_cast<FloatLiteral*>(expr);
-                shared_ptr<Object> newf = make_shared<Object>(new Float(f->value));
-                return newf;
+                shared_ptr<Float> newf ( new Float(f->value) );
+                shared_ptr<Object> newptr = static_pointer_cast<Float>(newf);
+                return newptr;
             }   
             case booleanExpression: {
                 BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
-                return static_pointer_cast<Object>(nativeToBoolean(b->value));
+                shared_ptr<Boolean> newb = nativeToBoolean(b->value);
+                shared_ptr<Object> newptr = static_pointer_cast<Boolean>(newb);
+                return newptr;
 
                 // return nativeToBoolean(b->value);
             }   
             case stringLiteral: {
                 StringLiteral* s = static_cast<StringLiteral*>(expr);
-                shared_ptr<Object> news = make_shared<Object>(new String(s->value));
-                return news;
+                shared_ptr<String> news ( new String(s->value) );
+                shared_ptr<Object> newptr = static_pointer_cast<String>(news);
+                return newptr;
             }   
             case identifier: {
             //     IdentifierLiteral* b = static_cast<IdentifierLiteral*>(expr);
@@ -73,7 +77,8 @@ shared_ptr<Object> evalNode(Node* node) {
             case prefixExpression: {
                 PrefixExpression* p = static_cast<PrefixExpression*>(expr);
                 shared_ptr<Object> right = evalNode(p->_right);
-                return static_pointer_cast<Object>(evalPrefixExpression(p->_operator, right));
+                shared_ptr<Object> newp = evalPrefixExpression(p->_operator, right);
+                return newp;
                 // BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
                 // break;
                 // return new Boolean(b->value);
@@ -123,13 +128,13 @@ shared_ptr<Object> evalPrefixExpression(string _operator, shared_ptr<Object> _ri
 shared_ptr<Object> evalBangOperatorExpression(shared_ptr<Object> _right) {
     switch (_right->type) {
         case BOOLEAN_TRUE:
-            return make_shared<Object>(&_FALSE_BOOL);
+            return make_shared<Object>(_FALSE_BOOL);
         case BOOLEAN_FALSE:
-            return make_shared<Object>(&_TRUE_BOOL);
+            return make_shared<Object>(_TRUE_BOOL);
         case NULL_OBJ:
-            return make_shared<Object>(&_TRUE_BOOL);
+            return make_shared<Object>(_TRUE_BOOL);
         default:
-            return make_shared<Object>(&_FALSE_BOOL);
+            return make_shared<Object>(_FALSE_BOOL);
     }
 }
 
@@ -139,16 +144,17 @@ shared_ptr<Object> evalMinusOperatorExpression(shared_ptr<Object> _right) {
         return NULL;
     }
     shared_ptr<Integer> i = static_pointer_cast<Integer>(_right);
-    shared_ptr<Object> newInt = make_shared<Object>(new Integer(-i->value));
+    shared_ptr<Integer> newi ( new Integer(-i->value) );
+    shared_ptr<Object> newInt = static_pointer_cast<Integer>(newi);
     return newInt;
 }
 
 
 shared_ptr<Boolean> nativeToBoolean(bool input) {
     if (input) {
-        shared_ptr<Boolean> b = make_shared<Boolean>(&_TRUE_BOOL);
+        shared_ptr<Boolean> b = make_shared<Boolean>(_TRUE_BOOL);
         return b;
     }
-    shared_ptr<Boolean> b = make_shared<Boolean>(&_FALSE_BOOL);
+    shared_ptr<Boolean> b = make_shared<Boolean>(_FALSE_BOOL);
     return b;
 }
