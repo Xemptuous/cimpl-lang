@@ -9,6 +9,8 @@ Boolean _FALSE_BOOL = Boolean(false);
 Null _NULL = Null{};
 
 // FORWARD DECLARATIONS
+shared_ptr<Object> evalStatements(Statement*);
+shared_ptr<Object> evalExpressions(Expression*);
 shared_ptr<Boolean> nativeToBoolean(bool);
 shared_ptr<Object> evalPrefixExpression(string, shared_ptr<Object>);
 shared_ptr<Object> evalBangOperatorExpression(shared_ptr<Object>);
@@ -18,107 +20,118 @@ shared_ptr<Object> evalMinusOperatorExpression(shared_ptr<Object>);
 shared_ptr<Object> evalNode(Node* node) {
     if (node->nodetype == statement) {
         Statement* stmt = static_cast<Statement*>(node);
-        switch (stmt->type) {
-            case identifierStatement:{
-                break;
-            }
-            case functionStatement: {
-                break;
-            }
-            case letStatement: {
-                break;
-            }
-            case returnStatement: {
-                break;
-            }
-            case expressionStatement: {
-                ExpressionStatement* es = static_cast<ExpressionStatement*>(stmt);
-                return evalNode(es->expression);
-            }
-            case blockStatement: {
-                break;
-            }
-        }
+        return evalStatements(stmt);
     }
     else {
         Expression* expr = static_cast<Expression*>(node);
-        switch (expr->type) {
-            case integerLiteral: {
-                IntegerLiteral* i = static_cast<IntegerLiteral*>(expr);
-                shared_ptr<Integer> newi ( new Integer(i->value) );
-                shared_ptr<Object> newptr = static_pointer_cast<Integer>(newi);
-                return newptr;
-            }   
-            case floatLiteral: {
-                FloatLiteral* f = static_cast<FloatLiteral*>(expr);
-                shared_ptr<Float> newf ( new Float(f->value) );
-                shared_ptr<Object> newptr = static_pointer_cast<Float>(newf);
-                return newptr;
-            }   
-            case booleanExpression: {
-                BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
-                shared_ptr<Boolean> newb = nativeToBoolean(b->value);
-                shared_ptr<Object> newptr = static_pointer_cast<Boolean>(newb);
-                return newptr;
-
-                // return nativeToBoolean(b->value);
-            }   
-            case stringLiteral: {
-                StringLiteral* s = static_cast<StringLiteral*>(expr);
-                shared_ptr<String> news ( new String(s->value) );
-                shared_ptr<Object> newptr = static_pointer_cast<String>(news);
-                return newptr;
-            }   
-            case identifier: {
-            //     IdentifierLiteral* b = static_cast<IdentifierLiteral*>(expr);
-            //     break;
-            //     // return new Identifier(b->value);
-            }   
-            case prefixExpression: {
-                PrefixExpression* p = static_cast<PrefixExpression*>(expr);
-                shared_ptr<Object> right = evalNode(p->_right);
-                shared_ptr<Object> newp = evalPrefixExpression(p->_operator, right);
-                return newp;
-                // BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
-                // break;
-                // return new Boolean(b->value);
-            }   
-            case infixExpression: {
-                // BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
-                // break;
-                // return Boolean(b->value);
-            }   
-            case ifExpression: {
-                // BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
-                // break;
-                // return Boolean(b->value);
-            }   
-            case functionLiteral: {
-                // BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
-                // break;
-                // return Boolean(b->value);
-            }   
-            case callExpression: {
-                // BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
-                // break;
-                // return Boolean(b->value);
-            }   
-            case groupedExpression: {
-                // BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
-                // break;
-                // return Boolean(b->value);
-            }   
-        }
+        return evalExpressions(expr);
     }
 }
 
 
-shared_ptr<Object> evalPrefixExpression(string _operator, shared_ptr<Object> _right) {
-    switch(_operator[0]) {
+shared_ptr<Object> evalStatements(Statement* stmt) {
+    switch (stmt->type) {
+        case identifierStatement:{
+            break;
+        }
+        case functionStatement: {
+            break;
+        }
+        case letStatement: {
+            break;
+        }
+        case returnStatement: {
+            break;
+        }
+        case expressionStatement: {
+            ExpressionStatement* es = static_cast<ExpressionStatement*>(stmt);
+            return evalNode(es->expression);
+        }
+        case blockStatement: {
+            break;
+        }
+    }
+    return NULL;
+}
+
+
+shared_ptr<Object> evalExpressions(Expression* expr) {
+    switch (expr->type) {
+        case integerLiteral: {
+            IntegerLiteral* i = static_cast<IntegerLiteral*>(expr);
+            shared_ptr<Integer> newi ( new Integer(i->value) );
+            shared_ptr<Object> newptr = static_pointer_cast<Integer>(newi);
+            return newptr;
+        }   
+        case floatLiteral: {
+            FloatLiteral* f = static_cast<FloatLiteral*>(expr);
+            shared_ptr<Float> newf ( new Float(f->value) );
+            shared_ptr<Object> newptr = static_pointer_cast<Float>(newf);
+            return newptr;
+        }   
+        case booleanExpression: {
+            BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
+            shared_ptr<Boolean> newb = nativeToBoolean(b->value);
+            shared_ptr<Object> newptr = static_pointer_cast<Boolean>(newb);
+            return newptr;
+
+            // return nativeToBoolean(b->value);
+        }   
+        case stringLiteral: {
+            StringLiteral* s = static_cast<StringLiteral*>(expr);
+            shared_ptr<String> news ( new String(s->value) );
+            shared_ptr<Object> newptr = static_pointer_cast<String>(news);
+            return newptr;
+        }   
+        case identifier: {
+        //     IdentifierLiteral* b = static_cast<IdentifierLiteral*>(expr);
+        //     break;
+        //     // return new Identifier(b->value);
+        }   
+        case prefixExpression: {
+            PrefixExpression* p = static_cast<PrefixExpression*>(expr);
+            shared_ptr<Object> right = evalNode(p->_right);
+            shared_ptr<Object> np = evalPrefixExpression(p->_operator, right);
+            return np;
+            // BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
+            // break;
+            // return new Boolean(b->value);
+        }   
+        case infixExpression: {
+            // BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
+            // break;
+            // return Boolean(b->value);
+        }   
+        case ifExpression: {
+            // BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
+            // break;
+            // return Boolean(b->value);
+        }   
+        case functionLiteral: {
+            // BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
+            // break;
+            // return Boolean(b->value);
+        }   
+        case callExpression: {
+            // BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
+            // break;
+            // return Boolean(b->value);
+        }   
+        case groupedExpression: {
+            // BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
+            // break;
+            // return Boolean(b->value);
+        }   
+    }
+
+}
+
+shared_ptr<Object> evalPrefixExpression(string op, shared_ptr<Object> r) {
+    switch(op[0]) {
         case '!':
-            return evalBangOperatorExpression(_right);
+            return evalBangOperatorExpression(r);
         case '-':
-            return evalMinusOperatorExpression(_right);
+            return evalMinusOperatorExpression(r);
         default:
             return NULL;
     }
