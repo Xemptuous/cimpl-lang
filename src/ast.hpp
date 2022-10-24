@@ -4,22 +4,13 @@
 #include <vector>
 
 
-typedef struct Node {
-    std::string type;
-    std::string literal;
-    int datatype;
-} Node;
-
-
 enum StatementType {
     identifierStatement,
+    functionStatement,
     letStatement,
     returnStatement,
     expressionStatement,
     blockStatement,
-    // conditionalStatement,
-    // noOpStatement,
-    // loopStatement,
 };
 
 enum ExpressionType {
@@ -31,10 +22,17 @@ enum ExpressionType {
     prefixExpression,
     infixExpression,
     ifExpression,
+    functionLiteral,
+    callExpression,
     groupedExpression,
-    // functionCall,
-    // binaryExpression
 };
+
+
+typedef struct Node {
+    std::string type;
+    std::string literal;
+    int datatype;
+} Node;
 
 
 typedef struct Statement {
@@ -197,6 +195,7 @@ typedef struct IntegerLiteral : Expression {
         this->type = integerLiteral;
     }
 
+    void setExpressionNode(Token);
     inline std::string printString() { return std::to_string(this->value); };
 } IntegerLiteral;
 
@@ -209,6 +208,7 @@ typedef struct FloatLiteral : Expression {
         this->type = floatLiteral;
     }
 
+    void setExpressionNode(Token);
     inline std::string printString() { return std::to_string(this->value); };
 } FloatLiteral;
 
@@ -286,12 +286,79 @@ typedef struct IfExpression : Expression {
 } IfExpression;
 
 
+typedef struct FunctionStatement : Statement {
+    Token tok;
+    Identifier* name;
+    std::vector<Identifier*> parameters;
+    BlockStatement* body;
+
+    FunctionStatement() {
+        this->type = functionStatement;
+        this->body = NULL;
+        this->name = NULL;
+    }
+    ~FunctionStatement() {
+        delete this->body;
+        delete this->name;
+        for (auto param : parameters) {
+            delete param;
+        }
+    }
+
+    std::string printString();
+} FunctionStatement;
+
+
+typedef struct FunctionLiteral : Expression {
+    Token tok;
+    Identifier* name;
+    std::vector<Identifier*> parameters;
+    BlockStatement* body;
+
+    FunctionLiteral() {
+        this->type = functionLiteral;
+        this->name = NULL;
+        this->body = NULL;
+    }
+    ~FunctionLiteral() {
+        delete this->body;
+        delete this->name;
+        for (auto param : parameters) {
+            delete param;
+        }
+    }
+
+    std::string printString();
+} FunctionLiteral;
+
+
+typedef struct CallExpression : Expression { 
+    Token tok;
+    Expression* _function;
+    std::vector<Expression*> arguments;
+
+    CallExpression() {
+        
+        this->_function = NULL;
+    }
+    ~CallExpression() {
+        delete this->_function;
+        for (auto arg : arguments) {
+            delete arg;
+        }
+    }
+
+    std::string printString();
+} CallExpression;
+
+
 const std::unordered_map<int, std::string> StatementMap = {
     {0, "Identifier Statement"},
-    {1, "Let Statement"},
-    {2, "Return Statement"},
-    {3, "Expression Statement"},
-    {4, "Block Statement"}
+    {1, "Function Statement"},
+    {2, "Let Statement"},
+    {3, "Return Statement"},
+    {4, "Expression Statement"},
+    {5, "Block Statement"}
 };
 
 
@@ -304,21 +371,19 @@ const std::unordered_map<int, std::string> ExpressionMap = {
     {5, "Prefix Expression"},
     {6, "Infix Expression"},
     {7, "If Expression"},
-    {8, "Grouped Expression"},
-    {9, "Boolean"}
+    {8, "Function Literal"},
+    {9, "Call Expression"},
+    {10, "Grouped Expression"},
+    {11, "Boolean"}
 };
 
 
 const std::unordered_map<int, std::string> DatatypeMap = {
-    {0, "Int"},
-    // {1, "Long"},
-    // {2, "Double"},
-    {1, "Float"},
-    {2, "Boolean"},
-    // {5, "Char"},
-    {3, "String"},
-    // {7, "Vector"},
-    // {8, "Map"},
+    {0, "int"},
+    {1, "float"},
+    {2, "boolean"},
+    {3, "string"},
+    {4, "void"},
 };
 
 
@@ -361,4 +426,5 @@ const std::unordered_map<std::string, int> precedencesMap = {
     {TokenType.MINUS, Precedences.SUM},
     {TokenType.SLASH, Precedences.PRODUCT},
     {TokenType.ASTERISK, Precedences.PRODUCT},
+    {TokenType.LPAREN, Precedences.CALL},
 };

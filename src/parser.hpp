@@ -8,6 +8,8 @@ struct Expression;
 struct PrefixExpression;
 struct InfixExpression;
 struct IfExpression;
+struct FunctionLiteral;
+struct CallExpression;
 struct IntegerLiteral;
 struct FloatLiteral;
 struct StringLiteral;
@@ -17,6 +19,7 @@ struct Identifier;
 struct Statement;
 struct LetStatement;
 struct IdentifierStatement;
+struct FunctionStatement;
 struct ReturnStatement;
 struct ExpressionStatement;
 struct BlockStatement;
@@ -25,7 +28,6 @@ struct BlockStatement;
 class Parser {
     public:
         // Attributes
-        Lexer* lexer;
         Token currentToken;
         Token peekToken;
         int linenumber{1};
@@ -47,14 +49,27 @@ class Parser {
         void nextToken();
         bool expectPeek(std::string);
         void peekErrors(std::string);
+        Statement* parseStatement();
+    private:
+        // Attributes
+        Lexer* lexer;
+
+        // Methods
         int currentPrecedence();
         int peekPrecedence();
         void checkIdentifierDataType(IdentifierStatement*);
+        void checkFunctionReturn(FunctionStatement*);
+        void checkFunctionReturnDataType(ReturnStatement*);
 
+        // Expression Methods
         Expression* parseExpression(int);
         Expression* parseLeftPrefix(int);
         Expression* parseGroupedExpression();
         IfExpression* parseIfExpression();
+        FunctionLiteral* parseFunctionLiteral();
+        std::vector<Identifier*> parseFunctionParameters();
+        CallExpression* parseCallExpression(Expression*);
+        std::vector<Expression*> parseCallArguments();
         PrefixExpression* parsePrefixExpression();
         InfixExpression* parseInfixExpression(Expression*);
         Identifier* parseIdentifier();
@@ -63,11 +78,12 @@ class Parser {
         StringLiteral* parseStringLiteral();
         Boolean* parseBoolean();
 
-        Statement* parseStatement();
+        // Statement Methods
         LetStatement* parseLetStatement();
         BlockStatement* parseBlockStatement();
         ReturnStatement* parseReturnStatement();
         IdentifierStatement* parseIdentifierStatement();
+        FunctionStatement* parseFunctionStatement();
         ExpressionStatement* parseExpressionStatement();
 };
 
@@ -79,6 +95,7 @@ enum prefix {
     PREFIX_STRING,
     PREFIX_BOOL,
     PREFIX_IF,
+    PREFIX_FUNCTION,
     PREFIX_INCREMENT,
     PREFIX_DECREMENT,
     PREFIX_GROUPED_EXPR,
@@ -97,10 +114,12 @@ const std::unordered_map<std::string, int> prefixFunctions = {
     {TokenType.DECREMENT, PREFIX_DECREMENT},
     {TokenType.LPAREN, PREFIX_GROUPED_EXPR},
     {TokenType.IF, PREFIX_IF},
+    {TokenType.FUNCTION, PREFIX_FUNCTION},
 };
 
 enum infix {
-   INFIX_STD 
+   INFIX_STD,
+   INFIX_CALL
 };
 
 const std::unordered_map<std::string, int> infixFunctions = {
@@ -113,4 +132,5 @@ const std::unordered_map<std::string, int> infixFunctions = {
     {TokenType.LT, INFIX_STD},
     {TokenType.GT, INFIX_STD},
     {TokenType.PLUS_EQ, INFIX_STD},
+    {TokenType.LPAREN, INFIX_CALL},
 };

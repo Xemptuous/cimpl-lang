@@ -5,6 +5,7 @@
 
 using namespace std;
 
+
 Token Lexer::nextToken() {
     Token tok;
     this->skipWhitespace();
