@@ -1,10 +1,12 @@
 #include "lexer.hpp"
 #include "ast.hpp"
+#include "object.hpp"
 #include <vector>
 #include <iostream>
 
 using namespace std;
 void printParserErrors(vector<string>);
+Object evalNode(Node*);
 
 
 void start(string input) {
@@ -13,6 +15,9 @@ void start(string input) {
     if (ast->parser->errors.size() != 0) {
         printParserErrors(ast->parser->errors);
         return;
+    }
+    for (auto stmt : ast->Statements) {
+        Object evaluated = evalNode(stmt);
     }
     cout << ast->printString() << '\n';
 }

@@ -36,109 +36,98 @@ void AST::checkParserErrors() {
 
 void Statement::setDataType(std::string lit) {
     if (lit == "int") {
-        this->node.datatype = INT;
+        this->datatype = INT;
     }
     else if (lit == "float") {
-        this->node.datatype = FLOAT;
+        this->datatype = FLOAT;
     }
     else if (lit == "bool") {
-        this->node.datatype = BOOLEAN;
+        this->datatype = BOOLEAN;
     }
     else if (lit == "string") {
-        this->node.datatype = _STRING;
+        this->datatype = _STRING;
+    }
+    else if (lit == "void") {
+        this->datatype = VOID;
     }
 }
 
 
 void Expression::setDataType(std::string lit) {
     if (lit == "int") {
-        this->node.datatype = INT;
+        this->datatype = INT;
     }
     else if (lit == "float") {
-        this->node.datatype = FLOAT;
+        this->datatype = FLOAT;
     }
     else if (lit == "bool") {
-        this->node.datatype = BOOLEAN;
+        this->datatype = BOOLEAN;
     }
     else if (lit == "string") {
-        this->node.datatype = _STRING;
+        this->datatype = _STRING;
     }
     else if (lit == "void") {
-        this->node.datatype = VOID;
+        this->datatype = VOID;
     }
 }
 
 
 void Statement::setStatementNode(Token tok) {
     this->token = tok;
-    this->node.literal = tok.literal;
-    this->token.literal = tok.literal;
-    this->node.type = tok.type;
+    this->setDataType(tok.literal);
 }
 
 
 void Expression::setExpressionNode(Token tok) {
     this->token = tok;
-    this->node.literal = tok.literal;
-    this->node.type = tok.type;
+    this->setDataType(tok.literal);
 }
 
 
-void Identifier::setExpressionNode(Token tok) {
+void IdentifierLiteral::setExpressionNode(Token tok) {
     this->token = tok;
-    this->node.literal = tok.literal;
-    this->node.type = tok.type;
+    this->setDataType(tok.literal);
     this->value = tok.literal;
 }
 
 
 void PrefixExpression::setExpressionNode(Token tok) {
     this->token = tok;
+    this->setDataType(tok.literal);
     this->_operator = tok.literal;
-    this->node.literal = tok.literal;
-    this->node.type = tok.type;
 }
 
 
 void InfixExpression::setExpressionNode(Token tok) {
     this->token = tok;
+    this->setDataType(tok.literal);
     this->_operator = tok.literal;
-    this->node.literal = tok.literal;
-    this->node.type = tok.type;
 }
 
 
 void IntegerLiteral::setExpressionNode(Token tok) {
     this->token = tok;
-    this->node.literal = tok.literal;
-    this->node.type = tok.type;
-    this->node.datatype = INT;
+    this->datatype = INT;
 }
 
 
 void StringLiteral::setExpressionNode(Token tok) {
     this->token = tok;
-    this->node.literal = tok.literal;
-    this->node.type = tok.type;
     this->value = tok.literal;
-    this->node.datatype = _STRING;
+    this->datatype = _STRING;
 }
 
 
-void Boolean::setExpressionNode(Token tok) {
+void BooleanLiteral::setExpressionNode(Token tok) {
     this->token = tok;
-    this->node.literal = tok.literal;
-    this->node.type = tok.type;
     this->value = (tok.type == TokenType._TRUE || tok.type == TokenType._FALSE);
-    this->node.datatype = BOOLEAN;
+    this->datatype = BOOLEAN;
 }
 
 
 void FloatLiteral::setExpressionNode(Token tok) {
     this->token = tok;
-    this->node.literal = tok.literal;
-    this->node.type = tok.type;
-    this->node.datatype = FLOAT;
+    this->datatype = FLOAT;
 }
 
 
@@ -158,7 +147,7 @@ std::string Expression::printString() {
 
 std::string IdentifierStatement::printString() {
     std::ostringstream ss;
-    ss << DatatypeMap.at(this->node.datatype);
+    ss << DatatypeMap.at(this->datatype);
     ss << this->token.literal << " ";
     ss << this->name->printString() << " = ";
 
@@ -267,8 +256,8 @@ std::string FunctionStatement::printString() {
         params.push_back(this->parameters[i]->printString());
     }
 
-    ss << DatatypeMap.at(this->node.datatype) << " " << 
-        this->name->node.literal << "(";
+    ss << DatatypeMap.at(this->datatype) << " " << 
+        this->name->token.literal << "(";
     for (std::string param : params) {
         ss << param << ", ";
     }
@@ -285,8 +274,8 @@ std::string FunctionLiteral::printString() {
         params.push_back(this->parameters[i]->printString());
     }
 
-    ss << DatatypeMap.at(this->node.datatype) << " " << 
-        this->name->node.literal << "(";
+    ss << DatatypeMap.at(this->datatype) << " " << 
+        this->name->token.literal << "(";
     for (std::string param : params) {
         ss << param << ", ";
     }
@@ -304,7 +293,7 @@ std::string CallExpression::printString() {
     }
 
     ss << this->_function->printString();
-    ss << this->node.literal << "(";
+    ss << this->token.literal << "(";
     for (std::string arg : args) {
         ss << arg << ", ";
     }
@@ -313,7 +302,7 @@ std::string CallExpression::printString() {
 }
 
 
-std::string Boolean::printString() {
+std::string BooleanLiteral::printString() {
     std::ostringstream ss;
 
     if (this->value) {

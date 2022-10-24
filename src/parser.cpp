@@ -78,7 +78,7 @@ IdentifierStatement* Parser::parseIdentifierStatement() {
         if (this->currentToken.type == TokenType._EOF) {
             std::ostringstream ss;
             ss << "No Semicolon present at end of line for " << StatementMap.at(stmt->type) << 
-                " with value " << stmt->value->node.literal;
+                " with value " << stmt->value->token.literal;
             this->errors.push_back(ss.str());
             return NULL;
         }
@@ -121,7 +121,7 @@ LetStatement* Parser::parseLetStatement() {
         if (this->currentToken.type == TokenType._EOF) {
             std::ostringstream ss;
             ss << "No Semicolon present at end of line for " << StatementMap.at(stmt->type) << 
-                " with value " << stmt->value->node.literal;
+                " with value " << stmt->value->token.literal;
             this->errors.push_back(ss.str());
             return NULL;
         }
@@ -139,17 +139,17 @@ ReturnStatement* Parser::parseReturnStatement() {
 
     stmt->returnValue = this->parseExpression(Precedences.LOWEST);
     if (stmt->returnValue == NULL) {
-        stmt->node.datatype = VOID;
+        stmt->datatype = VOID;
     }
     else {
-        stmt->node.datatype = stmt->returnValue->node.datatype;
+        stmt->datatype = stmt->returnValue->datatype;
     }
 
     while (this->currentToken.type != TokenType.SEMICOLON) {
         if (this->currentToken.type == TokenType._EOF) {
             std::ostringstream ss;
             ss << "No Semicolon present at end of line for " << StatementMap.at(stmt->type) << 
-                " with value " << stmt->returnValue->node.literal;
+                " with value " << stmt->returnValue->token.literal;
             this->errors.push_back(ss.str());
             return NULL;
         }
@@ -159,8 +159,8 @@ ReturnStatement* Parser::parseReturnStatement() {
 }
 
 
-Identifier* Parser::parseIdentifier() {
-    Identifier* idp = new Identifier;
+IdentifierLiteral* Parser::parseIdentifier() {
+    IdentifierLiteral* idp = new IdentifierLiteral;
     idp->setExpressionNode(this->currentToken);
     return idp;
 }
@@ -189,7 +189,7 @@ Expression* Parser::parseLeftPrefix(int prefix) {
         case PREFIX_STRING:
             return this->parseStringLiteral();
         case PREFIX_BOOL:
-            return this->parseBoolean();
+            return this->parseBooleanLiteral();
         case PREFIX_IF:
             return this->parseIfExpression();
         case PREFIX_GROUPED_EXPR:
@@ -212,7 +212,7 @@ Expression* Parser::parseExpression(int precedence) {
     }
 
     Expression* leftExp = this->parseLeftPrefix(prefix->second);
-    leftExp->setDataType(leftExp->node.literal);
+    leftExp->setDataType(leftExp->token.literal);
 
     while (this->peekToken.type != TokenType.SEMICOLON && precedence < this->peekPrecedence()) 
     {
@@ -384,22 +384,22 @@ FunctionLiteral* Parser::parseFunctionLiteral() {
 }
 
 
-std::vector<Identifier*> Parser::parseFunctionParameters() {
-    std::vector<Identifier*> identifiers{};
+std::vector<IdentifierLiteral*> Parser::parseFunctionParameters() {
+    std::vector<IdentifierLiteral*> identifiers{};
     if (this->peekToken.type == TokenType.RPAREN) {
         this->nextToken();
         return identifiers;
     }
 
     this->nextToken();
-    Identifier* ident = new Identifier;
+    IdentifierLiteral* ident = new IdentifierLiteral;
     ident->setExpressionNode(this->currentToken);
     identifiers.push_back(ident);
 
     while (this->peekToken.type == TokenType.COMMA) {
         this->nextToken();
         this->nextToken();
-        Identifier* ident = new Identifier;
+        IdentifierLiteral* ident = new IdentifierLiteral;
         ident->setExpressionNode(this->currentToken);
         identifiers.push_back(ident);
     }
@@ -497,8 +497,8 @@ StringLiteral* Parser::parseStringLiteral() {
 }
 
 
-Boolean* Parser::parseBoolean() {
-    Boolean* expr = new Boolean;
+BooleanLiteral* Parser::parseBooleanLiteral() {
+    BooleanLiteral* expr = new BooleanLiteral;
     expr->setExpressionNode(this->currentToken);
     return expr;
 }
@@ -537,7 +537,7 @@ void Parser::peekErrors(std::string t){
 
 
 void Parser::checkIdentifierDataType(IdentifierStatement* stmt) {
-    switch (stmt->node.datatype) {
+    switch (stmt->datatype) {
         case INT:
             if (DatatypeMap.at(stmt->value->type) != "int") {
                 std::ostringstream ss;
@@ -586,7 +586,7 @@ void Parser::checkFunctionReturn(FunctionStatement* stmt) {
         if (st->type == returnStatement) {
             returnStmt = static_cast<ReturnStatement*>(st);
             found ++;
-            if (stmt->node.datatype != returnStmt->node.datatype) {
+            if (stmt->datatype != returnStmt->datatype) {
                 std::ostringstream ss;
                 ss << "Function return value DataType mismatch.\n";
                 // ss << "Function return value DataType mismatch: " << 

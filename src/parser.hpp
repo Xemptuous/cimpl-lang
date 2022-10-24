@@ -13,8 +13,8 @@ struct CallExpression;
 struct IntegerLiteral;
 struct FloatLiteral;
 struct StringLiteral;
-struct Boolean;
-struct Identifier;
+struct BooleanLiteral;
+struct IdentifierLiteral;
 
 struct Statement;
 struct LetStatement;
@@ -67,16 +67,16 @@ class Parser {
         Expression* parseGroupedExpression();
         IfExpression* parseIfExpression();
         FunctionLiteral* parseFunctionLiteral();
-        std::vector<Identifier*> parseFunctionParameters();
+        std::vector<IdentifierLiteral*> parseFunctionParameters();
         CallExpression* parseCallExpression(Expression*);
         std::vector<Expression*> parseCallArguments();
         PrefixExpression* parsePrefixExpression();
         InfixExpression* parseInfixExpression(Expression*);
-        Identifier* parseIdentifier();
+        IdentifierLiteral* parseIdentifier();
         IntegerLiteral* parseIntegerLiteral();
         FloatLiteral* parseFloatLiteral();
         StringLiteral* parseStringLiteral();
-        Boolean* parseBoolean();
+        BooleanLiteral* parseBooleanLiteral();
 
         // Statement Methods
         LetStatement* parseLetStatement();
