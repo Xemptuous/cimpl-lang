@@ -2,6 +2,16 @@
 #include <string>
 
 
+enum ObjectEnum {
+    INTEGER_OBJ,
+    BOOLEAN_TRUE,
+    BOOLEAN_FALSE,
+    STRING_OBJ,
+    IDENT_OBJ,
+    FLOAT_OBJ,
+    NULL_OBJ,
+};
+
 const struct Objecttype {
     std::string INTEGER_OBJ = {"INTEGER"};
     std::string BOOLEAN_OBJ = {"BOOLEAN"};
@@ -13,7 +23,7 @@ const struct Objecttype {
 
 
 typedef struct Object {
-    std::string type;
+    int type;
 
     virtual ~Object() = default;
 
@@ -27,6 +37,7 @@ typedef struct Integer : Object {
 
     Integer(int v) {
         this->value = v;
+        this->type = INTEGER_OBJ;
     }
 
     inline std::string inspectObject() { return std::to_string(this->value); }
@@ -39,6 +50,8 @@ typedef struct Boolean : Object {
 
     Boolean(bool b) {
         this->value = b;
+        if (b) { this->type = BOOLEAN_TRUE; }
+        else { this->type = BOOLEAN_FALSE; }
     }
 
     inline std::string inspectObject() { return this->value ? "true" : "false"; }
@@ -51,6 +64,7 @@ typedef struct Float : Object {
 
     Float(float b) {
         this->value = b;
+        this->type = FLOAT_OBJ;
     }
 
     inline std::string inspectObject() { return std::to_string(this->value); }
@@ -63,6 +77,7 @@ typedef struct String : Object {
 
     String(std::string b) {
         this->value = b;
+        this->type = STRING_OBJ;
     }
 
     inline std::string inspectObject() { return this->value; }
@@ -71,6 +86,8 @@ typedef struct String : Object {
 
 
 typedef struct Null : Object {
+
+    Null() { this->type = NULL_OBJ; }
 
     inline std::string inspectObject() { return "null"; }
     inline std::string inspectType() { return ObjectType.NULL_OBJ; }

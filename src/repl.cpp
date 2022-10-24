@@ -6,7 +6,7 @@
 
 using namespace std;
 void printParserErrors(vector<string>);
-Object evalNode(Node*);
+Object* evalNode(Node*);
 
 
 void start(string input) {
@@ -17,7 +17,11 @@ void start(string input) {
         return;
     }
     for (auto stmt : ast->Statements) {
-        Object evaluated = evalNode(stmt);
+        Object* evaluated = evalNode(stmt);
+        if (evaluated != NULL) {
+            std::cout << evaluated->inspectObject() << '\n';
+        }
+        delete evaluated;
     }
     cout << ast->printString() << '\n';
 }
