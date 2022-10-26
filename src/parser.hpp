@@ -37,6 +37,7 @@ class Parser {
         Parser(std::string input) {
             this->lexer = new Lexer(input);
 
+            // reading two tokens so currentToken and peekToken both get set
             this->nextToken();
             this->nextToken();
         }
@@ -87,6 +88,8 @@ class Parser {
         ExpressionStatement* parseExpressionStatement();
 };
 
+
+// Prefix Functions
 enum prefix {
     PREFIX_STD,
     PREFIX_IDENT,
@@ -100,6 +103,7 @@ enum prefix {
     PREFIX_DECREMENT,
     PREFIX_GROUPED_EXPR,
 };
+
 
 const std::unordered_map<std::string, int> prefixFunctions = {
     {TokenType.IDENT, PREFIX_IDENT},
@@ -117,10 +121,13 @@ const std::unordered_map<std::string, int> prefixFunctions = {
     {TokenType.FUNCTION, PREFIX_FUNCTION},
 };
 
+
+// Infix Functions
 enum infix {
    INFIX_STD,
    INFIX_CALL
 };
+
 
 const std::unordered_map<std::string, int> infixFunctions = {
     {TokenType.PLUS, INFIX_STD},
@@ -134,3 +141,4 @@ const std::unordered_map<std::string, int> infixFunctions = {
     {TokenType.PLUS_EQ, INFIX_STD},
     {TokenType.LPAREN, INFIX_CALL},
 };
+

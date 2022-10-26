@@ -13,6 +13,7 @@ enum StatementType {
     blockStatement,
 };
 
+
 enum ExpressionType {
     integerLiteral,
     floatLiteral,
@@ -61,6 +62,25 @@ typedef struct Expression {
     virtual std::string printString();
     void setDataType(std::string);
 } Expression;
+
+
+typedef struct AST {
+    Parser* parser;
+    std::vector<Statement*> Statements;
+
+    AST(std::string input) {
+        this->parser = new Parser(input);
+    }
+
+    ~AST() {
+        delete this->parser;
+    }
+
+    void parseProgram();
+    void convertTypes();
+    void checkParserErrors();
+    std::string printString();
+} AST;
 
 
 typedef struct Identifier : Expression {
@@ -385,25 +405,6 @@ const std::unordered_map<int, std::string> DatatypeMap = {
     {3, "string"},
     {4, "void"},
 };
-
-
-typedef struct AST {
-    Parser* parser;
-    std::vector<Statement*> Statements;
-
-    AST(std::string input) {
-        this->parser = new Parser(input);
-    }
-
-    ~AST() {
-        delete this->parser;
-    }
-
-    void parseProgram();
-    void convertTypes();
-    void checkParserErrors();
-    std::string printString();
-} AST;
 
 
 const struct Precedences {

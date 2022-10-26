@@ -9,7 +9,9 @@ void printParserErrors(vector<string>);
 
 void start(string input) {
     AST* ast = new AST(input);
+    // create AST through recursive-descent-parsing
     ast->parseProgram();
+
     if (ast->parser->errors.size() != 0) {
         printParserErrors(ast->parser->errors);
         return;

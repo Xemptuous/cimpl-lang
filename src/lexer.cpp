@@ -165,8 +165,10 @@ Token Lexer::evaluateNumber() {
     Token tok;
     std::string result = this->readNumber();
     tok.literal = result;
+    // if number has decimal (is float)
     if (result.find('.') != std::string::npos) {
         int c = std::count(result.begin(), result.end(), '.');
+        // if multiple decimals, illegal
         if (c > 1) {
             tok.type = TokenType.ILLEGAL;
             return tok;
@@ -285,6 +287,7 @@ std::string lookupIdentifier(std::string ident) {
 
 
 Token newToken(std::string type, char ch) {
+    // converting char to string
     std::string str(1, ch);
     Token tok = {type, str};
     return tok;

@@ -12,7 +12,6 @@ class Lexer {
         }
         ~Lexer() = default;
 
-        // Methods
         Token nextToken();
     private:
         // Attributes
