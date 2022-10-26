@@ -143,15 +143,18 @@ shared_ptr<Object> evalExpressions(Expression* expr) {
 shared_ptr<Object> evalIfExpression(IfExpression* expr) {
     shared_ptr<Object> initCondition = evalNode(expr->condition);
     
+    // if first if condition is true, eval consequence
     if (isTruthy(initCondition))
         return evalNode(expr->consequence);
     else {
+        // if else-if present, iterate through to find true condition
         for (int i = 0; i < expr->conditions.size(); i++) {
             shared_ptr<Object> cond = evalNode(expr->conditions[i]);
             if (isTruthy(cond))  {
                 return evalNode(expr->alternatives[i]);
             }
         }
+        // if no else-ifs true/found, evaluate final else
         if (expr->alternative != NULL)
             return evalNode(expr->alternative);
         else
@@ -159,11 +162,6 @@ shared_ptr<Object> evalIfExpression(IfExpression* expr) {
     }
 }
 
-shared_ptr<Object> evalElseIfExpressions(IfExpression* expr) {
-    for (int i = 0; i < expr->conditions.size(); i++) {
-        shared_ptr<Object> condition = evalNode(expr->conditions[i]);
-    }
-}
 
 bool isTruthy(shared_ptr<Object> obj) {
     switch(obj->type) {
