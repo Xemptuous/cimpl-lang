@@ -180,6 +180,20 @@ shared_ptr<Object> evalIntegerInfixExpression(
             shared_ptr<Integer> newi ( new Integer(leftVal / rightVal) );
             return newi;
         }
+        case '<':
+            return nativeToBoolean(leftVal < rightVal);
+        case '>':
+            return nativeToBoolean(leftVal > rightVal);
+        case '=':
+            if (op[1] == '=')
+                return nativeToBoolean(leftVal == rightVal);
+            else
+                return NULL;
+        case '!':
+            if (op[1] == '=')
+                return nativeToBoolean(leftVal != rightVal);
+            else
+                return NULL;
         default:
             return NULL;
     }
