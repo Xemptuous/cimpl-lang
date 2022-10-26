@@ -15,7 +15,8 @@ shared_ptr<Boolean> nativeToBoolean(bool);
 shared_ptr<Object> evalPrefixExpression(string, shared_ptr<Object>);
 shared_ptr<Object> evalBangOperatorExpression(shared_ptr<Object>);
 shared_ptr<Object> evalMinusOperatorExpression(shared_ptr<Object>);
-
+shared_ptr<Object> evalInfixExpression(string, shared_ptr<Object>, shared_ptr<Object>);
+shared_ptr<Object> evalIntegerInfixExpression(string, shared_ptr<Object>, shared_ptr<Object>);
 // MAIN
 shared_ptr<Object> evalNode(Node* node) {
     if (node->nodetype == statement) {
@@ -98,6 +99,11 @@ shared_ptr<Object> evalExpressions(Expression* expr) {
             // return new Boolean(b->value);
         }   
         case infixExpression: {
+            InfixExpression* i = static_cast<InfixExpression*>(expr);
+            shared_ptr<Object> left = evalNode(i->_left);
+            shared_ptr<Object> right = evalNode(i->_right);
+            shared_ptr<Object> ni = evalInfixExpression(i->_operator, left, right);
+            return ni;
             // BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
             // break;
             // return Boolean(b->value);
@@ -135,6 +141,49 @@ shared_ptr<Object> evalPrefixExpression(string op, shared_ptr<Object> r) {
         default:
             return NULL;
     }
+}
+
+
+shared_ptr<Object> evalInfixExpression(
+        string op, 
+        shared_ptr<Object> l, 
+        shared_ptr<Object> r
+    ) {
+    if (l->inspectType() == "INTEGER" && r->inspectType() == "INTEGER") {
+        evalIntegerInfixExpression(op, l, r);
+    }
+    return NULL;
+}
+
+
+shared_ptr<Object> evalIntegerInfixExpression(
+        string op, 
+        shared_ptr<Object> l, 
+        shared_ptr<Object> r
+    ) {
+    int leftVal = static_pointer_cast<Integer>(l)->value;
+    int rightVal = static_pointer_cast<Integer>(r)->value;
+    switch (op[0]) {
+        case '+': {
+            shared_ptr<Integer> newi ( new Integer(leftVal + rightVal) );
+            return newi;
+        }
+        case '-': {
+            shared_ptr<Integer> newi ( new Integer(leftVal - rightVal) );
+            return newi;
+        }
+        case '*': {
+            shared_ptr<Integer> newi ( new Integer(leftVal * rightVal) );
+            return newi;
+        }
+        case '/': {
+            shared_ptr<Integer> newi ( new Integer(leftVal / rightVal) );
+            return newi;
+        }
+        default:
+            return NULL;
+    }
+
 }
 
 
