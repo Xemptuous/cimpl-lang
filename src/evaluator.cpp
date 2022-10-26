@@ -17,6 +17,9 @@ shared_ptr<Object> evalBangOperatorExpression(shared_ptr<Object>);
 shared_ptr<Object> evalMinusOperatorExpression(shared_ptr<Object>);
 shared_ptr<Object> evalInfixExpression(string, shared_ptr<Object>, shared_ptr<Object>);
 shared_ptr<Object> evalIntegerInfixExpression(string, shared_ptr<Object>, shared_ptr<Object>);
+shared_ptr<Object> evalIfExpression(IfExpression*);
+bool isTruthy(shared_ptr<Object>);
+
 // MAIN
 shared_ptr<Object> evalNode(Node* node) {
     if (node->nodetype == statement) {
@@ -49,7 +52,9 @@ shared_ptr<Object> evalStatements(Statement* stmt) {
             return evalNode(es->expression);
         }
         case blockStatement: {
-            break;
+            BlockStatement* bs = static_cast<BlockStatement*>(stmt);
+            for (auto stmt : bs->statements)
+                return evalStatements(stmt);
         }
     }
     return NULL;
@@ -109,6 +114,9 @@ shared_ptr<Object> evalExpressions(Expression* expr) {
             // return Boolean(b->value);
         }   
         case ifExpression: {
+            IfExpression* i = static_cast<IfExpression*>(expr);
+            shared_ptr<Object> cond = evalIfExpression(i);
+            return cond;
             // BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
             // break;
             // return Boolean(b->value);
@@ -129,8 +137,47 @@ shared_ptr<Object> evalExpressions(Expression* expr) {
             // return Boolean(b->value);
         }   
     }
-
 }
+
+
+shared_ptr<Object> evalIfExpression(IfExpression* expr) {
+    shared_ptr<Object> initCondition = evalNode(expr->condition);
+    
+    if (isTruthy(initCondition))
+        return evalNode(expr->consequence);
+    else {
+        for (int i = 0; i < expr->conditions.size(); i++) {
+            shared_ptr<Object> cond = evalNode(expr->conditions[i]);
+            if (isTruthy(cond))  {
+                return evalNode(expr->alternatives[i]);
+            }
+        }
+        if (expr->alternative != NULL)
+            return evalNode(expr->alternative);
+        else
+            return NULL;
+    }
+}
+
+shared_ptr<Object> evalElseIfExpressions(IfExpression* expr) {
+    for (int i = 0; i < expr->conditions.size(); i++) {
+        shared_ptr<Object> condition = evalNode(expr->conditions[i]);
+    }
+}
+
+bool isTruthy(shared_ptr<Object> obj) {
+    switch(obj->type) {
+        case BOOLEAN_TRUE:
+            return true;
+        case BOOLEAN_FALSE:
+            return false;
+        case NULL_OBJ:
+            return false;
+        default:
+            return true;
+    }
+}
+
 
 shared_ptr<Object> evalPrefixExpression(string op, shared_ptr<Object> r) {
     switch(op[0]) {
