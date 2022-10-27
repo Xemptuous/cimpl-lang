@@ -45,7 +45,10 @@ shared_ptr<Object> evalStatements(Statement* stmt) {
             break;
         }
         case returnStatement: {
-            break;
+            ReturnStatement* rs = static_cast<ReturnStatement*>(stmt);
+            shared_ptr<Object> val = evalNode(rs->returnValue);
+            shared_ptr<ReturnValue> newr (new ReturnValue(val));
+            return newr;
         }
         case expressionStatement: {
             ExpressionStatement* es = static_cast<ExpressionStatement*>(stmt);
@@ -53,8 +56,9 @@ shared_ptr<Object> evalStatements(Statement* stmt) {
         }
         case blockStatement: {
             BlockStatement* bs = static_cast<BlockStatement*>(stmt);
-            for (auto stmt : bs->statements)
+            for (auto stmt : bs->statements) {
                 return evalStatements(stmt);
+            }
         }
     }
     return NULL;

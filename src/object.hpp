@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <memory>
 
 
 enum ObjectEnum {
@@ -18,6 +19,7 @@ const struct Objecttype {
     std::string INTEGER_OBJ = {"INTEGER"};
     std::string BOOLEAN_OBJ = {"BOOLEAN"};
     std::string STRING_OBJ = {"STRING"};
+    std::string RETURN_OBJ = {"RETURN"};
     std::string IDENT_OBJ = {"IDENT"};
     std::string FLOAT_OBJ = {"FLOAT"};
     std::string NULL_OBJ = {"NULL"};
@@ -95,4 +97,16 @@ typedef struct Null : Object {
     inline std::string inspectObject() { return "null"; }
     inline std::string inspectType() { return ObjectType.NULL_OBJ; }
 } Null;
+
+
+typedef struct ReturnValue : Object {
+    std::shared_ptr<Object> value;
+
+    ReturnValue(std::shared_ptr<Object> obj) {
+        this->value = obj;
+    }
+
+    inline std::string inspectObject() { return value->inspectObject(); }
+    inline std::string inspectType() { return ObjectType.RETURN_OBJ; }
+} ReturnValue;
 
