@@ -19,7 +19,11 @@ void start(string input) {
     for (auto stmt : ast->Statements) {
         shared_ptr<Object> evaluated = evalNode(stmt);
         if (evaluated != NULL) {
-            std::cout << evaluated->inspectObject() << '\n';
+            if (evaluated->inspectType() == ObjectType.RETURN_OBJ) {
+                shared_ptr<ReturnValue> result = static_pointer_cast<ReturnValue>(evaluated);
+                cout << result->value << '\n';
+            }
+            cout << evaluated->inspectObject() << '\n';
         }
     }
     cout << ast->printString() << '\n';
