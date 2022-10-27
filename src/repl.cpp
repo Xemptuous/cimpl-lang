@@ -6,18 +6,21 @@
 
 using namespace std;
 void printParserErrors(vector<string>);
-shared_ptr<Object> evalNode(Node*);
+shared_ptr<Object> evalNode(Node*, Environment*);
 
 
 void start(string input) {
     AST* ast = new AST(input);
+    Environment* env = new Environment;
+
     ast->parseProgram();
+
     if (ast->parser->errors.size() != 0) {
         printParserErrors(ast->parser->errors);
         return;
     }
-    for (auto stmt : ast->Statements) {
-        shared_ptr<Object> evaluated = evalNode(stmt);
+    for (Statement* stmt : ast->Statements) {
+        shared_ptr<Object> evaluated = evalNode(stmt, env);
         if (evaluated->type == RETURN_OBJ) {
             shared_ptr<ReturnValue> result = static_pointer_cast<ReturnValue>(evaluated);
             cout << result->value << '\n';
@@ -30,6 +33,8 @@ void start(string input) {
         }
         cout << evaluated->inspectObject() << '\n';
     }
+    delete ast;
+    delete env;
     // cout << ast->printString() << '\n';
 }
 

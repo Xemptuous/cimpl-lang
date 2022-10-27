@@ -1,6 +1,7 @@
 #include "ast.hpp"
 #include "object.hpp"
 #include <sstream>
+#include <iostream>
 
 using namespace std;
 
@@ -8,6 +9,7 @@ using namespace std;
 Boolean _TRUE_BOOL = Boolean(true);
 Boolean _FALSE_BOOL = Boolean(false);
 Null _NULL = Null{};
+Environment* ENV = NULL;
 
 // FORWARD DECLARATIONS
 shared_ptr<Object> evalStatements(Statement*);
@@ -19,12 +21,14 @@ shared_ptr<Object> evalMinusOperatorExpression(shared_ptr<Object>);
 shared_ptr<Object> evalInfixExpression(string, shared_ptr<Object>, shared_ptr<Object>);
 shared_ptr<Object> evalIntegerInfixExpression(string, shared_ptr<Object>, shared_ptr<Object>);
 shared_ptr<Object> evalIfExpression(IfExpression*);
+shared_ptr<Object> evalIdentifier(IdentifierLiteral*);
 shared_ptr<Object> newError(string);
 bool isError(shared_ptr<Object>);
 bool isTruthy(shared_ptr<Object>);
 
 // MAIN
-shared_ptr<Object> evalNode(Node* node) {
+shared_ptr<Object> evalNode(Node* node, Environment* env = NULL) {
+    ENV = env;
     if (node->nodetype == statement) {
         Statement* stmt = static_cast<Statement*>(node);
         return evalStatements(stmt);
@@ -45,7 +49,15 @@ shared_ptr<Object> evalStatements(Statement* stmt) {
             break;
         }
         case letStatement: {
-            break;
+            LetStatement* ls = static_cast<LetStatement*>(stmt);
+            shared_ptr<Object> val = evalNode(ls->value);
+            if (isError(val))
+                return val;
+            shared_ptr<ReturnValue> newr (new ReturnValue(val));
+            cout << "SETTING\n";
+            ENV->set(ls->name->value, val);
+            cout << "SET\n";
+            return newr;
         }
         case returnStatement: {
             ReturnStatement* rs = static_cast<ReturnStatement*>(stmt);
@@ -101,6 +113,9 @@ shared_ptr<Object> evalExpressions(Expression* expr) {
             return newptr;
         }   
         case identifier: {
+            IdentifierLiteral* i = static_cast<IdentifierLiteral*>(expr);
+            shared_ptr<Object> newi = evalIdentifier(i);
+            return newi;
         //     IdentifierLiteral* b = static_cast<IdentifierLiteral*>(expr);
         //     break;
         //     // return new Identifier(b->value);
@@ -181,6 +196,14 @@ shared_ptr<Object> evalIfExpression(IfExpression* expr) {
         else
             return NULL;
     }
+}
+
+
+shared_ptr<Object> evalIdentifier(IdentifierLiteral* node) {
+    shared_ptr<Object> val = ENV->get(node->value);
+    if (val == NULL)
+        return newError("identifier not found: " + node->value);
+    return val;
 }
 
 

@@ -1,6 +1,9 @@
 #pragma once
 #include <string>
 #include <memory>
+#include <unordered_map>
+#include <vector>
+#include <iostream>
 
 
 enum ObjectEnum {
@@ -128,3 +131,22 @@ typedef struct Error : Object {
     inline std::string inspectObject() { return "ERROR: " + this->message; }
     inline std::string inspectType() { return ObjectType.ERROR_OBJ; }
 } Error;
+
+
+typedef struct Environment {
+    std::unordered_map<std::string, std::shared_ptr<Object>> store{};
+
+    std::shared_ptr<Object> get(std::string name) {
+        try { return this->store[name]; }
+        catch (...) { return NULL; }
+    }
+
+    std::shared_ptr<Object> set(std::string name, std::shared_ptr<Object> val) {
+        // this->store.emplace(name, val);
+        std::cout << "STORING\n";
+        this->store[name] = val;
+        std::cout << "STORED\n";
+        return val;
+    }
+} Environment;
+
