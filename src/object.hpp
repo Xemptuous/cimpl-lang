@@ -32,8 +32,8 @@ typedef struct Object {
     Object() = default;
     virtual ~Object() = default;
 
-    inline std::string inspectObject() { return "OBJECT"; };
-    inline std::string inspectType() { return ObjectType.OBJECT_OBJ; };
+    virtual inline std::string inspectObject() { return "OBJECT"; };
+    virtual inline std::string inspectType() { return ObjectType.OBJECT_OBJ; };
 } Object;
 
 

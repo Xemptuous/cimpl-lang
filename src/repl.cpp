@@ -26,7 +26,7 @@ void start(string input) {
             cout << evaluated->inspectObject() << '\n';
         }
     }
-    cout << ast->printString() << '\n';
+    // cout << ast->printString() << '\n';
 }
 
 

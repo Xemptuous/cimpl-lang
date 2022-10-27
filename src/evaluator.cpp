@@ -1,5 +1,6 @@
 #include "ast.hpp"
 #include "object.hpp"
+#include <iostream>
 
 using namespace std;
 
@@ -57,7 +58,9 @@ shared_ptr<Object> evalStatements(Statement* stmt) {
         case blockStatement: {
             BlockStatement* bs = static_cast<BlockStatement*>(stmt);
             for (auto stmt : bs->statements) {
-                return evalStatements(stmt);
+                shared_ptr<Object> result = evalStatements(stmt);
+                if (result != NULL && result->inspectType() == ObjectType.RETURN_OBJ)
+                    return result;
             }
         }
     }
@@ -198,9 +201,12 @@ shared_ptr<Object> evalInfixExpression(
         shared_ptr<Object> l, 
         shared_ptr<Object> r
     ) {
-    if (l->inspectType() == "INTEGER" && r->inspectType() == "INTEGER") {
-        evalIntegerInfixExpression(op, l, r);
-    }
+    if (l->inspectType() == "INTEGER" && r->inspectType() == "INTEGER")
+        return evalIntegerInfixExpression(op, l, r);
+    else if (op == "==")
+        return nativeToBoolean(l->inspectObject() == r->inspectObject());
+    else if (op == "!=")
+        return nativeToBoolean(l->inspectObject() != r->inspectObject());
     return NULL;
 }
 
@@ -253,13 +259,13 @@ shared_ptr<Object> evalIntegerInfixExpression(
 shared_ptr<Object> evalBangOperatorExpression(shared_ptr<Object> _right) {
     switch (_right->type) {
         case BOOLEAN_TRUE:
-            return make_shared<Object>(_FALSE_BOOL);
+            return make_shared<Boolean>(_FALSE_BOOL);
         case BOOLEAN_FALSE:
-            return make_shared<Object>(_TRUE_BOOL);
+            return make_shared<Boolean>(_TRUE_BOOL);
         case NULL_OBJ:
-            return make_shared<Object>(_TRUE_BOOL);
+            return make_shared<Boolean>(_TRUE_BOOL);
         default:
-            return make_shared<Object>(_FALSE_BOOL);
+            return make_shared<Boolean>(_FALSE_BOOL);
     }
 }
 
