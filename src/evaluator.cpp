@@ -12,23 +12,25 @@ Null _NULL = Null{};
 Environment* ENV = NULL;
 
 // FORWARD DECLARATIONS
-shared_ptr<Object> evalStatements(Statement*);
-shared_ptr<Object> evalExpressions(Expression*);
-shared_ptr<Boolean> nativeToBoolean(bool);
-shared_ptr<Object> evalPrefixExpression(string, shared_ptr<Object>);
-shared_ptr<Object> evalBangOperatorExpression(shared_ptr<Object>);
-shared_ptr<Object> evalMinusOperatorExpression(shared_ptr<Object>);
-shared_ptr<Object> evalInfixExpression(string, shared_ptr<Object>, shared_ptr<Object>);
-shared_ptr<Object> evalIntegerInfixExpression(string, shared_ptr<Object>, shared_ptr<Object>);
-shared_ptr<Object> evalIfExpression(IfExpression*);
-shared_ptr<Object> evalIdentifier(IdentifierLiteral*);
-shared_ptr<Object> newError(string);
-bool isError(shared_ptr<Object>);
-bool isTruthy(shared_ptr<Object>);
+Object* evalStatements(Statement*);
+Object* evalExpressions(Expression*);
+Boolean* nativeToBoolean(bool);
+Object* evalPrefixExpression(string, Object*);
+Object* evalBangOperatorExpression(Object*);
+Object* evalMinusOperatorExpression(Object*);
+Object* evalInfixExpression(string, Object*, Object*);
+Object* evalIntegerInfixExpression(string, Object*, Object*);
+Object* evalIfExpression(IfExpression*);
+Object* evalIdentifier(IdentifierLiteral*);
+Object* newError(string);
+bool isError(Object*);
+bool isTruthy(Object*);
+
+
+void setEnvironment(Environment* env) { ENV = env; }
 
 // MAIN
-shared_ptr<Object> evalNode(Node* node, Environment* env = NULL) {
-    ENV = env;
+Object* evalNode(Node* node) {
     if (node->nodetype == statement) {
         Statement* stmt = static_cast<Statement*>(node);
         return evalStatements(stmt);
@@ -40,7 +42,7 @@ shared_ptr<Object> evalNode(Node* node, Environment* env = NULL) {
 }
 
 
-shared_ptr<Object> evalStatements(Statement* stmt) {
+Object* evalStatements(Statement* stmt) {
     switch (stmt->type) {
         case identifierStatement:{
             break;
@@ -50,21 +52,21 @@ shared_ptr<Object> evalStatements(Statement* stmt) {
         }
         case letStatement: {
             LetStatement* ls = static_cast<LetStatement*>(stmt);
-            shared_ptr<Object> val = evalNode(ls->value);
-            if (isError(val))
+            Object* val = evalNode(ls->value);
+            if (isError(val)) {
+                cout << "iserror\n";
                 return val;
-            shared_ptr<ReturnValue> newr (new ReturnValue(val));
-            cout << "SETTING\n";
+            }
             ENV->set(ls->name->value, val);
-            cout << "SET\n";
-            return newr;
+            break;
         }
         case returnStatement: {
             ReturnStatement* rs = static_cast<ReturnStatement*>(stmt);
-            shared_ptr<Object> val = evalNode(rs->returnValue);
+            Object* val = evalNode(rs->returnValue);
             if (isError(val))
                 return val;
-            shared_ptr<ReturnValue> newr (new ReturnValue(val));
+            ReturnValue* newr = new ReturnValue(val);
+            ENV->gc.push_back(newr);
             return newr;
         }
         case expressionStatement: {
@@ -74,7 +76,7 @@ shared_ptr<Object> evalStatements(Statement* stmt) {
         case blockStatement: {
             BlockStatement* bs = static_cast<BlockStatement*>(stmt);
             for (auto stmt : bs->statements) {
-                shared_ptr<Object> result = evalStatements(stmt);
+                Object* result = evalStatements(stmt);
                 if (result != NULL && result->type == RETURN_OBJ)
                     return result;
             }
@@ -84,62 +86,56 @@ shared_ptr<Object> evalStatements(Statement* stmt) {
 }
 
 
-shared_ptr<Object> evalExpressions(Expression* expr) {
+Object* evalExpressions(Expression* expr) {
     switch (expr->type) {
         case integerLiteral: {
             IntegerLiteral* i = static_cast<IntegerLiteral*>(expr);
-            shared_ptr<Integer> newi ( new Integer(i->value) );
-            shared_ptr<Object> newptr = static_pointer_cast<Integer>(newi);
-            return newptr;
+            Integer* newi = new Integer(i->value);
+            ENV->gc.push_back(newi);
+            return newi;
         }   
         case floatLiteral: {
             FloatLiteral* f = static_cast<FloatLiteral*>(expr);
-            shared_ptr<Float> newf ( new Float(f->value) );
-            shared_ptr<Object> newptr = static_pointer_cast<Float>(newf);
-            return newptr;
+            Float* newf = new Float(f->value);
+            ENV->gc.push_back(newf);
+            return newf;
         }   
         case booleanExpression: {
             BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
-            shared_ptr<Boolean> newb = nativeToBoolean(b->value);
-            shared_ptr<Object> newptr = static_pointer_cast<Boolean>(newb);
-            return newptr;
+            Boolean* newb = nativeToBoolean(b->value);
+            return newb;
 
             // return nativeToBoolean(b->value);
         }   
         case stringLiteral: {
             StringLiteral* s = static_cast<StringLiteral*>(expr);
-            shared_ptr<String> news ( new String(s->value) );
-            shared_ptr<Object> newptr = static_pointer_cast<String>(news);
-            return newptr;
+            String* news = new String(s->value);
+            ENV->gc.push_back(news);
+            return news;
         }   
         case identifier: {
             IdentifierLiteral* i = static_cast<IdentifierLiteral*>(expr);
-            shared_ptr<Object> newi = evalIdentifier(i);
+            cout << i->value << '\n';
+            Object* newi = evalIdentifier(i);
             return newi;
-        //     IdentifierLiteral* b = static_cast<IdentifierLiteral*>(expr);
-        //     break;
-        //     // return new Identifier(b->value);
         }   
         case prefixExpression: {
             PrefixExpression* p = static_cast<PrefixExpression*>(expr);
-            shared_ptr<Object> right = evalNode(p->_right);
+            Object* right = evalNode(p->_right);
             if (isError(right))
                 return right;
-            shared_ptr<Object> np = evalPrefixExpression(p->_operator, right);
+            Object* np = evalPrefixExpression(p->_operator, right);
             return np;
-            // BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
-            // break;
-            // return new Boolean(b->value);
         }   
         case infixExpression: {
             InfixExpression* i = static_cast<InfixExpression*>(expr);
-            shared_ptr<Object> left = evalNode(i->_left);
+            Object* left = evalNode(i->_left);
             if (isError(left))
                 return left;
-            shared_ptr<Object> right = evalNode(i->_right);
+            Object* right = evalNode(i->_right);
             if (isError(right))
                 return right;
-            shared_ptr<Object> ni = evalInfixExpression(i->_operator, left, right);
+            Object* ni = evalInfixExpression(i->_operator, left, right);
             return ni;
             // BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
             // break;
@@ -147,7 +143,7 @@ shared_ptr<Object> evalExpressions(Expression* expr) {
         }   
         case ifExpression: {
             IfExpression* i = static_cast<IfExpression*>(expr);
-            shared_ptr<Object> cond = evalIfExpression(i);
+            Object* cond = evalIfExpression(i);
             return cond;
             // BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
             // break;
@@ -172,8 +168,9 @@ shared_ptr<Object> evalExpressions(Expression* expr) {
 }
 
 
-shared_ptr<Object> evalIfExpression(IfExpression* expr) {
-    shared_ptr<Object> initCondition = evalNode(expr->condition);
+Object* evalIfExpression(IfExpression* expr) {
+    // FIXME: not working as intended with printing return value
+    Object* initCondition = evalNode(expr->condition);
     if (isError(initCondition))
         return initCondition;
     
@@ -183,7 +180,7 @@ shared_ptr<Object> evalIfExpression(IfExpression* expr) {
     else {
         // if else-if present, iterate through to find true condition
         for (int i = 0; i < expr->conditions.size(); i++) {
-            shared_ptr<Object> cond = evalNode(expr->conditions[i]);
+            Object* cond = evalNode(expr->conditions[i]);
             if (isError(cond))
                 return cond;
             if (isTruthy(cond))  {
@@ -199,15 +196,15 @@ shared_ptr<Object> evalIfExpression(IfExpression* expr) {
 }
 
 
-shared_ptr<Object> evalIdentifier(IdentifierLiteral* node) {
-    shared_ptr<Object> val = ENV->get(node->value);
+Object* evalIdentifier(IdentifierLiteral* node) {
+    Object* val = ENV->get(node->value);
     if (val == NULL)
         return newError("identifier not found: " + node->value);
     return val;
 }
 
 
-bool isTruthy(shared_ptr<Object> obj) {
+bool isTruthy(Object* obj) {
     switch(obj->type) {
         case BOOLEAN_TRUE:
             return true;
@@ -221,7 +218,7 @@ bool isTruthy(shared_ptr<Object> obj) {
 }
 
 
-shared_ptr<Object> evalPrefixExpression(string op, shared_ptr<Object> r) {
+Object* evalPrefixExpression(string op, Object* r) {
     switch(op[0]) {
         case '!':
             return evalBangOperatorExpression(r);
@@ -235,10 +232,10 @@ shared_ptr<Object> evalPrefixExpression(string op, shared_ptr<Object> r) {
 }
 
 
-shared_ptr<Object> evalInfixExpression(
+Object* evalInfixExpression(
         string op, 
-        shared_ptr<Object> l, 
-        shared_ptr<Object> r
+        Object* l, 
+        Object* r
     ) {
     if (l->type == INTEGER_OBJ && r->type == INTEGER_OBJ)
         return evalIntegerInfixExpression(op, l, r);
@@ -257,13 +254,13 @@ shared_ptr<Object> evalInfixExpression(
 }
 
 
-shared_ptr<Object> evalIntegerInfixExpression(
+Object* evalIntegerInfixExpression(
         string op, 
-        shared_ptr<Object> l, 
-        shared_ptr<Object> r
+        Object* l, 
+        Object* r
     ) {
-    int leftVal = static_pointer_cast<Integer>(l)->value;
-    int rightVal = static_pointer_cast<Integer>(r)->value;
+    int leftVal = static_cast<Integer*>(l)->value;
+    int rightVal = static_cast<Integer*>(r)->value;
 
     if (op.length() > 2) {
         ostringstream ss;
@@ -273,19 +270,23 @@ shared_ptr<Object> evalIntegerInfixExpression(
 
     switch (op[0]) {
         case '+': {
-            shared_ptr<Integer> newi ( new Integer(leftVal + rightVal) );
+            Integer* newi = new Integer(leftVal + rightVal);
+            ENV->gc.push_back(newi);
             return newi;
         }
         case '-': {
-            shared_ptr<Integer> newi ( new Integer(leftVal - rightVal) );
+            Integer* newi = new Integer(leftVal - rightVal);
+            ENV->gc.push_back(newi);
             return newi;
         }
         case '*': {
-            shared_ptr<Integer> newi ( new Integer(leftVal * rightVal) );
+            Integer* newi = new Integer(leftVal * rightVal);
+            ENV->gc.push_back(newi);
             return newi;
         }
         case '/': {
-            shared_ptr<Integer> newi ( new Integer(leftVal / rightVal) );
+            Integer* newi = new Integer(leftVal / rightVal);
+            ENV->gc.push_back(newi);
             return newi;
         }
         case '<':
@@ -317,50 +318,51 @@ shared_ptr<Object> evalIntegerInfixExpression(
 }
 
 
-shared_ptr<Object> evalBangOperatorExpression(shared_ptr<Object> _right) {
+Object* evalBangOperatorExpression(Object* _right) {
     switch (_right->type) {
         case BOOLEAN_TRUE:
-            return make_shared<Boolean>(_FALSE_BOOL);
+            return &_FALSE_BOOL;
         case BOOLEAN_FALSE:
-            return make_shared<Boolean>(_TRUE_BOOL);
+            return &_TRUE_BOOL;
         case NULL_OBJ:
-            return make_shared<Boolean>(_TRUE_BOOL);
+            return &_TRUE_BOOL;
         default:
-            return make_shared<Boolean>(_FALSE_BOOL);
+            return &_FALSE_BOOL;
     }
 }
 
 
-shared_ptr<Object> evalMinusOperatorExpression(shared_ptr<Object> _right) {
+Object* evalMinusOperatorExpression(Object* _right) {
     if (_right->type != INTEGER_OBJ) {
         ostringstream ss;
         ss << "Unknown operator: -" << _right->inspectType();
         return newError(ss.str());
     }
-    shared_ptr<Integer> i = static_pointer_cast<Integer>(_right);
-    shared_ptr<Integer> newi ( new Integer(-i->value) );
-    shared_ptr<Object> newInt = static_pointer_cast<Integer>(newi);
+    Integer* i = static_cast<Integer*>(_right);
+    Integer* newi = new Integer(-i->value);
+    ENV->gc.push_back(newi);
+    Object* newInt = static_cast<Integer*>(newi);
     return newInt;
 }
 
 
-shared_ptr<Boolean> nativeToBoolean(bool input) {
+Boolean* nativeToBoolean(bool input) {
     if (input) {
-        shared_ptr<Boolean> b = make_shared<Boolean>(_TRUE_BOOL);
+        Boolean* b = &_TRUE_BOOL;
         return b;
     }
-    shared_ptr<Boolean> b = make_shared<Boolean>(_FALSE_BOOL);
+    Boolean* b = &_FALSE_BOOL;
     return b;
 }
 
 
-shared_ptr<Object> newError(string msg) {
-    shared_ptr<Object> err ( new Error(msg));
+Object* newError(string msg) {
+    Object* err ( new Error(msg));
     return err;
 }
 
 
-bool isError(shared_ptr<Object> obj) {
+bool isError(Object* obj) {
     if (obj != NULL) {
         return obj->type == ERROR_OBJ;
     }

@@ -1,11 +1,14 @@
 #include <iostream>
+#include "object.hpp"
+#include <memory>
 
 using namespace std;
-void start(string);
+void start(string, Environment*);
 
 
 int main() {
     system("clear");
+    Environment* env = new Environment;
     string input;
 
     while (true) {
@@ -20,6 +23,7 @@ int main() {
             system("clear");
             goto start;
         }
-        start(input);
+        start(input, env);
     }
+    delete env;
 }

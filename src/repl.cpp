@@ -6,12 +6,13 @@
 
 using namespace std;
 void printParserErrors(vector<string>);
-shared_ptr<Object> evalNode(Node*, Environment*);
+Object* evalNode(Node*);
+void setEnvironment(Environment*);
 
 
-void start(string input) {
+void start(string input, Environment* env) {
     AST* ast = new AST(input);
-    Environment* env = new Environment;
+    // Environment* env = new Environment;
 
     ast->parseProgram();
 
@@ -19,22 +20,25 @@ void start(string input) {
         printParserErrors(ast->parser->errors);
         return;
     }
+    setEnvironment(env);
     for (Statement* stmt : ast->Statements) {
-        shared_ptr<Object> evaluated = evalNode(stmt, env);
-        if (evaluated->type == RETURN_OBJ) {
-            shared_ptr<ReturnValue> result = static_pointer_cast<ReturnValue>(evaluated);
-            cout << result->value << '\n';
-            continue;
+        Object* evaluated = evalNode(stmt);
+        if (evaluated != NULL) {
+            if (evaluated->type == RETURN_OBJ) {
+                ReturnValue* result = static_cast<ReturnValue*>(evaluated);
+                cout << result->value << '\n';
+                continue;
+            }
+            else if (evaluated->type == ERROR_OBJ) {
+                Error* result = static_cast<Error*>(evaluated);
+                cout << result->message << '\n';
+                continue;
+            }
+            cout << evaluated->inspectObject() << '\n';
         }
-        else if (evaluated->type == ERROR_OBJ) {
-            shared_ptr<Error> result = static_pointer_cast<Error>(evaluated);
-            cout << result->message << '\n';
-            continue;
-        }
-        cout << evaluated->inspectObject() << '\n';
     }
     delete ast;
-    delete env;
+    // delete env;
     // cout << ast->printString() << '\n';
 }
 

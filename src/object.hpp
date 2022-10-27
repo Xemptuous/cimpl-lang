@@ -108,9 +108,9 @@ typedef struct Null : Object {
 
 
 typedef struct ReturnValue : Object {
-    std::shared_ptr<Object> value;
+    Object* value;
 
-    ReturnValue(std::shared_ptr<Object> obj) {
+    ReturnValue(Object* obj) {
         this->value = obj;
         this->type = RETURN_OBJ;
     }
@@ -134,18 +134,27 @@ typedef struct Error : Object {
 
 
 typedef struct Environment {
-    std::unordered_map<std::string, std::shared_ptr<Object>> store{};
+    // std::unordered_map<std::string, std::shared_ptr<Object>> store{};
+    std::unordered_map<std::string, Object*> store{};
+    std::vector<Object*> gc{};
 
-    std::shared_ptr<Object> get(std::string name) {
-        try { return this->store[name]; }
+    ~Environment() {
+        for (auto i : gc)
+            delete i;
+    }
+
+    Object* get(std::string name) {
+        try { 
+            Object* res = this->store[name]; 
+            return res;
+        }
         catch (...) { return NULL; }
     }
 
-    std::shared_ptr<Object> set(std::string name, std::shared_ptr<Object> val) {
+    // std::shared_ptr<Object> set(std::string name, std::shared_ptr<Object> val) {
+    Object* set(std::string name, Object* val) {
         // this->store.emplace(name, val);
-        std::cout << "STORING\n";
         this->store[name] = val;
-        std::cout << "STORED\n";
         return val;
     }
 } Environment;
