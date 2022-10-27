@@ -18,13 +18,17 @@ void start(string input) {
     }
     for (auto stmt : ast->Statements) {
         shared_ptr<Object> evaluated = evalNode(stmt);
-        if (evaluated != NULL) {
-            if (evaluated->inspectType() == ObjectType.RETURN_OBJ) {
-                shared_ptr<ReturnValue> result = static_pointer_cast<ReturnValue>(evaluated);
-                cout << result->value << '\n';
-            }
-            cout << evaluated->inspectObject() << '\n';
+        if (evaluated->type == RETURN_OBJ) {
+            shared_ptr<ReturnValue> result = static_pointer_cast<ReturnValue>(evaluated);
+            cout << result->value << '\n';
+            continue;
         }
+        else if (evaluated->type == ERROR_OBJ) {
+            shared_ptr<Error> result = static_pointer_cast<Error>(evaluated);
+            cout << result->message << '\n';
+            continue;
+        }
+        cout << evaluated->inspectObject() << '\n';
     }
     // cout << ast->printString() << '\n';
 }

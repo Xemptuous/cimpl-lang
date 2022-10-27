@@ -9,8 +9,10 @@ enum ObjectEnum {
     BOOLEAN_TRUE,
     BOOLEAN_FALSE,
     STRING_OBJ,
+    RETURN_OBJ,
     IDENT_OBJ,
     FLOAT_OBJ,
+    ERROR_OBJ,
     NULL_OBJ,
 };
 
@@ -22,6 +24,7 @@ const struct Objecttype {
     std::string RETURN_OBJ = {"RETURN"};
     std::string IDENT_OBJ = {"IDENT"};
     std::string FLOAT_OBJ = {"FLOAT"};
+    std::string ERROR_OBJ = {"ERROR"};
     std::string NULL_OBJ = {"NULL"};
 } ObjectType;
 
@@ -29,7 +32,9 @@ const struct Objecttype {
 typedef struct Object {
     int type;
 
-    Object() = default;
+    Object() {
+        this->type = OBJECT_OBJ;
+    };
     virtual ~Object() = default;
 
     virtual inline std::string inspectObject() { return "OBJECT"; };
@@ -104,9 +109,22 @@ typedef struct ReturnValue : Object {
 
     ReturnValue(std::shared_ptr<Object> obj) {
         this->value = obj;
+        this->type = RETURN_OBJ;
     }
 
     inline std::string inspectObject() { return value->inspectObject(); }
     inline std::string inspectType() { return ObjectType.RETURN_OBJ; }
 } ReturnValue;
 
+
+typedef struct Error : Object {
+    std::string message;
+
+    Error(std::string msg) {
+        this->message = msg;
+        this->type = ERROR_OBJ;
+    }
+
+    inline std::string inspectObject() { return "ERROR: " + this->message; }
+    inline std::string inspectType() { return ObjectType.ERROR_OBJ; }
+} Error;

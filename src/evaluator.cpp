@@ -1,6 +1,6 @@
 #include "ast.hpp"
 #include "object.hpp"
-#include <iostream>
+#include <sstream>
 
 using namespace std;
 
@@ -19,6 +19,8 @@ shared_ptr<Object> evalMinusOperatorExpression(shared_ptr<Object>);
 shared_ptr<Object> evalInfixExpression(string, shared_ptr<Object>, shared_ptr<Object>);
 shared_ptr<Object> evalIntegerInfixExpression(string, shared_ptr<Object>, shared_ptr<Object>);
 shared_ptr<Object> evalIfExpression(IfExpression*);
+shared_ptr<Object> newError(string);
+bool isError(shared_ptr<Object>);
 bool isTruthy(shared_ptr<Object>);
 
 // MAIN
@@ -48,6 +50,8 @@ shared_ptr<Object> evalStatements(Statement* stmt) {
         case returnStatement: {
             ReturnStatement* rs = static_cast<ReturnStatement*>(stmt);
             shared_ptr<Object> val = evalNode(rs->returnValue);
+            if (isError(val))
+                return val;
             shared_ptr<ReturnValue> newr (new ReturnValue(val));
             return newr;
         }
@@ -59,7 +63,7 @@ shared_ptr<Object> evalStatements(Statement* stmt) {
             BlockStatement* bs = static_cast<BlockStatement*>(stmt);
             for (auto stmt : bs->statements) {
                 shared_ptr<Object> result = evalStatements(stmt);
-                if (result != NULL && result->inspectType() == ObjectType.RETURN_OBJ)
+                if (result != NULL && result->type == RETURN_OBJ)
                     return result;
             }
         }
@@ -104,6 +108,8 @@ shared_ptr<Object> evalExpressions(Expression* expr) {
         case prefixExpression: {
             PrefixExpression* p = static_cast<PrefixExpression*>(expr);
             shared_ptr<Object> right = evalNode(p->_right);
+            if (isError(right))
+                return right;
             shared_ptr<Object> np = evalPrefixExpression(p->_operator, right);
             return np;
             // BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
@@ -113,7 +119,11 @@ shared_ptr<Object> evalExpressions(Expression* expr) {
         case infixExpression: {
             InfixExpression* i = static_cast<InfixExpression*>(expr);
             shared_ptr<Object> left = evalNode(i->_left);
+            if (isError(left))
+                return left;
             shared_ptr<Object> right = evalNode(i->_right);
+            if (isError(right))
+                return right;
             shared_ptr<Object> ni = evalInfixExpression(i->_operator, left, right);
             return ni;
             // BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
@@ -149,6 +159,8 @@ shared_ptr<Object> evalExpressions(Expression* expr) {
 
 shared_ptr<Object> evalIfExpression(IfExpression* expr) {
     shared_ptr<Object> initCondition = evalNode(expr->condition);
+    if (isError(initCondition))
+        return initCondition;
     
     // if first if condition is true, eval consequence
     if (isTruthy(initCondition))
@@ -157,6 +169,8 @@ shared_ptr<Object> evalIfExpression(IfExpression* expr) {
         // if else-if present, iterate through to find true condition
         for (int i = 0; i < expr->conditions.size(); i++) {
             shared_ptr<Object> cond = evalNode(expr->conditions[i]);
+            if (isError(cond))
+                return cond;
             if (isTruthy(cond))  {
                 return evalNode(expr->alternatives[i]);
             }
@@ -191,7 +205,9 @@ shared_ptr<Object> evalPrefixExpression(string op, shared_ptr<Object> r) {
         case '-':
             return evalMinusOperatorExpression(r);
         default:
-            return NULL;
+            ostringstream ss;
+            ss << "Unknown operator: " << op << r->inspectType();
+            return newError(ss.str());
     }
 }
 
@@ -201,13 +217,20 @@ shared_ptr<Object> evalInfixExpression(
         shared_ptr<Object> l, 
         shared_ptr<Object> r
     ) {
-    if (l->inspectType() == "INTEGER" && r->inspectType() == "INTEGER")
+    if (l->type == INTEGER_OBJ && r->type == INTEGER_OBJ)
         return evalIntegerInfixExpression(op, l, r);
     else if (op == "==")
         return nativeToBoolean(l->inspectObject() == r->inspectObject());
     else if (op == "!=")
         return nativeToBoolean(l->inspectObject() != r->inspectObject());
-    return NULL;
+    else if (l->type !=  r->type) {
+        ostringstream ss;
+        ss << "Type mismatch: " << l->inspectType() << op << r->inspectType();
+        return newError(ss.str());
+    }
+    ostringstream ss;
+    ss << "Unknown operator: " << l->inspectType() << op << r->inspectType();
+    return newError(ss.str());
 }
 
 
@@ -218,6 +241,13 @@ shared_ptr<Object> evalIntegerInfixExpression(
     ) {
     int leftVal = static_pointer_cast<Integer>(l)->value;
     int rightVal = static_pointer_cast<Integer>(r)->value;
+
+    if (op.length() > 2) {
+        ostringstream ss;
+        ss << "Unknown operator: " << leftVal << op << rightVal;
+        return newError(ss.str());
+    }
+
     switch (op[0]) {
         case '+': {
             shared_ptr<Integer> newi ( new Integer(leftVal + rightVal) );
@@ -239,18 +269,26 @@ shared_ptr<Object> evalIntegerInfixExpression(
             return nativeToBoolean(leftVal < rightVal);
         case '>':
             return nativeToBoolean(leftVal > rightVal);
-        case '=':
+        case '=': {
             if (op[1] == '=')
                 return nativeToBoolean(leftVal == rightVal);
-            else
-                return NULL;
-        case '!':
+
+            ostringstream ss;
+            ss << "Unknown operator: " << leftVal << op << rightVal;
+            return newError(ss.str());
+        }
+        case '!': {
             if (op[1] == '=')
                 return nativeToBoolean(leftVal != rightVal);
-            else
-                return NULL;
+
+            ostringstream ss;
+            ss << "Unknown operator: " << leftVal << op << rightVal;
+            return newError(ss.str());
+        }
         default:
-            return NULL;
+            ostringstream ss;
+            ss << "Unknown operator: " << leftVal << op << rightVal;
+            return newError(ss.str());
     }
 
 }
@@ -271,8 +309,10 @@ shared_ptr<Object> evalBangOperatorExpression(shared_ptr<Object> _right) {
 
 
 shared_ptr<Object> evalMinusOperatorExpression(shared_ptr<Object> _right) {
-    if (_right->inspectType() != ObjectType.INTEGER_OBJ) {
-        return NULL;
+    if (_right->type != INTEGER_OBJ) {
+        ostringstream ss;
+        ss << "Unknown operator: -" << _right->inspectType();
+        return newError(ss.str());
     }
     shared_ptr<Integer> i = static_pointer_cast<Integer>(_right);
     shared_ptr<Integer> newi ( new Integer(-i->value) );
@@ -288,4 +328,18 @@ shared_ptr<Boolean> nativeToBoolean(bool input) {
     }
     shared_ptr<Boolean> b = make_shared<Boolean>(_FALSE_BOOL);
     return b;
+}
+
+
+shared_ptr<Object> newError(string msg) {
+    shared_ptr<Object> err ( new Error(msg));
+    return err;
+}
+
+
+bool isError(shared_ptr<Object> obj) {
+    if (obj != NULL) {
+        return obj->type == ERROR_OBJ;
+    }
+    return false;
 }
