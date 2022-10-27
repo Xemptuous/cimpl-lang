@@ -120,8 +120,11 @@ void StringLiteral::setExpressionNode(Token tok) {
 
 void BooleanLiteral::setExpressionNode(Token tok) {
     this->token = tok;
-    this->value = (tok.type == TokenType._TRUE || tok.type == TokenType._FALSE);
     this->datatype = BOOLEAN;
+    if (tok.type == TokenType._TRUE)
+        this->value = true;
+    else if (tok.type == TokenType._FALSE)
+        this->value = false;
 }
 
 
