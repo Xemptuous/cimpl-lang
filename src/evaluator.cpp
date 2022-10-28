@@ -38,7 +38,6 @@ void setEnvironment(std::shared_ptr<Environment> env) { ENV = env; }
 Object* evalNode(Node* node, std::shared_ptr<Environment> env = NULL) {
     if (node->nodetype == statement) {
         Statement* stmt = static_cast<Statement*>(node);
-        cout << "entering evalStatements\n";
         return evalStatements(stmt, env);
     }
     else {
@@ -55,7 +54,6 @@ Object* evalStatements(Statement* stmt, std::shared_ptr<Environment> env = NULL)
         case functionStatement: {
             FunctionStatement* fs = static_cast<FunctionStatement*>(stmt);
             Function* newf = new Function(fs->parameters, fs->body);
-            cout << "returning functionStatement\n";
             return newf;
         }
         case letStatement: {
@@ -148,6 +146,9 @@ Object* evalExpressions(Expression* expr, std::shared_ptr<Environment> = NULL) {
             return cond;
         }   
         case functionLiteral: {
+            FunctionLiteral* fl = static_cast<FunctionLiteral*>(expr);
+            Function* newf = new Function(fl->parameters, fl->body);
+            return newf;
         }   
         case callExpression: {
             CallExpression* ce = static_cast<CallExpression*>(expr);
@@ -320,34 +321,26 @@ std::vector<Object*> evalCallExpressions(std::vector<Expression*> expr) {
 
 
 Object* applyFunction(Object* fn, std::vector<Object*> args) {
-    cout << "in applyFunction\n";
     Function* func;
     try {
         func = dynamic_cast<Function*>(fn);
-        cout << "dynamic_cast\n";
     }
     catch (...) {
         ostringstream ss;
         ss << "not a function: " << fn->inspectType();
         return newError(ss.str());
     }
-    cout << "extendFunction\n";
     std::shared_ptr<Environment> newEnv = extendFunction(func, args);
-    cout << "eval it\n";
     Object* evaluated = evalNode(func->body, newEnv);
-    cout << "return unwrapEvalValue\n";
     return unwrapEvalValue(evaluated);
 }
 
 
 std::shared_ptr<Environment> extendFunction(Function* fn, std::vector<Object*> args) {
-    cout << "creating new environment\n";
     std::shared_ptr<Environment> env (new Environment);
     for (int i = 0; i < fn->parameters.size(); i++) {
-        cout << "setting environment param\n";
         env->set(fn->parameters[i]->value, args[i]);
     }
-    cout << "returning new env\n";
     return env;
 }
 
@@ -355,7 +348,6 @@ std::shared_ptr<Environment> extendFunction(Function* fn, std::vector<Object*> a
 Object* unwrapEvalValue(Object* evaluated) {
     ReturnValue* obj;
     try {
-        cout << "casting returnvalue\n";
         obj = dynamic_cast<ReturnValue*>(evaluated);
     }
     catch (...) {
@@ -363,7 +355,6 @@ Object* unwrapEvalValue(Object* evaluated) {
         ss << "Invalid return value";
         return newError(ss.str());
     }
-    cout << "returning cast value\n";
     return obj;
 }
 
