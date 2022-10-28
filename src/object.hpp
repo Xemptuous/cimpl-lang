@@ -1,14 +1,12 @@
 #pragma once
-#include <string>
-#include <memory>
-#include <unordered_map>
-#include <vector>
-#include <iostream>
+#include "ast.hpp"
+#include <sstream>
 
 
 enum ObjectEnum {
     OBJECT_OBJ,
     INTEGER_OBJ,
+    FUNCTION_OBJ,
     BOOLEAN_TRUE,
     BOOLEAN_FALSE,
     STRING_OBJ,
@@ -22,6 +20,7 @@ enum ObjectEnum {
 const struct Objecttype {
     std::string OBJECT_OBJ = {"OBJECT"};
     std::string INTEGER_OBJ = {"INTEGER"};
+    std::string FUNCTION_OBJ = {"FUNCTION"};
     std::string BOOLEAN_OBJ = {"BOOLEAN"};
     std::string STRING_OBJ = {"STRING"};
     std::string RETURN_OBJ = {"RETURN"};
@@ -120,6 +119,38 @@ typedef struct ReturnValue : Object {
 } ReturnValue;
 
 
+typedef struct Function : Object {
+    std::vector<IdentifierLiteral*> parameters;
+    BlockStatement* body;
+
+    Function(std::vector<IdentifierLiteral*> params, BlockStatement* body) {
+        this->parameters = params;
+        this->body = body;
+    }
+    ~Function() {
+        for (auto param : this->parameters)
+            delete param;
+        delete this->body;
+    }
+
+    inline std::string inspectObject() { return ObjectType.FUNCTION_OBJ; };
+    std::string inspectType() {
+        std::vector<std::string> params{};
+
+        for (auto param : this->parameters)
+            params.push_back(param->printString());
+
+        std::ostringstream ss;
+        for (std::string param : params) {
+            ss << "fn(" << param << ", ) {\n" << 
+                this->body->printString() << "\n}\n";
+        }
+        return ss.str();
+    }
+
+} Function;
+
+
 typedef struct Error : Object {
     std::string message;
 
@@ -137,6 +168,11 @@ typedef struct Environment {
     // std::unordered_map<std::string, std::shared_ptr<Object>> store{};
     std::unordered_map<std::string, Object*> store{};
     std::vector<Object*> gc{};
+    Environment* outer;
+
+    Environment() {
+        this->outer = NULL;
+    }
 
     ~Environment() {
         for (auto i : gc)
@@ -148,7 +184,15 @@ typedef struct Environment {
             Object* res = this->store[name]; 
             return res;
         }
-        catch (...) { return NULL; }
+        catch (...) {
+            if (this->outer != NULL) {
+                try {
+                    this->outer->get(name);
+                }
+                catch (...) { return NULL; }
+            }
+            return NULL; 
+        }
     }
 
     // std::shared_ptr<Object> set(std::string name, std::shared_ptr<Object> val) {

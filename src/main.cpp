@@ -3,12 +3,13 @@
 #include <memory>
 
 using namespace std;
-void start(string, Environment*);
+void start(string, shared_ptr<Environment>);
 
 
 int main() {
     system("clear");
-    Environment* env = new Environment;
+    shared_ptr<Environment> env (new Environment);
+    // Environment* env = new Environment;
     string input;
 
     while (true) {
@@ -25,5 +26,5 @@ int main() {
         }
         start(input, env);
     }
-    delete env;
+    // delete env;
 }

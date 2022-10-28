@@ -6,23 +6,24 @@
 
 using namespace std;
 void printParserErrors(vector<string>);
-Object* evalNode(Node*);
-void setEnvironment(Environment*);
+Object* evalNode(Node*, shared_ptr<Environment>);
+void setEnvironment(shared_ptr<Environment>);
 
 
-void start(string input, Environment* env) {
+void start(string input, shared_ptr<Environment> env) {
     AST* ast = new AST(input);
-    // Environment* env = new Environment;
-
+    cout << "parseProgram\n";
     ast->parseProgram();
 
     if (ast->parser->errors.size() != 0) {
         printParserErrors(ast->parser->errors);
         return;
     }
+    cout << "set environment\n";
     setEnvironment(env);
     for (Statement* stmt : ast->Statements) {
-        Object* evaluated = evalNode(stmt);
+        cout << "evaluating\n";
+        Object* evaluated = evalNode(stmt, env);
         if (evaluated != NULL) {
             if (evaluated->type == RETURN_OBJ) {
                 ReturnValue* result = static_cast<ReturnValue*>(evaluated);

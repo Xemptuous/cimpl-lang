@@ -9,11 +9,12 @@ using namespace std;
 Boolean _TRUE_BOOL = Boolean(true);
 Boolean _FALSE_BOOL = Boolean(false);
 Null _NULL = Null{};
-Environment* ENV = NULL;
+std::shared_ptr<Environment> ENV = nullptr;
 
 // FORWARD DECLARATIONS
-Object* evalStatements(Statement*);
-Object* evalExpressions(Expression*);
+std::vector<Object*> evalCallExpressions(std::vector<Expression*> expr);
+Object* evalStatements(Statement*, std::shared_ptr<Environment>);
+Object* evalExpressions(Expression*, std::shared_ptr<Environment>);
 Boolean* nativeToBoolean(bool);
 Object* evalPrefixExpression(string, Object*);
 Object* evalBangOperatorExpression(Object*);
@@ -25,30 +26,37 @@ Object* evalIdentifier(IdentifierLiteral*);
 Object* newError(string);
 bool isError(Object*);
 bool isTruthy(Object*);
+Object* applyFunction(Object*, std::vector<Object*>);
+std::shared_ptr<Environment> extendFunction(Function*, std::vector<Object*>);
+Object* unwrapEvalValue(Object*);
 
+//TODO: pass environments around as needed
 
-void setEnvironment(Environment* env) { ENV = env; }
+void setEnvironment(std::shared_ptr<Environment> env) { ENV = env; }
 
 // MAIN
-Object* evalNode(Node* node) {
+Object* evalNode(Node* node, std::shared_ptr<Environment> env = NULL) {
     if (node->nodetype == statement) {
         Statement* stmt = static_cast<Statement*>(node);
-        return evalStatements(stmt);
+        cout << "entering evalStatements\n";
+        return evalStatements(stmt, env);
     }
     else {
         Expression* expr = static_cast<Expression*>(node);
-        return evalExpressions(expr);
+        return evalExpressions(expr, env);
     }
 }
 
 
-Object* evalStatements(Statement* stmt) {
+Object* evalStatements(Statement* stmt, std::shared_ptr<Environment> env = NULL) {
     switch (stmt->type) {
         case identifierStatement:{
-            break;
         }
         case functionStatement: {
-            break;
+            FunctionStatement* fs = static_cast<FunctionStatement*>(stmt);
+            Function* newf = new Function(fs->parameters, fs->body);
+            cout << "returning functionStatement\n";
+            return newf;
         }
         case letStatement: {
             LetStatement* ls = static_cast<LetStatement*>(stmt);
@@ -85,7 +93,7 @@ Object* evalStatements(Statement* stmt) {
 }
 
 
-Object* evalExpressions(Expression* expr) {
+Object* evalExpressions(Expression* expr, std::shared_ptr<Environment> = NULL) {
     switch (expr->type) {
         case integerLiteral: {
             IntegerLiteral* i = static_cast<IntegerLiteral*>(expr);
@@ -103,8 +111,6 @@ Object* evalExpressions(Expression* expr) {
             BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
             Boolean* newb = nativeToBoolean(b->value);
             return newb;
-
-            // return nativeToBoolean(b->value);
         }   
         case stringLiteral: {
             StringLiteral* s = static_cast<StringLiteral*>(expr);
@@ -135,32 +141,24 @@ Object* evalExpressions(Expression* expr) {
                 return right;
             Object* ni = evalInfixExpression(i->_operator, left, right);
             return ni;
-            // BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
-            // break;
-            // return Boolean(b->value);
         }   
         case ifExpression: {
             IfExpression* i = static_cast<IfExpression*>(expr);
             Object* cond = evalIfExpression(i);
             return cond;
-            // BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
-            // break;
-            // return Boolean(b->value);
         }   
         case functionLiteral: {
-            // BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
-            // break;
-            // return Boolean(b->value);
         }   
         case callExpression: {
-            // BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
-            // break;
-            // return Boolean(b->value);
+            CallExpression* ce = static_cast<CallExpression*>(expr);
+            Object* func = evalNode(ce->_function);
+            if (isError(func))
+                return func;
+            std::vector<Object*> args = evalCallExpressions(ce->arguments);
+            if (args.size() == 1 && isError(args[0]))
+                return args[0];
         }   
         case groupedExpression: {
-            // BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
-            // break;
-            // return Boolean(b->value);
         }   
     }
 }
@@ -204,20 +202,6 @@ Object* evalIdentifier(IdentifierLiteral* node) {
     if (val == NULL)
         return newError("identifier not found: " + node->value);
     return val;
-}
-
-
-bool isTruthy(Object* obj) {
-    switch(obj->type) {
-        case BOOLEAN_TRUE:
-            return true;
-        case BOOLEAN_FALSE:
-            return false;
-        case NULL_OBJ:
-            return false;
-        default:
-            return true;
-    }
 }
 
 
@@ -317,7 +301,70 @@ Object* evalIntegerInfixExpression(
             ss << "Unknown operator: " << leftVal << op << rightVal;
             return newError(ss.str());
     }
+}
 
+
+std::vector<Object*> evalCallExpressions(std::vector<Expression*> expr) {
+    std::vector<Object*> result;
+
+    for (auto e : expr) {
+        Object* evaluated = evalNode(e);
+        if (isError(evaluated)) {
+            result.push_back(evaluated);
+            return result;
+        }
+        result.push_back(evaluated);
+    }
+    return result;
+}
+
+
+Object* applyFunction(Object* fn, std::vector<Object*> args) {
+    cout << "in applyFunction\n";
+    Function* func;
+    try {
+        func = dynamic_cast<Function*>(fn);
+        cout << "dynamic_cast\n";
+    }
+    catch (...) {
+        ostringstream ss;
+        ss << "not a function: " << fn->inspectType();
+        return newError(ss.str());
+    }
+    cout << "extendFunction\n";
+    std::shared_ptr<Environment> newEnv = extendFunction(func, args);
+    cout << "eval it\n";
+    Object* evaluated = evalNode(func->body, newEnv);
+    cout << "return unwrapEvalValue\n";
+    return unwrapEvalValue(evaluated);
+}
+
+
+std::shared_ptr<Environment> extendFunction(Function* fn, std::vector<Object*> args) {
+    cout << "creating new environment\n";
+    std::shared_ptr<Environment> env (new Environment);
+    for (int i = 0; i < fn->parameters.size(); i++) {
+        cout << "setting environment param\n";
+        env->set(fn->parameters[i]->value, args[i]);
+    }
+    cout << "returning new env\n";
+    return env;
+}
+
+
+Object* unwrapEvalValue(Object* evaluated) {
+    ReturnValue* obj;
+    try {
+        cout << "casting returnvalue\n";
+        obj = dynamic_cast<ReturnValue*>(evaluated);
+    }
+    catch (...) {
+        ostringstream ss;
+        ss << "Invalid return value";
+        return newError(ss.str());
+    }
+    cout << "returning cast value\n";
+    return obj;
 }
 
 
@@ -356,6 +403,20 @@ Boolean* nativeToBoolean(bool input) {
     }
     Boolean* b = &_FALSE_BOOL;
     return b;
+}
+
+
+bool isTruthy(Object* obj) {
+    switch(obj->type) {
+        case BOOLEAN_TRUE:
+            return true;
+        case BOOLEAN_FALSE:
+            return false;
+        case NULL_OBJ:
+            return false;
+        default:
+            return true;
+    }
 }
 
 
