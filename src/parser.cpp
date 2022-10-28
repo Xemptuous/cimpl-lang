@@ -212,6 +212,9 @@ Expression* Parser::parseExpression(int precedence) {
     }
 
     Expression* leftExp = this->parseLeftPrefix(prefix->second);
+    if (leftExp == NULL) {
+        return NULL;
+    }
     leftExp->setDataType(leftExp->token.literal);
 
     while (this->peekToken.type != TokenType.SEMICOLON && precedence < this->peekPrecedence()) 

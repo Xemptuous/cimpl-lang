@@ -308,7 +308,7 @@ typedef struct IfExpression : Expression {
 
 
 typedef struct FunctionStatement : Statement {
-    Token tok;
+    Token token;
     IdentifierLiteral* name;
     std::vector<IdentifierLiteral*> parameters;
     BlockStatement* body;
@@ -332,7 +332,7 @@ typedef struct FunctionStatement : Statement {
 
 
 typedef struct FunctionLiteral : Expression {
-    Token tok;
+    Token token;
     IdentifierLiteral* name;
     std::vector<IdentifierLiteral*> parameters;
     BlockStatement* body;
@@ -352,11 +352,12 @@ typedef struct FunctionLiteral : Expression {
     }
 
     std::string printString();
+    void setExpressionNode(Token);
 } FunctionLiteral;
 
 
 typedef struct CallExpression : Expression { 
-    Token tok;
+    Token token;
     Expression* _function;
     std::vector<Expression*> arguments;
 

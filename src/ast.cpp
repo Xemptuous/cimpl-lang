@@ -134,6 +134,12 @@ void FloatLiteral::setExpressionNode(Token tok) {
 }
 
 
+void FunctionLiteral::setExpressionNode(Token tok) {
+    this->token = tok;
+    this->setDataType(tok.literal);
+}
+
+
 std::string Statement::printString() {
     std::ostringstream ss;
     ss << "{ " << this->token.literal << "; }";
