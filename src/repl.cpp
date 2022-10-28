@@ -26,7 +26,7 @@ void start(string input, Environment* env) {
         if (evaluated != NULL) {
             if (evaluated->type == RETURN_OBJ) {
                 ReturnValue* result = static_cast<ReturnValue*>(evaluated);
-                cout << result->value << '\n';
+                cout << result->value->inspectObject() << '\n';
                 continue;
             }
             else if (evaluated->type == ERROR_OBJ) {
@@ -37,9 +37,8 @@ void start(string input, Environment* env) {
             cout << evaluated->inspectObject() << '\n';
         }
     }
-    delete ast;
-    // delete env;
     // cout << ast->printString() << '\n';
+    delete ast;
 }
 
 

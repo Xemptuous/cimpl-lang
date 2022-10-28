@@ -54,7 +54,6 @@ Object* evalStatements(Statement* stmt) {
             LetStatement* ls = static_cast<LetStatement*>(stmt);
             Object* val = evalNode(ls->value);
             if (isError(val)) {
-                cout << "iserror\n";
                 return val;
             }
             ENV->set(ls->name->value, val);
@@ -76,7 +75,7 @@ Object* evalStatements(Statement* stmt) {
         case blockStatement: {
             BlockStatement* bs = static_cast<BlockStatement*>(stmt);
             for (auto stmt : bs->statements) {
-                Object* result = evalStatements(stmt);
+                Object* result = evalNode(stmt);
                 if (result != NULL && result->type == RETURN_OBJ)
                     return result;
             }
@@ -115,7 +114,6 @@ Object* evalExpressions(Expression* expr) {
         }   
         case identifier: {
             IdentifierLiteral* i = static_cast<IdentifierLiteral*>(expr);
-            cout << i->value << '\n';
             Object* newi = evalIdentifier(i);
             return newi;
         }   
@@ -171,27 +169,32 @@ Object* evalExpressions(Expression* expr) {
 Object* evalIfExpression(IfExpression* expr) {
     // FIXME: not working as intended with printing return value
     Object* initCondition = evalNode(expr->condition);
-    if (isError(initCondition))
+    if (isError(initCondition)) {
         return initCondition;
+    }
     
     // if first if condition is true, eval consequence
-    if (isTruthy(initCondition))
+    if (isTruthy(initCondition)) {
         return evalNode(expr->consequence);
+    }
     else {
         // if else-if present, iterate through to find true condition
         for (int i = 0; i < expr->conditions.size(); i++) {
             Object* cond = evalNode(expr->conditions[i]);
-            if (isError(cond))
+            if (isError(cond)) {
                 return cond;
+            }
             if (isTruthy(cond))  {
                 return evalNode(expr->alternatives[i]);
             }
         }
         // if no else-ifs true/found, evaluate final else
-        if (expr->alternative != NULL)
+        if (expr->alternative != NULL) {
             return evalNode(expr->alternative);
-        else
+        }
+        else {
             return NULL;
+        }
     }
 }
 
