@@ -26,10 +26,12 @@ Object* evalNode(Node* node, shared_ptr<Environment> env = NULL) {
 Object* evalStatements(Statement* stmt, shared_ptr<Environment> env = NULL) {
     switch (stmt->type) {
         case identifierStatement:{
+            break;
         }
         case functionStatement: {
             FunctionStatement* fs = static_cast<FunctionStatement*>(stmt);
             Function* newf = new Function(fs->parameters, fs->body, env);
+            ENV->set(fs->name->value, newf);
             return newf;
         }
         case letStatement: {
@@ -122,8 +124,12 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = NULL) {
             return cond;
         }   
         case functionLiteral: {
+            // FIXME: currently properly parsing, but returning undefined behavior
+            // e.g., fn addTwo(x) {return x + 2;} works
+            // addTwo(2) should return 4, but returns random number (e.g. 393434192)
             FunctionLiteral* fl = static_cast<FunctionLiteral*>(expr);
             Function* newf = new Function(fl->parameters, fl->body, env);
+            ENV->set(fl->name->value, newf);
             return newf;
         }   
         case callExpression: {
@@ -136,13 +142,14 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = NULL) {
                 return args[0];
         }   
         case groupedExpression: {
+            break;
         }   
     }
+    return NULL;
 }
 
 
 Object* evalIfExpression(IfExpression* expr) {
-    // FIXME: not working as intended with printing return value
     Object* initCondition = evalNode(expr->condition);
     if (isError(initCondition)) {
         return initCondition;

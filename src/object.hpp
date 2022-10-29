@@ -172,14 +172,16 @@ typedef struct Environment {
 typedef struct Function : Object {
     std::vector<IdentifierLiteral*> parameters;
     BlockStatement* body;
+    std::shared_ptr<Environment> env;
 
     Function(
             std::vector<IdentifierLiteral*> params, 
             BlockStatement* body, 
-            std::shared_ptr<Environment>
+            std::shared_ptr<Environment> env
         ) {
         this->parameters = params;
         this->body = body;
+        this->env = env;
     }
     ~Function() {
         for (auto param : this->parameters)
