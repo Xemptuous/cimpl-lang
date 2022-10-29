@@ -1,7 +1,6 @@
 #include <iostream>
 #include <algorithm>
 #include "lexer.hpp"
-#include "token.hpp"
 
 using namespace std;
 
