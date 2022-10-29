@@ -39,7 +39,7 @@ void start(string input, shared_ptr<Environment> env) {
 
 
 void printParserErrors(vector<string> errs) {
-    cout << "===============================";
+    cout << "parser error:\n";
     for (auto err : errs) {
         cout << '\t' << err << '\n';
     }

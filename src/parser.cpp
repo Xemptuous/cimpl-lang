@@ -204,7 +204,7 @@ Expression* Parser::parseExpression(int precedence) {
     auto prefix = prefixFunctions.find(this->currentToken.type);
     if (prefix == prefixFunctions.end()) {
         std::ostringstream ss;
-        ss << "No prefix parse function found for " << this->currentToken.type << '\n';
+        ss << "No prefix parse function found for " << this->currentToken.literal << '\n';
         this->errors.push_back(ss.str());
         return NULL;
     }

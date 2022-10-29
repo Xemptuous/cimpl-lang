@@ -26,11 +26,6 @@ void AST::checkParserErrors() {
     if (len == 0) {
         return;
     }
-    cout << "parser has " << len <<  " errors:\n\n";
-    for (int i = 0; i < len; i++) {
-        cout << "parser error: " << this->parser->errors[i] << '\n';
-    }
-    exit(1);
 }
 
 
