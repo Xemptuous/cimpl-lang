@@ -1,5 +1,4 @@
-#include "ast.hpp"
-#include "object.hpp"
+#include "evaluator.hpp"
 #include <sstream>
 #include <iostream>
 
@@ -11,30 +10,9 @@ Boolean _FALSE_BOOL = Boolean(false);
 Null _NULL = Null{};
 shared_ptr<Environment> ENV = nullptr;
 
-// FORWARD DECLARATIONS
-vector<Object*> evalCallExpressions(vector<Expression*> expr, shared_ptr<Environment>);
-Object* evalStatements(Statement*, shared_ptr<Environment>);
-Object* evalExpressions(Expression*, shared_ptr<Environment>);
-Boolean* nativeToBoolean(bool);
-Object* evalPrefixExpression(string, Object*);
-Object* evalBangOperatorExpression(Object*);
-Object* evalMinusOperatorExpression(Object*);
-Object* evalInfixExpression(string, Object*, Object*);
-Object* evalIntegerInfixExpression(string, Object*, Object*);
-Object* evalIfExpression(IfExpression*);
-Object* evalIdentifier(IdentifierLiteral*, shared_ptr<Environment>);
-Object* newError(string);
-bool isError(Object*);
-bool isTruthy(Object*);
-Object* applyFunction(Object*, vector<Object*>);
-shared_ptr<Environment> extendFunction(Function*, vector<Object*>);
-Object* unwrapEvalValue(Object*);
-
-//TODO: pass environments around as needed
-
 void setEnvironment(shared_ptr<Environment> env) { ENV = env; }
 
-// MAIN
+
 Object* evalNode(Node* node, shared_ptr<Environment> env = NULL) {
     if (node->nodetype == statement) {
         Statement* stmt = static_cast<Statement*>(node);
