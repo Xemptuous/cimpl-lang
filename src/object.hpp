@@ -119,38 +119,6 @@ typedef struct ReturnValue : Object {
 } ReturnValue;
 
 
-typedef struct Function : Object {
-    std::vector<IdentifierLiteral*> parameters;
-    BlockStatement* body;
-
-    Function(std::vector<IdentifierLiteral*> params, BlockStatement* body) {
-        this->parameters = params;
-        this->body = body;
-    }
-    ~Function() {
-        for (auto param : this->parameters)
-            delete param;
-        delete this->body;
-    }
-
-    inline std::string inspectObject() { return ObjectType.FUNCTION_OBJ; };
-    std::string inspectType() {
-        std::vector<std::string> params{};
-
-        for (auto param : this->parameters)
-            params.push_back(param->printString());
-
-        std::ostringstream ss;
-        for (std::string param : params) {
-            ss << "fn(" << param << ", ) {\n" << 
-                this->body->printString() << "\n}\n";
-        }
-        return ss.str();
-    }
-
-} Function;
-
-
 typedef struct Error : Object {
     std::string message;
 
@@ -165,10 +133,9 @@ typedef struct Error : Object {
 
 
 typedef struct Environment {
-    // std::unordered_map<std::string, std::shared_ptr<Object>> store{};
     std::unordered_map<std::string, Object*> store{};
     std::vector<Object*> gc{};
-    Environment* outer;
+    std::shared_ptr<Environment> outer;
 
     Environment() {
         this->outer = NULL;
@@ -195,11 +162,46 @@ typedef struct Environment {
         }
     }
 
-    // std::shared_ptr<Object> set(std::string name, std::shared_ptr<Object> val) {
     Object* set(std::string name, Object* val) {
-        // this->store.emplace(name, val);
         this->store[name] = val;
         return val;
     }
 } Environment;
+
+
+typedef struct Function : Object {
+    std::vector<IdentifierLiteral*> parameters;
+    BlockStatement* body;
+
+    Function(
+            std::vector<IdentifierLiteral*> params, 
+            BlockStatement* body, 
+            std::shared_ptr<Environment>
+        ) {
+        this->parameters = params;
+        this->body = body;
+    }
+    ~Function() {
+        for (auto param : this->parameters)
+            delete param;
+        delete this->body;
+    }
+
+    inline std::string inspectObject() { return ObjectType.FUNCTION_OBJ; };
+    std::string inspectType() {
+        std::vector<std::string> params{};
+
+        for (auto param : this->parameters)
+            params.push_back(param->printString());
+
+        std::ostringstream ss;
+        for (std::string param : params) {
+            ss << "fn(" << param << ", ) {\n" << 
+                this->body->printString() << "\n}\n";
+        }
+        return ss.str();
+    }
+
+} Function;
+
 

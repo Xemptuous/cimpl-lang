@@ -9,12 +9,12 @@ using namespace std;
 Boolean _TRUE_BOOL = Boolean(true);
 Boolean _FALSE_BOOL = Boolean(false);
 Null _NULL = Null{};
-std::shared_ptr<Environment> ENV = nullptr;
+shared_ptr<Environment> ENV = nullptr;
 
 // FORWARD DECLARATIONS
-std::vector<Object*> evalCallExpressions(std::vector<Expression*> expr);
-Object* evalStatements(Statement*, std::shared_ptr<Environment>);
-Object* evalExpressions(Expression*, std::shared_ptr<Environment>);
+vector<Object*> evalCallExpressions(vector<Expression*> expr, shared_ptr<Environment>);
+Object* evalStatements(Statement*, shared_ptr<Environment>);
+Object* evalExpressions(Expression*, shared_ptr<Environment>);
 Boolean* nativeToBoolean(bool);
 Object* evalPrefixExpression(string, Object*);
 Object* evalBangOperatorExpression(Object*);
@@ -22,20 +22,20 @@ Object* evalMinusOperatorExpression(Object*);
 Object* evalInfixExpression(string, Object*, Object*);
 Object* evalIntegerInfixExpression(string, Object*, Object*);
 Object* evalIfExpression(IfExpression*);
-Object* evalIdentifier(IdentifierLiteral*);
+Object* evalIdentifier(IdentifierLiteral*, shared_ptr<Environment>);
 Object* newError(string);
 bool isError(Object*);
 bool isTruthy(Object*);
-Object* applyFunction(Object*, std::vector<Object*>);
-std::shared_ptr<Environment> extendFunction(Function*, std::vector<Object*>);
+Object* applyFunction(Object*, vector<Object*>);
+shared_ptr<Environment> extendFunction(Function*, vector<Object*>);
 Object* unwrapEvalValue(Object*);
 
 //TODO: pass environments around as needed
 
-void setEnvironment(std::shared_ptr<Environment> env) { ENV = env; }
+void setEnvironment(shared_ptr<Environment> env) { ENV = env; }
 
 // MAIN
-Object* evalNode(Node* node, std::shared_ptr<Environment> env = NULL) {
+Object* evalNode(Node* node, shared_ptr<Environment> env = NULL) {
     if (node->nodetype == statement) {
         Statement* stmt = static_cast<Statement*>(node);
         return evalStatements(stmt, env);
@@ -47,18 +47,18 @@ Object* evalNode(Node* node, std::shared_ptr<Environment> env = NULL) {
 }
 
 
-Object* evalStatements(Statement* stmt, std::shared_ptr<Environment> env = NULL) {
+Object* evalStatements(Statement* stmt, shared_ptr<Environment> env = NULL) {
     switch (stmt->type) {
         case identifierStatement:{
         }
         case functionStatement: {
             FunctionStatement* fs = static_cast<FunctionStatement*>(stmt);
-            Function* newf = new Function(fs->parameters, fs->body);
+            Function* newf = new Function(fs->parameters, fs->body, env);
             return newf;
         }
         case letStatement: {
             LetStatement* ls = static_cast<LetStatement*>(stmt);
-            Object* val = evalNode(ls->value);
+            Object* val = evalNode(ls->value, ENV);
             if (isError(val)) {
                 return val;
             }
@@ -91,7 +91,7 @@ Object* evalStatements(Statement* stmt, std::shared_ptr<Environment> env = NULL)
 }
 
 
-Object* evalExpressions(Expression* expr, std::shared_ptr<Environment> = NULL) {
+Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = NULL) {
     switch (expr->type) {
         case integerLiteral: {
             IntegerLiteral* i = static_cast<IntegerLiteral*>(expr);
@@ -118,7 +118,7 @@ Object* evalExpressions(Expression* expr, std::shared_ptr<Environment> = NULL) {
         }   
         case identifier: {
             IdentifierLiteral* i = static_cast<IdentifierLiteral*>(expr);
-            Object* newi = evalIdentifier(i);
+            Object* newi = evalIdentifier(i, ENV);
             return newi;
         }   
         case prefixExpression: {
@@ -147,15 +147,15 @@ Object* evalExpressions(Expression* expr, std::shared_ptr<Environment> = NULL) {
         }   
         case functionLiteral: {
             FunctionLiteral* fl = static_cast<FunctionLiteral*>(expr);
-            Function* newf = new Function(fl->parameters, fl->body);
+            Function* newf = new Function(fl->parameters, fl->body, env);
             return newf;
         }   
         case callExpression: {
             CallExpression* ce = static_cast<CallExpression*>(expr);
-            Object* func = evalNode(ce->_function);
+            Object* func = evalNode(ce->_function, env);
             if (isError(func))
                 return func;
-            std::vector<Object*> args = evalCallExpressions(ce->arguments);
+            vector<Object*> args = evalCallExpressions(ce->arguments, env);
             if (args.size() == 1 && isError(args[0]))
                 return args[0];
         }   
@@ -198,8 +198,8 @@ Object* evalIfExpression(IfExpression* expr) {
 }
 
 
-Object* evalIdentifier(IdentifierLiteral* node) {
-    Object* val = ENV->get(node->value);
+Object* evalIdentifier(IdentifierLiteral* node, shared_ptr<Environment> env) {
+    Object* val = env->get(node->value);
     if (val == NULL)
         return newError("identifier not found: " + node->value);
     return val;
@@ -305,11 +305,11 @@ Object* evalIntegerInfixExpression(
 }
 
 
-std::vector<Object*> evalCallExpressions(std::vector<Expression*> expr) {
-    std::vector<Object*> result;
+vector<Object*> evalCallExpressions(vector<Expression*> expr, shared_ptr<Environment> env) {
+    vector<Object*> result;
 
     for (auto e : expr) {
-        Object* evaluated = evalNode(e);
+        Object* evaluated = evalNode(e, env);
         if (isError(evaluated)) {
             result.push_back(evaluated);
             return result;
@@ -320,7 +320,7 @@ std::vector<Object*> evalCallExpressions(std::vector<Expression*> expr) {
 }
 
 
-Object* applyFunction(Object* fn, std::vector<Object*> args) {
+Object* applyFunction(Object* fn, vector<Object*> args) {
     Function* func;
     try {
         func = dynamic_cast<Function*>(fn);
@@ -330,14 +330,15 @@ Object* applyFunction(Object* fn, std::vector<Object*> args) {
         ss << "not a function: " << fn->inspectType();
         return newError(ss.str());
     }
-    std::shared_ptr<Environment> newEnv = extendFunction(func, args);
+    shared_ptr<Environment> newEnv = extendFunction(func, args);
     Object* evaluated = evalNode(func->body, newEnv);
     return unwrapEvalValue(evaluated);
 }
 
 
-std::shared_ptr<Environment> extendFunction(Function* fn, std::vector<Object*> args) {
-    std::shared_ptr<Environment> env (new Environment);
+shared_ptr<Environment> extendFunction(Function* fn, vector<Object*> args) {
+    shared_ptr<Environment> env (new Environment);
+    env->outer = ENV;
     for (int i = 0; i < fn->parameters.size(); i++) {
         env->set(fn->parameters[i]->value, args[i]);
     }
