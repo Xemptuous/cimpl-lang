@@ -31,21 +31,21 @@ Object* evalStatements(Statement* stmt, shared_ptr<Environment> env = NULL) {
     case functionStatement: {
       FunctionStatement* fs = static_cast<FunctionStatement*>(stmt);
       Function* newf = new Function(fs->parameters, fs->body, env);
-      ENV->set(fs->name->value, newf);
+      env->set(fs->name->value, newf);
       return newf;
     }
     case letStatement: {
       LetStatement* ls = static_cast<LetStatement*>(stmt);
-      Object* val = evalNode(ls->value, ENV);
+      Object* val = evalNode(ls->value, env);
       if (isError(val)) {
         return val;
       }
-      ENV->set(ls->name->value, val);
+      env->set(ls->name->value, val);
       break;
     }
     case returnStatement: {
       ReturnStatement* rs = static_cast<ReturnStatement*>(stmt);
-      Object* val = evalNode(rs->returnValue);
+      Object* val = evalNode(rs->returnValue, env);
       if (isError(val))
         return val;
       ReturnValue* newr = new ReturnValue(val);
@@ -54,12 +54,12 @@ Object* evalStatements(Statement* stmt, shared_ptr<Environment> env = NULL) {
     }
     case expressionStatement: {
       ExpressionStatement* es = static_cast<ExpressionStatement*>(stmt);
-      return evalNode(es->expression);
+      return evalNode(es->expression, env);
     }
     case blockStatement: {
       BlockStatement* bs = static_cast<BlockStatement*>(stmt);
       for (auto stmt : bs->statements) {
-        Object* result = evalNode(stmt);
+        Object* result = evalNode(stmt, env);
         if (result != NULL && result->type == RETURN_OBJ)
           return result;
       }
@@ -96,12 +96,12 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = NULL) {
     }   
     case identifier: {
       IdentifierLiteral* i = static_cast<IdentifierLiteral*>(expr);
-      Object* newi = evalIdentifier(i, ENV);
+      Object* newi = evalIdentifier(i, env);
       return newi;
     }   
     case prefixExpression: {
       PrefixExpression* p = static_cast<PrefixExpression*>(expr);
-      Object* right = evalNode(p->_right);
+      Object* right = evalNode(p->_right, env);
       if (isError(right))
         return right;
       Object* np = evalPrefixExpression(p->_operator, right);
@@ -109,10 +109,10 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = NULL) {
     }   
     case infixExpression: {
       InfixExpression* i = static_cast<InfixExpression*>(expr);
-      Object* left = evalNode(i->_left);
+      Object* left = evalNode(i->_left, env);
       if (isError(left))
         return left;
-      Object* right = evalNode(i->_right);
+      Object* right = evalNode(i->_right, env);
       if (isError(right))
         return right;
       Object* ni = evalInfixExpression(i->_operator, left, right);
@@ -120,16 +120,13 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = NULL) {
     }   
     case ifExpression: {
       IfExpression* i = static_cast<IfExpression*>(expr);
-      Object* cond = evalIfExpression(i);
+      Object* cond = evalIfExpression(i, env);
       return cond;
     }   
     case functionLiteral: {
-      // FIXME: currently properly parsing, but returning undefined behavior
-      // e.g., fn addTwo(x) {return x + 2;} works
-      // addTwo(2) should return 4, but returns random number (e.g. 393434192)
       FunctionLiteral* fl = static_cast<FunctionLiteral*>(expr);
       Function* newf = new Function(fl->parameters, fl->body, env);
-      ENV->set(fl->name->value, newf);
+      env->set(fl->name->value, newf);
       return newf;
     }   
     case callExpression: {
@@ -140,39 +137,40 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = NULL) {
       vector<Object*> args = evalCallExpressions(ce->arguments, env);
       if (args.size() == 1 && isError(args[0]))
         return args[0];
+      return applyFunction(func, args);
     }   
     case groupedExpression: {
-      break;
+      return NULL;
     }   
   }
   return NULL;
 }
 
 
-Object* evalIfExpression(IfExpression* expr) {
-  Object* initCondition = evalNode(expr->condition);
+Object* evalIfExpression(IfExpression* expr, shared_ptr<Environment> env) {
+  Object* initCondition = evalNode(expr->condition, env);
   if (isError(initCondition)) {
     return initCondition;
   }
 
   // if first if condition is true, eval consequence
   if (isTruthy(initCondition)) {
-    return evalNode(expr->consequence);
+    return evalNode(expr->consequence, env);
   }
   else {
     // if else-if present, iterate through to find true condition
     for (int i = 0; i < expr->conditions.size(); i++) {
-      Object* cond = evalNode(expr->conditions[i]);
+      Object* cond = evalNode(expr->conditions[i], env);
       if (isError(cond)) {
         return cond;
       }
       if (isTruthy(cond))  {
-        return evalNode(expr->alternatives[i]);
+        return evalNode(expr->alternatives[i], env);
       }
     }
     // if no else-ifs true/found, evaluate final else
     if (expr->alternative != NULL) {
-      return evalNode(expr->alternative);
+      return evalNode(expr->alternative, env);
     }
     else {
       return NULL;
@@ -320,8 +318,7 @@ Object* applyFunction(Object* fn, vector<Object*> args) {
 
 
 shared_ptr<Environment> extendFunction(Function* fn, vector<Object*> args) {
-  shared_ptr<Environment> env (new Environment);
-  env->outer = ENV;
+  shared_ptr<Environment> env (new Environment(fn->env));
   for (int i = 0; i < fn->parameters.size(); i++) {
     env->set(fn->parameters[i]->value, args[i]);
   }
@@ -330,16 +327,11 @@ shared_ptr<Environment> extendFunction(Function* fn, vector<Object*> args) {
 
 
 Object* unwrapEvalValue(Object* evaluated) {
-  ReturnValue* obj;
-  try {
-    obj = dynamic_cast<ReturnValue*>(evaluated);
+  if (evaluated->inspectType() == ObjectType.RETURN_OBJ) {
+    ReturnValue* obj =  dynamic_cast<ReturnValue*>(evaluated);
+    return obj->value;
   }
-  catch (...) {
-    ostringstream ss;
-    ss << "Invalid return value";
-    return newError(ss.str());
-  }
-  return obj;
+  return evaluated;
 }
 
 

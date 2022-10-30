@@ -16,21 +16,26 @@ void start(string input, shared_ptr<Environment> env) {
     printParserErrors(ast->parser->errors);
     return;
   }
-  setEnvironment(env);
+
+
   for (Statement* stmt : ast->Statements) {
     Object* evaluated = evalNode(stmt, env);
     if (evaluated != NULL) {
       if (evaluated->type == RETURN_OBJ) {
         ReturnValue* result = static_cast<ReturnValue*>(evaluated);
+        cout << "printing return val:\n";
         cout << result->value->inspectObject() << '\n';
         continue;
       }
       else if (evaluated->type == ERROR_OBJ) {
+        cout << "printing error obj val:\n";
         Error* result = static_cast<Error*>(evaluated);
         cout << result->message << '\n';
         continue;
       }
-      cout << evaluated->inspectObject() << '\n';
+      else {
+        cout << evaluated->inspectObject() << '\n';
+      }
     }
   }
   // cout << ast->printString() << '\n';

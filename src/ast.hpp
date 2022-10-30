@@ -362,6 +362,7 @@ typedef struct CallExpression : Expression {
 
   CallExpression() {
     this->nodetype = expression;
+    this->type = callExpression;
     this->_function = NULL;
   }
   ~CallExpression() {

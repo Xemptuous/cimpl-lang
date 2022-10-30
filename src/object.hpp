@@ -37,7 +37,7 @@ typedef struct Object {
   Object() {
     this->type = OBJECT_OBJ;
   };
-  virtual ~Object() = default;
+  ~Object() = default;
 
   virtual inline std::string inspectObject() { return "OBJECT"; };
   virtual inline std::string inspectType() { return ObjectType.OBJECT_OBJ; };
@@ -137,8 +137,8 @@ typedef struct Environment {
   std::vector<Object*> gc{};
   std::shared_ptr<Environment> outer;
 
-  Environment() {
-    this->outer = NULL;
+  Environment(std::shared_ptr<Environment> env = NULL) {
+    this->outer = env;
   }
 
   ~Environment() {
@@ -178,7 +178,7 @@ typedef struct Function : Object {
       std::vector<IdentifierLiteral*> params, 
       BlockStatement* body, 
       std::shared_ptr<Environment> env
-      ) {
+    ) {
     this->parameters = params;
     this->body = body;
     this->env = env;
@@ -189,19 +189,20 @@ typedef struct Function : Object {
     delete this->body;
   }
 
-  inline std::string inspectObject() { return ObjectType.FUNCTION_OBJ; };
-  std::string inspectType() {
-    std::vector<std::string> params{};
-
-    for (auto param : this->parameters)
-      params.push_back(param->printString());
-
-    std::ostringstream ss;
-    for (std::string param : params) {
-      ss << "fn(" << param << ", ) {\n" << 
-        this->body->printString() << "\n}\n";
-    }
-    return ss.str();
+  inline std::string inspectType() { return ObjectType.FUNCTION_OBJ; };
+  inline std::string inspectObject() {
+    // std::vector<std::string> params{};
+    //
+    // for (auto param : this->parameters)
+    //   params.push_back(param->printString());
+    //
+    // std::ostringstream ss;
+    // for (std::string param : params) {
+    //   ss << "fn(" << param << ", ) {\n" << 
+    //     this->body->printString() << "\n}\n";
+    // }
+    // return ss.str();
+    return "";
   }
 
 } Function;

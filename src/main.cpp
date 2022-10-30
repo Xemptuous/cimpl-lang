@@ -3,13 +3,14 @@
 
 using namespace std;
 void start(string, shared_ptr<Environment>);
+void setEnvironment(shared_ptr<Environment> env);
 
 
 int main() {
   system("clear");
-  shared_ptr<Environment> env (new Environment);
-  // Environment* env = new Environment;
   string input;
+  shared_ptr<Environment> env (new Environment);
+  setEnvironment(env);
 
   while (true) {
 start:
