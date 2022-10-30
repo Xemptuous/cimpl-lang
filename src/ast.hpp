@@ -28,7 +28,6 @@ enum ExpressionType {
   ifExpression,
   functionLiteral,
   callExpression,
-  groupedExpression,
 };
 
 
@@ -397,7 +396,6 @@ const std::unordered_map<int, std::string> ExpressionMap = {
   {7, "If Expression"},
   {8, "Function Literal"},
   {9, "Call Expression"},
-  {10, "Grouped Expression"},
 };
 
 

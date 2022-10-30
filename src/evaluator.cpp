@@ -139,9 +139,6 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = NULL) {
         return args[0];
       return applyFunction(func, args);
     }   
-    case groupedExpression: {
-      return NULL;
-    }   
   }
   return NULL;
 }
