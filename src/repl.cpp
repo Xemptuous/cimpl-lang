@@ -23,12 +23,10 @@ void start(string input, shared_ptr<Environment> env) {
     if (evaluated != NULL) {
       if (evaluated->type == RETURN_OBJ) {
         ReturnValue* result = static_cast<ReturnValue*>(evaluated);
-        cout << "printing return val:\n";
         cout << result->value->inspectObject() << '\n';
         continue;
       }
       else if (evaluated->type == ERROR_OBJ) {
-        cout << "printing error obj val:\n";
         Error* result = static_cast<Error*>(evaluated);
         cout << result->message << '\n';
         continue;

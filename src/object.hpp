@@ -191,18 +191,17 @@ typedef struct Function : Object {
 
   inline std::string inspectType() { return ObjectType.FUNCTION_OBJ; };
   inline std::string inspectObject() {
-    // std::vector<std::string> params{};
-    //
-    // for (auto param : this->parameters)
-    //   params.push_back(param->printString());
-    //
-    // std::ostringstream ss;
-    // for (std::string param : params) {
-    //   ss << "fn(" << param << ", ) {\n" << 
-    //     this->body->printString() << "\n}\n";
-    // }
-    // return ss.str();
-    return "";
+    std::vector<std::string> params{};
+
+    for (auto param : this->parameters)
+      params.push_back(param->printString());
+
+    std::ostringstream ss;
+    for (std::string param : params) {
+      ss << "fn(" << param << ", ) {\n" << 
+        this->body->printString() << "\n}\n";
+    }
+    return ss.str();
   }
 
 } Function;
