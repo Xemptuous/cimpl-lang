@@ -206,6 +206,8 @@ Object* evalInfixExpression(
     ) {
   if (l->type == INTEGER_OBJ && r->type == INTEGER_OBJ)
     return evalIntegerInfixExpression(op, l, r);
+  else if (l->type == STRING_OBJ && r->type == STRING_OBJ)
+    return evalStringInfixExpression(op, l, r);
   else if (op == "==")
     return nativeToBoolean(l->inspectObject() == r->inspectObject());
   else if (op == "!=")
@@ -221,11 +223,7 @@ Object* evalInfixExpression(
 }
 
 
-Object* evalIntegerInfixExpression(
-    string op, 
-    Object* l, 
-    Object* r
-    ) {
+Object* evalIntegerInfixExpression(string op, Object* l, Object* r) {
   int leftVal = static_cast<Integer*>(l)->value;
   int rightVal = static_cast<Integer*>(r)->value;
 
@@ -281,6 +279,17 @@ Object* evalIntegerInfixExpression(
       ss << "Unknown operator: " << leftVal << op << rightVal;
       return newError(ss.str());
   }
+}
+
+
+Object* evalStringInfixExpression(string op, Object* l, Object* r) {
+  if (op != "+")
+    return newError("unknown operator: " + l->inspectType() + op + r->inspectType());
+  String* nl = static_cast<String*>(l);
+  String* nr = static_cast<String*>(r);
+  String* news = new String(nl->value + nr->value);
+  ENV->gc.push_back(news);
+  return news;
 }
 
 
