@@ -26,5 +26,4 @@ start:
     }
     start(input, env);
   }
-  // delete env;
 }

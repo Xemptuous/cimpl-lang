@@ -1,4 +1,4 @@
-#include <iostream>
+#include <ostream>
 #include <algorithm>
 #include "lexer.hpp"
 
