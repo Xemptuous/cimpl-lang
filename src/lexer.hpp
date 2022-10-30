@@ -11,8 +11,7 @@ class Lexer {
     }
     ~Lexer() = default;
 
-    // Methods
-    Token nextToken();
+      Token nextToken();
   private:
     // Attributes
     std::string input;

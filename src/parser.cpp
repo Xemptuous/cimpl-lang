@@ -13,6 +13,7 @@ void Parser::nextToken() {
 
 
 bool Parser::expectPeek(std::string tokentype) {
+  // checks the expected token, and if found, advances parser
   if (this->peekToken.type == tokentype) {
     this->nextToken();
     return true;
@@ -25,6 +26,7 @@ bool Parser::expectPeek(std::string tokentype) {
 Statement* Parser::parseStatement() {
   std::string curr = this->currentToken.type;
   std::string peek = this->peekToken.type;
+  // if starts with optional datatype declaration
   if (curr == TokenType.DATATYPE) {
     if (peek == TokenType.IDENT) {
       return this->parseIdentifierStatement();
@@ -356,6 +358,7 @@ FunctionStatement* Parser::parseFunctionStatement() {
     return NULL;
   }
   stmt->body = this->parseBlockStatement();
+  // make sure return datatype is the same as funtion datatype
   this->checkFunctionReturn(stmt);
 
   return stmt;
@@ -590,9 +593,6 @@ void Parser::checkFunctionReturn(FunctionStatement* stmt) {
       if (stmt->datatype != returnStmt->datatype) {
         std::ostringstream ss;
         ss << "Function return value DataType mismatch.\n";
-        // ss << "Function return value DataType mismatch: " << 
-        //     DatatypeMap.at(stmt->node.datatype) << " != " << 
-        //     DatatypeMap.at(returnStmt->node.datatype);
         this->errors.push_back(ss.str());
       }
     }

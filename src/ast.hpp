@@ -17,6 +17,7 @@ enum StatementType {
   blockStatement,
 };
 
+
 enum ExpressionType {
   integerLiteral,
   floatLiteral,

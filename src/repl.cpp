@@ -38,7 +38,6 @@ void start(string input, shared_ptr<Environment> env) {
       }
     }
   }
-  // cout << ast->printString() << '\n';
   delete ast;
 }
 
