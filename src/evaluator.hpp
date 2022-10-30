@@ -20,4 +20,4 @@ bool isError(Object*);
 bool isTruthy(Object*);
 Object* applyFunction(Object*, std::vector<Object*>);
 std::shared_ptr<Environment> extendFunction(Function*, std::vector<Object*>);
-Object* unwrapEvalValue(Object*);
+Object* unwrapReturnValue(Object*);

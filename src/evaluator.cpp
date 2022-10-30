@@ -6,6 +6,7 @@ using namespace std;
 Boolean _TRUE_BOOL = Boolean(true);
 Boolean _FALSE_BOOL = Boolean(false);
 Null _NULL = Null{};
+// main outer env
 shared_ptr<Environment> ENV = nullptr;
 
 void setEnvironment(shared_ptr<Environment> env) { ENV = env; }
@@ -310,7 +311,7 @@ Object* applyFunction(Object* fn, vector<Object*> args) {
   }
   shared_ptr<Environment> newEnv = extendFunction(func, args);
   Object* evaluated = evalNode(func->body, newEnv);
-  return unwrapEvalValue(evaluated);
+  return unwrapReturnValue(evaluated);
 }
 
 
@@ -323,7 +324,7 @@ shared_ptr<Environment> extendFunction(Function* fn, vector<Object*> args) {
 }
 
 
-Object* unwrapEvalValue(Object* evaluated) {
+Object* unwrapReturnValue(Object* evaluated) {
   if (evaluated->inspectType() == ObjectType.RETURN_OBJ) {
     ReturnValue* obj =  dynamic_cast<ReturnValue*>(evaluated);
     return obj->value;
