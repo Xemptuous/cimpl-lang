@@ -201,11 +201,8 @@ Object* evalPrefixExpression(string op, Object* r, shared_ptr<Environment> env) 
 
 
 Object* evalInfixExpression(
-    string op, 
-    Object* l, 
-    Object* r,
-    shared_ptr<Environment> env
-    ) {
+    string op, Object* l, Object* r,shared_ptr<Environment> env
+  ) {
   if (l->type == INTEGER_OBJ && r->type == INTEGER_OBJ)
     return evalIntegerInfixExpression(op, l, r, env);
   else if (l->type == STRING_OBJ && r->type == STRING_OBJ)
@@ -225,7 +222,9 @@ Object* evalInfixExpression(
 }
 
 
-Object* evalIntegerInfixExpression(string op, Object* l, Object* r, shared_ptr<Environment> env) {
+Object* evalIntegerInfixExpression(
+    string op, Object* l, Object* r, shared_ptr<Environment> env
+  ) {
   int leftVal = static_cast<Integer*>(l)->value;
   int rightVal = static_cast<Integer*>(r)->value;
 
