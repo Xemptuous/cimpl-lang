@@ -445,8 +445,12 @@ const std::unordered_map<std::string, int> precedencesMap = {
   {TokenType.LT, Precedences.LESSGREATER},
   {TokenType.GT, Precedences.LESSGREATER},
   {TokenType.PLUS, Precedences.SUM},
+  {TokenType.PLUS_EQ, Precedences.SUM},
   {TokenType.MINUS, Precedences.SUM},
+  {TokenType.MINUS_EQ, Precedences.SUM},
   {TokenType.SLASH, Precedences.PRODUCT},
+  {TokenType.DIV_EQ, Precedences.PRODUCT},
   {TokenType.ASTERISK, Precedences.PRODUCT},
+  {TokenType.MULT_EQ, Precedences.PRODUCT},
   {TokenType.LPAREN, Precedences.CALL},
 };

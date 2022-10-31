@@ -5,7 +5,7 @@
 using namespace std;
 void printParserErrors(vector<string>);
 Object* evalNode(Node*, shared_ptr<Environment>);
-void setEnvironment(shared_ptr<Environment>);
+// void setEnvironment(shared_ptr<Environment>);
 
 
 void start(string input, shared_ptr<Environment> env) {

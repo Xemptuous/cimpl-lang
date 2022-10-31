@@ -8,12 +8,12 @@ std::vector<Object*> evalCallExpressions(
 Object* evalStatements(Statement*, std::shared_ptr<Environment>);
 Object* evalExpressions(Expression*, std::shared_ptr<Environment>);
 Boolean* nativeToBoolean(bool);
-Object* evalPrefixExpression(std::string, Object*);
+Object* evalPrefixExpression(std::string, Object*, std::shared_ptr<Environment>);
 Object* evalBangOperatorExpression(Object*);
-Object* evalMinusOperatorExpression(Object*);
-Object* evalInfixExpression(std::string, Object*, Object*);
-Object* evalIntegerInfixExpression(std::string, Object*, Object*);
-Object* evalStringInfixExpression(std::string, Object*, Object*);
+Object* evalMinusOperatorExpression(Object*, std::shared_ptr<Environment>);
+Object* evalInfixExpression(std::string, Object*, Object*, std::shared_ptr<Environment>);
+Object* evalIntegerInfixExpression(std::string, Object*, Object*, std::shared_ptr<Environment>);
+Object* evalStringInfixExpression(std::string, Object*, Object*, std::shared_ptr<Environment>);
 Object* evalIfExpression(IfExpression*, std::shared_ptr<Environment>);
 Object* evalIdentifier(IdentifierLiteral*, std::shared_ptr<Environment>);
 Object* newError(std::string);
