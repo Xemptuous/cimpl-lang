@@ -38,9 +38,8 @@ Object* evalStatements(Statement* stmt, shared_ptr<Environment> env = NULL) {
     case letStatement: {
       LetStatement* ls = static_cast<LetStatement*>(stmt);
       Object* val = evalNode(ls->value, env);
-      if (isError(val)) {
+      if (isError(val))
         return val;
-      }
       env->set(ls->name->value, val);
       break;
     }
@@ -69,10 +68,11 @@ Object* evalStatements(Statement* stmt, shared_ptr<Environment> env = NULL) {
       //FIXME: string += int returns only int
       AssignmentExpressionStatement* ae = static_cast<AssignmentExpressionStatement*>(stmt);
       Object* val = evalNode(ae->value, env);
-      if (isError(val)) {
+      if (isError(val))
         return val;
-      }
       Object* oldVal = env->get(ae->name->value);
+      if (val->type != oldVal->type)
+        return newError("Cannot assign " + oldVal->inspectType() + " and " + val->inspectType());
       Object* newVal = evalAssignmentExpression(ae->_operator, oldVal, val, env);
       env->set(ae->name->value, newVal);
       break;
@@ -159,32 +159,26 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = NULL) {
 
 Object* evalIfExpression(IfExpression* expr, shared_ptr<Environment> env) {
   Object* initCondition = evalNode(expr->condition, env);
-  if (isError(initCondition)) {
+  if (isError(initCondition))
     return initCondition;
-  }
 
   // if first if condition is true, eval consequence
-  if (isTruthy(initCondition)) {
+  if (isTruthy(initCondition))
     return evalNode(expr->consequence, env);
-  }
   else {
     // if else-if present, iterate through to find true condition
     for (int i = 0; i < expr->conditions.size(); i++) {
       Object* cond = evalNode(expr->conditions[i], env);
-      if (isError(cond)) {
+      if (isError(cond))
         return cond;
-      }
-      if (isTruthy(cond))  {
+      if (isTruthy(cond))
         return evalNode(expr->alternatives[i], env);
-      }
     }
     // if no else-ifs true/found, evaluate final else
-    if (expr->alternative != NULL) {
+    if (expr->alternative != NULL)
       return evalNode(expr->alternative, env);
-    }
-    else {
+    else
       return NULL;
-    }
   }
 }
 
