@@ -65,6 +65,18 @@ Object* evalStatements(Statement* stmt, shared_ptr<Environment> env = NULL) {
           return result;
       }
     }
+    case assignmentExpressionStatement: {
+      //FIXME: string += int returns only int
+      AssignmentExpressionStatement* ae = static_cast<AssignmentExpressionStatement*>(stmt);
+      Object* val = evalNode(ae->value, env);
+      if (isError(val)) {
+        return val;
+      }
+      Object* oldVal = env->get(ae->name->value);
+      Object* newVal = evalAssignmentExpression(ae->_operator, oldVal, val, env);
+      env->set(ae->name->value, newVal);
+      break;
+    }
   }
   return NULL;
 }
@@ -281,6 +293,48 @@ Object* evalIntegerInfixExpression(
       ss << "Unknown operator: " << leftVal << op << rightVal;
       return newError(ss.str());
   }
+}
+
+Object* evalAssignmentExpression(
+    string op, Object* oldVal, Object* val, shared_ptr<Environment> env
+  ) {
+  if (val->type == INTEGER_OBJ) {
+    Integer* oldv = static_cast<Integer*>(oldVal);
+    Integer* v = static_cast<Integer*>(val);
+    if (op == "+=") {
+      Integer* newi = new Integer(oldv->value + v->value);
+      env->gc.push_back(newi);
+      return newi;
+    }
+    else if (op == "-=") {
+      Integer* newi = new Integer(oldv->value - v->value);
+      env->gc.push_back(newi);
+      return newi;
+    }
+    else if (op == "*=") {
+      Integer* newi = new Integer(oldv->value * v->value);
+      env->gc.push_back(newi);
+      return newi;
+    }
+    else if (op == "/=") {
+      Integer* newi = new Integer(oldv->value / v->value);
+      env->gc.push_back(newi);
+      return newi;
+    }
+  }
+  else if (val->type == STRING_OBJ) {
+    String* olds = static_cast<String*>(oldVal);
+    String* s = static_cast<String*>(val);
+    if (op == "+=") {
+      String* news = new String(olds->value + s->value);
+      env->gc.push_back(news);
+      return news;
+    }
+    else {
+      return newError("incompatible assignment operator: " + val->inspectType() + " " + op);
+    }
+  }
+  return NULL;
 }
 
 
