@@ -1,4 +1,5 @@
 #include "evaluator.hpp"
+#include <iostream>
 
 using namespace std;
 
@@ -7,9 +8,9 @@ Boolean _TRUE_BOOL = Boolean(true);
 Boolean _FALSE_BOOL = Boolean(false);
 Null _NULL = Null{};
 // main outer env
-shared_ptr<Environment> ENV = nullptr;
+// shared_ptr<Environment> ENV = nullptr;
 
-void setEnvironment(shared_ptr<Environment> env) { ENV = env; }
+// void setEnvironment(shared_ptr<Environment> env) { ENV = env; }
 
 
 Object* evalNode(Node* node, shared_ptr<Environment> env = NULL) {
@@ -49,7 +50,7 @@ Object* evalStatements(Statement* stmt, shared_ptr<Environment> env = NULL) {
       if (isError(val))
         return val;
       ReturnValue* newr = new ReturnValue(val);
-      ENV->gc.push_back(newr);
+      env->gc.push_back(newr);
       return newr;
     }
     case expressionStatement: {
@@ -87,13 +88,13 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = NULL) {
     case integerLiteral: {
       IntegerLiteral* i = static_cast<IntegerLiteral*>(expr);
       Integer* newi = new Integer(i->value);
-      ENV->gc.push_back(newi);
+      env->gc.push_back(newi);
       return newi;
     }   
     case floatLiteral: {
       FloatLiteral* f = static_cast<FloatLiteral*>(expr);
       Float* newf = new Float(f->value);
-      ENV->gc.push_back(newf);
+      env->gc.push_back(newf);
       return newf;
     }   
     case booleanExpression: {
@@ -104,7 +105,7 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = NULL) {
     case stringLiteral: {
       StringLiteral* s = static_cast<StringLiteral*>(expr);
       String* news = new String(s->value);
-      ENV->gc.push_back(news);
+      env->gc.push_back(news);
       return news;
     }   
     case identifier: {
@@ -117,7 +118,7 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = NULL) {
       Object* right = evalNode(p->_right, env);
       if (isError(right))
         return right;
-      Object* np = evalPrefixExpression(p->_operator, right);
+      Object* np = evalPrefixExpression(p->_operator, right, env);
       return np;
     }   
     case infixExpression: {
@@ -128,7 +129,7 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = NULL) {
       Object* right = evalNode(i->_right, env);
       if (isError(right))
         return right;
-      Object* ni = evalInfixExpression(i->_operator, left, right);
+      Object* ni = evalInfixExpression(i->_operator, left, right, env);
       return ni;
     }   
     case ifExpression: {
@@ -191,12 +192,12 @@ Object* evalIdentifier(IdentifierLiteral* node, shared_ptr<Environment> env) {
 }
 
 
-Object* evalPrefixExpression(string op, Object* r) {
+Object* evalPrefixExpression(string op, Object* r, shared_ptr<Environment> env) {
   switch(op[0]) {
     case '!':
       return evalBangOperatorExpression(r);
     case '-':
-      return evalMinusOperatorExpression(r);
+      return evalMinusOperatorExpression(r, env);
     default:
       ostringstream ss;
       ss << "Unknown operator: " << op << r->inspectType();
@@ -206,12 +207,12 @@ Object* evalPrefixExpression(string op, Object* r) {
 
 
 Object* evalInfixExpression(
-    string op, 
-    Object* l, 
-    Object* r
-    ) {
+    string op, Object* l, Object* r,shared_ptr<Environment> env
+  ) {
   if (l->type == INTEGER_OBJ && r->type == INTEGER_OBJ)
-    return evalIntegerInfixExpression(op, l, r);
+    return evalIntegerInfixExpression(op, l, r, env);
+  else if (l->type == STRING_OBJ && r->type == STRING_OBJ)
+    return evalStringInfixExpression(op, l, r, env);
   else if (op == "==")
     return nativeToBoolean(l->inspectObject() == r->inspectObject());
   else if (op == "!=")
@@ -228,10 +229,8 @@ Object* evalInfixExpression(
 
 
 Object* evalIntegerInfixExpression(
-    string op, 
-    Object* l, 
-    Object* r
-    ) {
+    string op, Object* l, Object* r, shared_ptr<Environment> env
+  ) {
   int leftVal = static_cast<Integer*>(l)->value;
   int rightVal = static_cast<Integer*>(r)->value;
 
@@ -244,22 +243,22 @@ Object* evalIntegerInfixExpression(
   switch (op[0]) {
     case '+': {
       Integer* newi = new Integer(leftVal + rightVal);
-      ENV->gc.push_back(newi);
+      env->gc.push_back(newi);
       return newi;
     }
     case '-': {
       Integer* newi = new Integer(leftVal - rightVal);
-      ENV->gc.push_back(newi);
+      env->gc.push_back(newi);
       return newi;
     }
     case '*': {
       Integer* newi = new Integer(leftVal * rightVal);
-      ENV->gc.push_back(newi);
+      env->gc.push_back(newi);
       return newi;
     }
     case '/': {
       Integer* newi = new Integer(leftVal / rightVal);
-      ENV->gc.push_back(newi);
+      env->gc.push_back(newi);
       return newi;
     }
     case '<':
@@ -332,6 +331,17 @@ Object* evalAssignmentExpression(
 }
 
 
+Object* evalStringInfixExpression(string op, Object* l, Object* r, shared_ptr<Environment> env) {
+  if (op[0] != '+')
+    return newError("unknown operator: " + l->inspectType() + " " + op + " " + r->inspectType());
+  String* nl = static_cast<String*>(l);
+  String* nr = static_cast<String*>(r);
+  String* news = new String(nl->value + nr->value);
+  env->gc.push_back(news);
+  return news;
+}
+
+
 vector<Object*> evalCallExpressions(vector<Expression*> expr, shared_ptr<Environment> env) {
   vector<Object*> result;
 
@@ -395,7 +405,7 @@ Object* evalBangOperatorExpression(Object* _right) {
 }
 
 
-Object* evalMinusOperatorExpression(Object* _right) {
+Object* evalMinusOperatorExpression(Object* _right, shared_ptr<Environment> env) {
   if (_right->type != INTEGER_OBJ) {
     ostringstream ss;
     ss << "Unknown operator: -" << _right->inspectType();
@@ -403,7 +413,7 @@ Object* evalMinusOperatorExpression(Object* _right) {
   }
   Integer* i = static_cast<Integer*>(_right);
   Integer* newi = new Integer(-i->value);
-  ENV->gc.push_back(newi);
+  env->gc.push_back(newi);
   Object* newInt = static_cast<Integer*>(newi);
   return newInt;
 }
