@@ -38,9 +38,8 @@ Object* evalStatements(Statement* stmt, shared_ptr<Environment> env = NULL) {
     case letStatement: {
       LetStatement* ls = static_cast<LetStatement*>(stmt);
       Object* val = evalNode(ls->value, env);
-      if (isError(val)) {
+      if (isError(val))
         return val;
-      }
       env->set(ls->name->value, val);
       break;
     }
@@ -64,6 +63,19 @@ Object* evalStatements(Statement* stmt, shared_ptr<Environment> env = NULL) {
         if (result != NULL && result->type == RETURN_OBJ)
           return result;
       }
+    }
+    case assignmentExpressionStatement: {
+      //FIXME: string += int returns only int
+      AssignmentExpressionStatement* ae = static_cast<AssignmentExpressionStatement*>(stmt);
+      Object* val = evalNode(ae->value, env);
+      if (isError(val))
+        return val;
+      Object* oldVal = env->get(ae->name->value);
+      if (val->type != oldVal->type)
+        return newError("Cannot assign " + oldVal->inspectType() + " and " + val->inspectType());
+      Object* newVal = evalAssignmentExpression(ae->_operator, oldVal, val, env);
+      env->set(ae->name->value, newVal);
+      break;
     }
   }
   return NULL;
@@ -147,32 +159,26 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = NULL) {
 
 Object* evalIfExpression(IfExpression* expr, shared_ptr<Environment> env) {
   Object* initCondition = evalNode(expr->condition, env);
-  if (isError(initCondition)) {
+  if (isError(initCondition))
     return initCondition;
-  }
 
   // if first if condition is true, eval consequence
-  if (isTruthy(initCondition)) {
+  if (isTruthy(initCondition))
     return evalNode(expr->consequence, env);
-  }
   else {
     // if else-if present, iterate through to find true condition
     for (int i = 0; i < expr->conditions.size(); i++) {
       Object* cond = evalNode(expr->conditions[i], env);
-      if (isError(cond)) {
+      if (isError(cond))
         return cond;
-      }
-      if (isTruthy(cond))  {
+      if (isTruthy(cond))
         return evalNode(expr->alternatives[i], env);
-      }
     }
     // if no else-ifs true/found, evaluate final else
-    if (expr->alternative != NULL) {
+    if (expr->alternative != NULL)
       return evalNode(expr->alternative, env);
-    }
-    else {
+    else
       return NULL;
-    }
   }
 }
 
@@ -281,6 +287,48 @@ Object* evalIntegerInfixExpression(
       ss << "Unknown operator: " << leftVal << op << rightVal;
       return newError(ss.str());
   }
+}
+
+Object* evalAssignmentExpression(
+    string op, Object* oldVal, Object* val, shared_ptr<Environment> env
+  ) {
+  if (val->type == INTEGER_OBJ) {
+    Integer* oldv = static_cast<Integer*>(oldVal);
+    Integer* v = static_cast<Integer*>(val);
+    if (op == "+=") {
+      Integer* newi = new Integer(oldv->value + v->value);
+      env->gc.push_back(newi);
+      return newi;
+    }
+    else if (op == "-=") {
+      Integer* newi = new Integer(oldv->value - v->value);
+      env->gc.push_back(newi);
+      return newi;
+    }
+    else if (op == "*=") {
+      Integer* newi = new Integer(oldv->value * v->value);
+      env->gc.push_back(newi);
+      return newi;
+    }
+    else if (op == "/=") {
+      Integer* newi = new Integer(oldv->value / v->value);
+      env->gc.push_back(newi);
+      return newi;
+    }
+  }
+  else if (val->type == STRING_OBJ) {
+    String* olds = static_cast<String*>(oldVal);
+    String* s = static_cast<String*>(val);
+    if (op == "+=") {
+      String* news = new String(olds->value + s->value);
+      env->gc.push_back(news);
+      return news;
+    }
+    else {
+      return newError("incompatible assignment operator: " + val->inspectType() + " " + op);
+    }
+  }
+  return NULL;
 }
 
 

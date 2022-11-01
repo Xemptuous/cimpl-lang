@@ -15,6 +15,7 @@ Object* evalInfixExpression(std::string, Object*, Object*);
 Object* evalIntegerInfixExpression(std::string, Object*, Object*);
 Object* evalIfExpression(IfExpression*, std::shared_ptr<Environment>);
 Object* evalIdentifier(IdentifierLiteral*, std::shared_ptr<Environment>);
+Object* evalAssignmentExpression(std::string, Object*, Object*, std::shared_ptr<Environment>);
 Object* newError(std::string);
 bool isError(Object*);
 bool isTruthy(Object*);
