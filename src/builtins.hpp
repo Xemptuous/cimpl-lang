@@ -19,7 +19,14 @@ typedef struct Builtin : Object {
 } Builtin;
 
 
+enum BuiltinFunctions {
+  len,
+  print,
+};
+
+
 const std::unordered_map<std::string, int> builtins {
   {"len", len},
   {"print", print}
 };
+

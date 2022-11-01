@@ -25,12 +25,6 @@ enum FunctionEnum {
 };
 
 
-enum BuiltinFunctions {
-  len,
-  print
-};
-
-
 const struct Objecttype {
   std::string OBJECT_OBJ = {"OBJECT"};
   std::string INTEGER_OBJ = {"INTEGER"};
