@@ -7,6 +7,7 @@ enum ObjectEnum {
   OBJECT_OBJ,
   INTEGER_OBJ,
   FUNCTION_OBJ,
+  BUILTIN_OBJ,
   BOOLEAN_TRUE,
   BOOLEAN_FALSE,
   STRING_OBJ,
@@ -17,10 +18,24 @@ enum ObjectEnum {
   NULL_OBJ,
 };
 
+
+enum FunctionEnum {
+  standardFunction,
+  builtinFunction,
+};
+
+
+enum BuiltinFunctions {
+  len,
+  print
+};
+
+
 const struct Objecttype {
   std::string OBJECT_OBJ = {"OBJECT"};
   std::string INTEGER_OBJ = {"INTEGER"};
   std::string FUNCTION_OBJ = {"FUNCTION"};
+  std::string BUILTIN_OBJ = {"BUILTIN"};
   std::string BOOLEAN_OBJ = {"BOOLEAN"};
   std::string STRING_OBJ = {"STRING"};
   std::string RETURN_OBJ = {"RETURN"};
@@ -173,6 +188,7 @@ typedef struct Function : Object {
   std::vector<IdentifierLiteral*> parameters;
   BlockStatement* body;
   std::shared_ptr<Environment> env;
+  int function_type;
 
   Function(
       std::vector<IdentifierLiteral*> params, 
@@ -182,6 +198,7 @@ typedef struct Function : Object {
     this->parameters = params;
     this->body = body;
     this->env = env;
+    this->function_type = standardFunction;
   }
   ~Function() {
     for (auto param : this->parameters)
@@ -203,7 +220,5 @@ typedef struct Function : Object {
     }
     return ss.str();
   }
-
 } Function;
-
 

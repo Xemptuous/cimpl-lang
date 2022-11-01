@@ -5,7 +5,7 @@
 using namespace std;
 void printParserErrors(vector<string>);
 Object* evalNode(Node*, shared_ptr<Environment>);
-// void setEnvironment(shared_ptr<Environment>);
+void setErrorGarbageCollector(shared_ptr<Environment>);
 
 
 void start(string input, shared_ptr<Environment> env) {
@@ -17,6 +17,8 @@ void start(string input, shared_ptr<Environment> env) {
     return;
   }
 
+  shared_ptr<Environment> err_gc ( new Environment() );
+  setErrorGarbageCollector(err_gc);
 
   for (Statement* stmt : ast->Statements) {
     Object* evaluated = evalNode(stmt, env);

@@ -1,4 +1,5 @@
 #include "evaluator.hpp"
+#include "builtins.hpp"
 #include <iostream>
 
 using namespace std;
@@ -7,10 +8,9 @@ using namespace std;
 Boolean _TRUE_BOOL = Boolean(true);
 Boolean _FALSE_BOOL = Boolean(false);
 Null _NULL = Null{};
-// main outer env
-// shared_ptr<Environment> ENV = nullptr;
+shared_ptr<Environment> err_gc = NULL;
 
-// void setEnvironment(shared_ptr<Environment> env) { ENV = env; }
+void setErrorGarbageCollector(shared_ptr<Environment> env) { err_gc = env; };
 
 
 Object* evalNode(Node* node, shared_ptr<Environment> env = NULL) {
@@ -184,14 +184,6 @@ Object* evalIfExpression(IfExpression* expr, shared_ptr<Environment> env) {
 }
 
 
-Object* evalIdentifier(IdentifierLiteral* node, shared_ptr<Environment> env) {
-  Object* val = env->get(node->value);
-  if (val == NULL)
-    return newError("identifier not found: " + node->value);
-  return val;
-}
-
-
 Object* evalPrefixExpression(string op, Object* r, shared_ptr<Environment> env) {
   switch(op[0]) {
     case '!':
@@ -357,19 +349,54 @@ vector<Object*> evalCallExpressions(vector<Expression*> expr, shared_ptr<Environ
 }
 
 
-Object* applyFunction(Object* fn, vector<Object*> args) {
-  Function* func;
-  try {
-    func = dynamic_cast<Function*>(fn);
+Object* evalBuiltinFunction(Object* fn, vector<Object*> args, shared_ptr<Environment> env) {
+  Builtin* bf = static_cast<Builtin*>(fn);
+  switch (bf->builtin_type) {
+    case len:
+      return built_in_len(args, env);
+    case print:
+      return built_in_print(args);
+    default:
+      return newError("not a valid function");
   }
-  catch (...) {
-    ostringstream ss;
-    ss << "not a function: " << fn->inspectType();
-    return newError(ss.str());
+};
+
+
+Object* evalIdentifier(IdentifierLiteral* node, shared_ptr<Environment> env) {
+  Object* val = env->get(node->value);
+  if (val != NULL)
+    return val;
+
+  auto builtin_find = builtins.find(node->value);
+  if(builtin_find != builtins.end()) {
+    Builtin* bi = new Builtin();
+    env->gc.push_back(bi);
+    return bi;
   }
-  shared_ptr<Environment> newEnv = extendFunction(func, args);
-  Object* evaluated = evalNode(func->body, newEnv);
-  return unwrapReturnValue(evaluated);
+  
+  return newError("identifier not found: " + node->value);
+  
+}
+
+
+Object* applyFunction(Object* fn, vector<Object*> args, shared_ptr<Environment> env) {
+  if(fn->type == standardFunction) {
+    Function* func;
+    try {
+      func = dynamic_cast<Function*>(fn);
+    }
+    catch (...) {
+      ostringstream ss;
+      ss << "not a function: " << fn->inspectType();
+      return newError(ss.str());
+    }
+    shared_ptr<Environment> newEnv = extendFunction(func, args);
+    Object* evaluated = evalNode(func->body, newEnv);
+    return unwrapReturnValue(evaluated);
+  }
+  else if (fn->type == builtinFunction)
+    return evalBuiltinFunction(fn, args, env);
+  return newError("not a function: " + fn->inspectType());
 }
 
 
@@ -444,7 +471,8 @@ bool isTruthy(Object* obj) {
 
 
 Object* newError(string msg) {
-  Object* err ( new Error(msg));
+  Object* err = new Error(msg);
+  err_gc->gc.push_back(err);
   return err;
 }
 

@@ -7,6 +7,7 @@ std::vector<Object*> evalCallExpressions(
     std::shared_ptr<Environment>);
 Object* evalStatements(Statement*, std::shared_ptr<Environment>);
 Object* evalExpressions(Expression*, std::shared_ptr<Environment>);
+Object* evalBuiltinFunction(Object*, std::vector<Object*>);
 Boolean* nativeToBoolean(bool);
 Object* evalPrefixExpression(std::string, Object*, std::shared_ptr<Environment>);
 Object* evalBangOperatorExpression(Object*);
