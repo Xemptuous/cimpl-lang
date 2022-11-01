@@ -56,10 +56,11 @@ const struct Tokentype {
   std::string SLASH = {"SLASH"};
   std::string INCREMENT = {"INCREMENT"};
   std::string DECREMENT = {"DECREMENT"};
-  std::string PLUS_EQ = {"PLUS_EQ"};
-  std::string MINUS_EQ = {"MINUS_EQ"};
-  std::string MULT_EQ = {"MULT_EQ"};
-  std::string DIV_EQ = {"DIV_EQ"};
+  std::string ASSIGN_EQ = {"ASSIGN_EQ"};
+  std::string PLUS_EQ = {"ASSIGN_EQ"};
+  std::string MINUS_EQ = {"ASSIGN_EQ"};
+  std::string MULT_EQ = {"ASSIGN_EQ"};
+  std::string DIV_EQ = {"ASSIGN_EQ"};
 
   // Delimiters
   std::string COMMA = {"COMMA"};

@@ -23,6 +23,7 @@ struct FunctionStatement;
 struct ReturnStatement;
 struct ExpressionStatement;
 struct BlockStatement;
+struct AssignmentExpressionStatement;
 
 
 class Parser {
@@ -66,6 +67,7 @@ class Parser {
     Expression* parseExpression(int);
     Expression* parseLeftPrefix(int);
     Expression* parseGroupedExpression();
+    AssignmentExpressionStatement* parseAssignmentExpression();
     IfExpression* parseIfExpression();
     FunctionLiteral* parseFunctionLiteral();
     std::vector<IdentifierLiteral*> parseFunctionParameters();
@@ -102,6 +104,7 @@ enum prefix {
   PREFIX_INCREMENT,
   PREFIX_DECREMENT,
   PREFIX_GROUPED_EXPR,
+  PREFIX_ASSIGN
 };
 
 
@@ -119,13 +122,17 @@ const std::unordered_map<std::string, int> prefixFunctions = {
   {TokenType.LPAREN, PREFIX_GROUPED_EXPR},
   {TokenType.IF, PREFIX_IF},
   {TokenType.FUNCTION, PREFIX_FUNCTION},
+  {TokenType.PLUS_EQ, PREFIX_ASSIGN},
+  {TokenType.MINUS_EQ, PREFIX_ASSIGN},
+  {TokenType.MULT_EQ, PREFIX_ASSIGN},
+  {TokenType.DIV_EQ, PREFIX_ASSIGN},
 };
 
 
 // Infix Functions
 enum infix {
   INFIX_STD,
-  INFIX_CALL
+  INFIX_CALL,
 };
 
 
@@ -138,8 +145,5 @@ const std::unordered_map<std::string, int> infixFunctions = {
   {TokenType.NOT_EQ, INFIX_STD},
   {TokenType.LT, INFIX_STD},
   {TokenType.GT, INFIX_STD},
-  {TokenType.LPAREN, INFIX_CALL},
-  {TokenType.PLUS_EQ, INFIX_STD},
-  {TokenType.MINUS_EQ, INFIX_STD},
 };
 

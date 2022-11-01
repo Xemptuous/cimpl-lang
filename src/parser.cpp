@@ -1,5 +1,6 @@
 #include "ast.hpp"
 #include <sstream>
+#include <iostream>
 
 
 void Parser::nextToken() {
@@ -28,22 +29,19 @@ Statement* Parser::parseStatement() {
   std::string peek = this->peekToken.type;
   // if starts with optional datatype declaration
   if (curr == TokenType.DATATYPE) {
-    if (peek == TokenType.IDENT) {
+    if (peek == TokenType.IDENT)
       return this->parseIdentifierStatement();
-    }
-    if (peek == TokenType.FUNCTION) {
+    if (peek == TokenType.FUNCTION)
       return this->parseFunctionStatement();
-    }
   }
-  else if (curr == TokenType.LET) {
+  else if (curr == TokenType.LET)
     return this->parseLetStatement();
-  }
-  else if (curr == TokenType.RETURN) {
+  else if (curr == TokenType.RETURN)
     return this->parseReturnStatement();
-  }
-  else {
+  else if (curr == TokenType.IDENT && peek == TokenType.ASSIGN_EQ)
+    return this->parseAssignmentExpression();
+  else 
     return this->parseExpressionStatement();
-  }
   return NULL;
 }
 
@@ -259,6 +257,32 @@ InfixExpression* Parser::parseInfixExpression(Expression* leftExpr) {
 
   expr->_right = this->parseExpression(precedence);
 
+  return expr;
+}
+
+
+AssignmentExpressionStatement* Parser::parseAssignmentExpression() {
+  AssignmentExpressionStatement* expr = new AssignmentExpressionStatement;
+  expr->setStatementNode(this->currentToken);
+
+  expr->name = this->parseIdentifier();
+  this->nextToken();
+  expr->_operator = this->currentToken.literal;
+  int precedence = this->currentPrecedence();
+  this->nextToken();
+  expr->value = this->parseExpression(precedence);
+
+  // Read to end of line/file
+  while (this->currentToken.type != TokenType.SEMICOLON) {
+    if (this->currentToken.type == TokenType._EOF) {
+      std::ostringstream ss;
+      ss << "No Semicolon present at end of line for " << StatementMap.at(expr->type) << 
+        " with value " << expr->value->token.literal;
+      this->errors.push_back(ss.str());
+      return NULL;
+    }
+    this->nextToken();
+  }
   return expr;
 }
 

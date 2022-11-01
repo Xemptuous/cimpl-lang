@@ -15,6 +15,7 @@ enum StatementType {
   returnStatement,
   expressionStatement,
   blockStatement,
+  assignmentExpressionStatement,
 };
 
 
@@ -122,6 +123,27 @@ typedef struct LetStatement : Statement {
   }
   std::string printString();
 } LetStatement;
+
+
+typedef struct AssignmentExpressionStatement : Statement {
+  Token token;
+  IdentifierLiteral* name;
+  std::string _operator;
+  Expression* value;
+
+  AssignmentExpressionStatement() {
+    this->name = NULL;
+    this->value = NULL;
+    this->type = assignmentExpressionStatement;
+    this->nodetype = statement;
+  }
+
+  ~AssignmentExpressionStatement() {
+    delete this->name;
+    delete this->value;
+  }
+  // std::string printString();
+} AssignmentExpressionStatement;
 
 
 typedef struct ReturnStatement : Statement {
@@ -382,7 +404,8 @@ const std::unordered_map<int, std::string> StatementMap = {
   {2, "Let Statement"},
   {3, "Return Statement"},
   {4, "Expression Statement"},
-  {5, "Block Statement"}
+  {5, "Block Statement"},
+  {6, "Assignment Expression Statement"},
 };
 
 
