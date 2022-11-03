@@ -355,7 +355,7 @@ Object* evalBuiltinFunction(Object* fn, vector<Object*> args, shared_ptr<Environ
     case len:
       return built_in_len(args, env);
     case print:
-      return built_in_print(args);
+      return built_in_print(args, env);
     default:
       return newError("not a valid function");
   }

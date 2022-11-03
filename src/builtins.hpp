@@ -2,7 +2,7 @@
 #include "object.hpp"
 
 Object* built_in_len(std::vector<Object*>, std::shared_ptr<Environment>);
-Object* built_in_print(std::vector<Object*>);
+Object* built_in_print(std::vector<Object*>, std::shared_ptr<Environment>);
 Object* newError(std::string);
 
 

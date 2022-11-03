@@ -21,8 +21,20 @@ Object* built_in_len(vector<Object*> args, shared_ptr<Environment> env) {
 }
 
 
-Object* built_in_print(vector<Object*> args) {
-// TODO: implement
-  return NULL;
+Object* built_in_print(vector<Object*> args, shared_ptr<Environment> env) {
+  if (args.size() != 1) {
+    return newError(
+      "wrong number of arguments for print(). Expected 1, got " + to_string(args.size())
+    );
+  }
+  string result;
+  for (auto arg : args) {
+    if (arg->inspectType() == ObjectType.STRING_OBJ) {
+      result += arg->inspectObject();
+    }
+  }
+  String* news = new String(result);
+  env->gc.push_back(news);
+  return news;
 }
 
