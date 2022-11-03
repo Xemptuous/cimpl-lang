@@ -1,4 +1,5 @@
 #include "evaluator.hpp"
+#include "builtins.hpp"
 #include <iostream>
 
 using namespace std;
@@ -7,10 +8,9 @@ using namespace std;
 Boolean _TRUE_BOOL = Boolean(true);
 Boolean _FALSE_BOOL = Boolean(false);
 Null _NULL = Null{};
-// main outer env
-// shared_ptr<Environment> ENV = nullptr;
+shared_ptr<Environment> err_gc = NULL;
 
-// void setEnvironment(shared_ptr<Environment> env) { ENV = env; }
+void setErrorGarbageCollector(shared_ptr<Environment> env) { err_gc = env; };
 
 
 Object* evalNode(Node* node, shared_ptr<Environment> env = NULL) {
@@ -151,7 +151,7 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = NULL) {
       vector<Object*> args = evalCallExpressions(ce->arguments, env);
       if (args.size() == 1 && isError(args[0]))
         return args[0];
-      return applyFunction(func, args);
+      return applyFunction(func, args, env);
     }   
   }
   return NULL;
@@ -181,14 +181,6 @@ Object* evalIfExpression(IfExpression* expr, shared_ptr<Environment> env) {
     else
       return NULL;
   }
-}
-
-
-Object* evalIdentifier(IdentifierLiteral* node, shared_ptr<Environment> env) {
-  Object* val = env->get(node->value);
-  if (val == NULL)
-    return newError("identifier not found: " + node->value);
-  return val;
 }
 
 
@@ -343,7 +335,7 @@ Object* evalStringInfixExpression(string op, Object* l, Object* r, shared_ptr<En
 
 
 vector<Object*> evalCallExpressions(vector<Expression*> expr, shared_ptr<Environment> env) {
-  vector<Object*> result;
+  vector<Object*> result{};
 
   for (auto e : expr) {
     Object* evaluated = evalNode(e, env);
@@ -357,19 +349,42 @@ vector<Object*> evalCallExpressions(vector<Expression*> expr, shared_ptr<Environ
 }
 
 
-Object* applyFunction(Object* fn, vector<Object*> args) {
-  Function* func;
-  try {
-    func = dynamic_cast<Function*>(fn);
+Object* evalIdentifier(IdentifierLiteral* node, shared_ptr<Environment> env) {
+  auto builtin_find = builtins.find(node->value);
+  if(builtin_find != builtins.end()) {
+    Builtin* bi = new Builtin();
+    bi->builtin_type = builtin_find->second;
+    env->gc.push_back(bi);
+    return bi;
   }
-  catch (...) {
-    ostringstream ss;
-    ss << "not a function: " << fn->inspectType();
-    return newError(ss.str());
+  
+  Object* val = env->get(node->value);
+  if (val != NULL)
+    return val;
+
+  return newError("identifier not found: " + node->value);
+  
+}
+
+
+Object* applyFunction(Object* fn, vector<Object*> args, shared_ptr<Environment> env) {
+  if(fn->type == FUNCTION_OBJ) {
+    Function* func;
+    try {
+      func = static_cast<Function*>(fn);
+    }
+    catch (...) {
+      ostringstream ss;
+      ss << "not a function: " << fn->inspectType();
+      return newError(ss.str());
+    }
+    shared_ptr<Environment> newEnv = extendFunction(func, args);
+    Object* evaluated = evalNode(func->body, newEnv);
+    return unwrapReturnValue(evaluated);
   }
-  shared_ptr<Environment> newEnv = extendFunction(func, args);
-  Object* evaluated = evalNode(func->body, newEnv);
-  return unwrapReturnValue(evaluated);
+  else if (fn->type == BUILTIN_OBJ)
+    return evalBuiltinFunction(fn, args, env);
+  return newError("not a function: " + fn->inspectType());
 }
 
 
@@ -444,7 +459,8 @@ bool isTruthy(Object* obj) {
 
 
 Object* newError(string msg) {
-  Object* err ( new Error(msg));
+  Object* err = new Error(msg);
+  err_gc->gc.push_back(err);
   return err;
 }
 

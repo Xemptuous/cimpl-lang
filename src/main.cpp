@@ -10,7 +10,6 @@ int main() {
   system("clear");
   string input;
   shared_ptr<Environment> env (new Environment);
-  // setEnvironment(env);
 
   while (true) {
 start:

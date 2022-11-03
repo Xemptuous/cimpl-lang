@@ -20,6 +20,6 @@ Object* evalAssignmentExpression(std::string, Object*, Object*, std::shared_ptr<
 Object* newError(std::string);
 bool isError(Object*);
 bool isTruthy(Object*);
-Object* applyFunction(Object*, std::vector<Object*>);
+Object* applyFunction(Object*, std::vector<Object*>, std::shared_ptr<Environment>);
 std::shared_ptr<Environment> extendFunction(Function*, std::vector<Object*>);
 Object* unwrapReturnValue(Object*);

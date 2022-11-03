@@ -145,5 +145,6 @@ const std::unordered_map<std::string, int> infixFunctions = {
   {TokenType.NOT_EQ, INFIX_STD},
   {TokenType.LT, INFIX_STD},
   {TokenType.GT, INFIX_STD},
+  {TokenType.LPAREN, INFIX_CALL},
 };
 
