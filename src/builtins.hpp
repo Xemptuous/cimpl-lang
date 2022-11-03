@@ -1,8 +1,11 @@
 #pragma once
 #include "object.hpp"
 
+Object* evalBuiltinFunction(Object*, std::vector<Object*>, std::shared_ptr<Environment>);
 Object* built_in_len(std::vector<Object*>, std::shared_ptr<Environment>);
 Object* built_in_print(std::vector<Object*>, std::shared_ptr<Environment>);
+Object* built_in_max(std::vector<Object*>, std::shared_ptr<Environment>);
+Object* built_in_min(std::vector<Object*>, std::shared_ptr<Environment>);
 Object* newError(std::string);
 
 
@@ -21,13 +24,17 @@ typedef struct Builtin : Object {
 
 
 enum BuiltinFunctions {
-  len,
-  print,
+  builtin_len,
+  builtin_print,
+  builtin_max,
+  builtin_min,
 };
 
 
 const std::unordered_map<std::string, int> builtins {
-  {"len", len},
-  {"print", print}
+  {"len", builtin_len},
+  {"print", builtin_print},
+  {"max", builtin_max},
+  {"min", builtin_min}
 };
 

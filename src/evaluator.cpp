@@ -349,19 +349,6 @@ vector<Object*> evalCallExpressions(vector<Expression*> expr, shared_ptr<Environ
 }
 
 
-Object* evalBuiltinFunction(Object* fn, vector<Object*> args, shared_ptr<Environment> env) {
-  Builtin* bf = static_cast<Builtin*>(fn);
-  switch (bf->builtin_type) {
-    case len:
-      return built_in_len(args, env);
-    case print:
-      return built_in_print(args, env);
-    default:
-      return newError("not a valid function");
-  }
-};
-
-
 Object* evalIdentifier(IdentifierLiteral* node, shared_ptr<Environment> env) {
   auto builtin_find = builtins.find(node->value);
   if(builtin_find != builtins.end()) {
