@@ -184,9 +184,8 @@ Token Lexer::evaluateNumber() {
 
 std::string Lexer::readIdentifier() {
   int position = this->position;
-  while (isalpha(this->ch) || this->ch == '_') {
+  while (isalpha(this->ch) || this->ch == '_')
     this->readChar();
-  }
   int diff = this->position - position;
   std::string result = this->input.substr(position, diff);
   return result;
@@ -195,9 +194,8 @@ std::string Lexer::readIdentifier() {
 
 std::string Lexer::readNumber() {
   int position = this->position;
-  while (isdigit(this->ch) || this->ch == '.') {
+  while (isdigit(this->ch) || this->ch == '.')
     this->readChar();
-  }
   int diff = this->position - position;
   std::string result = this->input.substr(position, diff);
   return result;
@@ -206,9 +204,8 @@ std::string Lexer::readNumber() {
 
 std::string Lexer::readString() {
   int position = this->position;
-  while(this->ch != '\"') {
+  while(this->ch != '\"' && this->ch != '\0')
     this->readChar();
-  }
   int diff = this->position - position;
   std::string result = this->input.substr(position, diff);
   return result;
@@ -217,11 +214,8 @@ std::string Lexer::readString() {
 
 std::string Lexer::readComment() {
   int position = this->position + 1;
-  while (this->ch != '\0') {
-    if (this->ch == '\n')
-      break;
+  while (this->ch != '\0' && this->ch != '\n')
     this->readChar();
-  }
   int diff = this->position - position;
   std::string result = this->input.substr(position, diff + 2);
   return result;
