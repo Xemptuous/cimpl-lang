@@ -1,5 +1,6 @@
 #include "object.hpp"
 #include "builtins.hpp"
+#include <iostream>
 
 using namespace std;
 
@@ -25,8 +26,3 @@ Object* built_in_print(vector<Object*> args) {
   return NULL;
 }
 
-
-Object* newError(string msg) {
-  Object* err ( new Error(msg));
-  return err;
-}

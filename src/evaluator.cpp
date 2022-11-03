@@ -151,7 +151,7 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = NULL) {
       vector<Object*> args = evalCallExpressions(ce->arguments, env);
       if (args.size() == 1 && isError(args[0]))
         return args[0];
-      return applyFunction(func, args);
+      return applyFunction(func, args, env);
     }   
   }
   return NULL;
@@ -335,7 +335,7 @@ Object* evalStringInfixExpression(string op, Object* l, Object* r, shared_ptr<En
 
 
 vector<Object*> evalCallExpressions(vector<Expression*> expr, shared_ptr<Environment> env) {
-  vector<Object*> result;
+  vector<Object*> result{};
 
   for (auto e : expr) {
     Object* evaluated = evalNode(e, env);
@@ -363,27 +363,28 @@ Object* evalBuiltinFunction(Object* fn, vector<Object*> args, shared_ptr<Environ
 
 
 Object* evalIdentifier(IdentifierLiteral* node, shared_ptr<Environment> env) {
-  Object* val = env->get(node->value);
-  if (val != NULL)
-    return val;
-
   auto builtin_find = builtins.find(node->value);
   if(builtin_find != builtins.end()) {
     Builtin* bi = new Builtin();
+    bi->builtin_type = builtin_find->second;
     env->gc.push_back(bi);
     return bi;
   }
   
+  Object* val = env->get(node->value);
+  if (val != NULL)
+    return val;
+
   return newError("identifier not found: " + node->value);
   
 }
 
 
 Object* applyFunction(Object* fn, vector<Object*> args, shared_ptr<Environment> env) {
-  if(fn->type == standardFunction) {
+  if(fn->type == FUNCTION_OBJ) {
     Function* func;
     try {
-      func = dynamic_cast<Function*>(fn);
+      func = static_cast<Function*>(fn);
     }
     catch (...) {
       ostringstream ss;
@@ -394,7 +395,7 @@ Object* applyFunction(Object* fn, vector<Object*> args, shared_ptr<Environment> 
     Object* evaluated = evalNode(func->body, newEnv);
     return unwrapReturnValue(evaluated);
   }
-  else if (fn->type == builtinFunction)
+  else if (fn->type == BUILTIN_OBJ)
     return evalBuiltinFunction(fn, args, env);
   return newError("not a function: " + fn->inspectType());
 }

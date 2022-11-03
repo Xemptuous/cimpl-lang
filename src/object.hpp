@@ -189,6 +189,7 @@ typedef struct Function : Object {
       BlockStatement* body, 
       std::shared_ptr<Environment> env
     ) {
+    this->type = FUNCTION_OBJ;
     this->parameters = params;
     this->body = body;
     this->env = env;

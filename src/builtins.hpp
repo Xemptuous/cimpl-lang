@@ -11,6 +11,7 @@ typedef struct Builtin : Object {
   int builtin_type;
 
   Builtin() {
+    this->type = BUILTIN_OBJ;
     this->function_type = builtinFunction;
   }
 
