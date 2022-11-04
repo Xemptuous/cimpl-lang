@@ -194,6 +194,8 @@ Expression* Parser::parseLeftPrefix(int prefix) {
       return this->parseGroupedExpression();
     case PREFIX_FUNCTION:
       return this->parseFunctionLiteral();
+    case PREFIX_ARRAY:
+      return this->parseArrayLiteral();
     default:
       return this->parsePrefixExpression();
   }
@@ -446,35 +448,43 @@ CallExpression* Parser::parseCallExpression(Expression* func) {
   CallExpression* expr = new CallExpression;
   expr->setExpressionNode(this->currentToken);
   expr->_function = func;
-  expr->arguments = this->parseCallArguments();
+  expr->arguments = this->parseExpressionList(TokenType.RPAREN);
   return expr;
 }
 
 
-std::vector<Expression*> Parser::parseCallArguments() {
-  std::vector<Expression*> args{};
+ArrayLiteral* Parser::parseArrayLiteral() {
+  ArrayLiteral* arr = new ArrayLiteral;
+  arr->setExpressionNode(this->currentToken);
+  arr->elements = this->parseExpressionList(TokenType.RBRACKET);
+  return arr;
+}
 
-  if (this->peekToken.type == TokenType.RPAREN) {
+
+std::vector<Expression*> Parser::parseExpressionList(std::string end) {
+  std::vector<Expression*> list{};
+
+  if (this->peekToken.type == end) {
     this->nextToken();
-    return args;
+    return list;
   }
 
   this->nextToken();
-  args.push_back(this->parseExpression(Precedences.LOWEST));
+  list.push_back(this->parseExpression(Precedences.LOWEST));
 
   while (this->peekToken.type == TokenType.COMMA) {
     this->nextToken();
     this->nextToken();
-    args.push_back(this->parseExpression(Precedences.LOWEST));
+    list.push_back(this->parseExpression(Precedences.LOWEST));
   }
 
-  if (!(expectPeek(TokenType.RPAREN))) {
+  if (!(expectPeek(end))) {
     std::ostringstream ss;
     ss << "Parenthesis never closed for function call\n";
     this->errors.push_back(ss.str());
   }
 
-  return args;
+  return list;
 }
 
 

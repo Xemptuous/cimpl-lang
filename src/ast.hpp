@@ -30,6 +30,7 @@ enum ExpressionType {
   ifExpression,
   functionLiteral,
   callExpression,
+  arrayLiteral,
 };
 
 
@@ -398,6 +399,23 @@ typedef struct CallExpression : Expression {
 } CallExpression;
 
 
+typedef struct ArrayLiteral : Expression {
+  Token token;
+  std::vector<Expression*> elements;
+
+  ArrayLiteral() {
+    this->type = arrayLiteral;
+  }
+
+  ~ArrayLiteral() {
+    for (auto el : this->elements)
+      delete el;
+  }
+
+  std::string printString();
+} ArrayLiteral;
+
+
 const std::unordered_map<int, std::string> StatementMap = {
   {0, "Identifier Statement"},
   {1, "Function Statement"},
@@ -420,6 +438,7 @@ const std::unordered_map<int, std::string> ExpressionMap = {
   {7, "If Expression"},
   {8, "Function Literal"},
   {9, "Call Expression"},
+  {10, "Array Literal"},
 };
 
 

@@ -319,6 +319,24 @@ std::string BooleanLiteral::printString() {
 }
 
 
+std::string ArrayLiteral::printString() {
+  std::ostringstream ss;
+  std::vector<std::string> elements{};
+
+  for (int i = 0; i < this->elements.size(); i++) {
+    elements.push_back(this->elements[i]->printString());
+  }
+
+  ss << "[";
+  for (std::string el : elements) {
+    ss << el << ", ";
+  }
+  ss << "] ";
+  return ss.str();
+
+}
+
+
 std::string AST::printString() {
   std::ostringstream ss;
   for (auto stmt : this->Statements) {

@@ -15,6 +15,7 @@ struct FloatLiteral;
 struct StringLiteral;
 struct BooleanLiteral;
 struct IdentifierLiteral;
+struct ArrayLiteral;
 
 struct Statement;
 struct LetStatement;
@@ -67,12 +68,12 @@ class Parser {
     Expression* parseExpression(int);
     Expression* parseLeftPrefix(int);
     Expression* parseGroupedExpression();
+    std::vector<Expression*> parseExpressionList(std::string);
     AssignmentExpressionStatement* parseAssignmentExpression();
     IfExpression* parseIfExpression();
     FunctionLiteral* parseFunctionLiteral();
     std::vector<IdentifierLiteral*> parseFunctionParameters();
     CallExpression* parseCallExpression(Expression*);
-    std::vector<Expression*> parseCallArguments();
     PrefixExpression* parsePrefixExpression();
     InfixExpression* parseInfixExpression(Expression*);
     IdentifierLiteral* parseIdentifier();
@@ -80,6 +81,7 @@ class Parser {
     FloatLiteral* parseFloatLiteral();
     StringLiteral* parseStringLiteral();
     BooleanLiteral* parseBooleanLiteral();
+    ArrayLiteral* parseArrayLiteral();
 
     // Statement Methods
     LetStatement* parseLetStatement();
@@ -104,7 +106,8 @@ enum prefix {
   PREFIX_INCREMENT,
   PREFIX_DECREMENT,
   PREFIX_GROUPED_EXPR,
-  PREFIX_ASSIGN
+  PREFIX_ASSIGN,
+  PREFIX_ARRAY
 };
 
 
@@ -126,6 +129,7 @@ const std::unordered_map<std::string, int> prefixFunctions = {
   {TokenType.MINUS_EQ, PREFIX_ASSIGN},
   {TokenType.MULT_EQ, PREFIX_ASSIGN},
   {TokenType.DIV_EQ, PREFIX_ASSIGN},
+  {TokenType.LBRACKET, PREFIX_ARRAY},
 };
 
 
