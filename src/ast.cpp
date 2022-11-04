@@ -333,8 +333,19 @@ std::string ArrayLiteral::printString() {
   }
   ss << "] ";
   return ss.str();
-
 }
+
+
+std::string IndexExpression::printString() {
+  std::ostringstream ss;
+  ss << "(";
+  ss << this->_left->printString();
+  ss << "[";
+  ss << this->index->printString();
+  ss << "]) ";
+  return ss.str();
+}
+
 
 
 std::string AST::printString() {

@@ -232,6 +232,9 @@ Expression* Parser::parseExpression(int precedence) {
       case INFIX_CALL:
         leftExp = this->parseCallExpression(leftExp);
         break;
+      case INFIX_INDEX:
+        leftExp = this->parseIndexExpression(leftExp);
+        break;
     }
   }
   return leftExp;
@@ -480,11 +483,29 @@ std::vector<Expression*> Parser::parseExpressionList(std::string end) {
 
   if (!(expectPeek(end))) {
     std::ostringstream ss;
-    ss << "Parenthesis never closed for function call\n";
+    ss << "Parenthesis/Bracket never closed\n";
     this->errors.push_back(ss.str());
   }
 
   return list;
+}
+
+
+Expression* Parser::parseIndexExpression(Expression* _left) {
+  IndexExpression* expr = new IndexExpression;
+  expr->setExpressionNode(this->currentToken);
+  expr->_left = _left;
+
+  this->nextToken();
+  expr->index = this->parseExpression(Precedences.LOWEST);
+
+  if (!(expectPeek(TokenType.RBRACKET))) {
+    std::ostringstream ss;
+    ss << "Index Bracket never closed\n";
+    this->errors.push_back(ss.str());
+  }
+  
+  return expr;
 }
 
 

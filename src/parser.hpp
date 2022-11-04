@@ -16,6 +16,7 @@ struct StringLiteral;
 struct BooleanLiteral;
 struct IdentifierLiteral;
 struct ArrayLiteral;
+struct IndexExpression;
 
 struct Statement;
 struct LetStatement;
@@ -69,6 +70,7 @@ class Parser {
     Expression* parseLeftPrefix(int);
     Expression* parseGroupedExpression();
     std::vector<Expression*> parseExpressionList(std::string);
+    Expression* parseIndexExpression(Expression*);
     AssignmentExpressionStatement* parseAssignmentExpression();
     IfExpression* parseIfExpression();
     FunctionLiteral* parseFunctionLiteral();
@@ -137,6 +139,7 @@ const std::unordered_map<std::string, int> prefixFunctions = {
 enum infix {
   INFIX_STD,
   INFIX_CALL,
+  INFIX_INDEX,
 };
 
 
@@ -150,5 +153,6 @@ const std::unordered_map<std::string, int> infixFunctions = {
   {TokenType.LT, INFIX_STD},
   {TokenType.GT, INFIX_STD},
   {TokenType.LPAREN, INFIX_CALL},
+  {TokenType.LBRACKET, INFIX_INDEX},
 };
 

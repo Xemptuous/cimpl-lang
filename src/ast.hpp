@@ -31,6 +31,7 @@ enum ExpressionType {
   functionLiteral,
   callExpression,
   arrayLiteral,
+  indexExpression,
 };
 
 
@@ -416,6 +417,25 @@ typedef struct ArrayLiteral : Expression {
 } ArrayLiteral;
 
 
+typedef struct IndexExpression : Expression {
+  Token token;
+  Expression* _left;
+  Expression* index;
+
+  IndexExpression() {
+    this->nodetype = expression;
+    this->type = indexExpression;
+    this->_left = NULL;
+    this->index = NULL;
+  }
+  ~IndexExpression() {
+    delete this->_left;
+    delete this->index;
+  }
+  std::string printString();
+} IndexExpression;
+
+
 const std::unordered_map<int, std::string> StatementMap = {
   {0, "Identifier Statement"},
   {1, "Function Statement"},
@@ -439,6 +459,7 @@ const std::unordered_map<int, std::string> ExpressionMap = {
   {8, "Function Literal"},
   {9, "Call Expression"},
   {10, "Array Literal"},
+  {11, "Index Expression"},
 };
 
 
@@ -478,6 +499,7 @@ const struct Precedences {
   int PRODUCT {5};
   int PREFIX {6};
   int CALL {7};
+  int INDEX {8};
 } Precedences{};
 
 
