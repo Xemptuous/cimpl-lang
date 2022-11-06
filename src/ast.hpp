@@ -345,9 +345,11 @@ typedef struct FunctionStatement : Statement {
   ~FunctionStatement() {
     delete this->body;
     delete this->name;
-    for (auto param : parameters) {
-      delete param;
-    }
+    for (int i = 0; i < this->parameters.size() - 1; i++)
+      delete[] this->parameters[i];
+    // for (auto param : parameters) {
+    //   delete param;
+    // }
   }
 
   std::string printString();
@@ -369,9 +371,11 @@ typedef struct FunctionLiteral : Expression {
   ~FunctionLiteral() {
     delete this->body;
     delete this->name;
-    for (auto param : parameters) {
-      delete param;
-    }
+    for (int i = 0; i < this->parameters.size() - 1; i++)
+      delete[] this->parameters[i];
+    // for (auto param : parameters) {
+    //   delete param;
+    // }
   }
 
   std::string printString();
@@ -391,9 +395,8 @@ typedef struct CallExpression : Expression {
   }
   ~CallExpression() {
     delete this->_function;
-    for (auto arg : arguments) {
-      delete arg;
-    }
+    for (int i = 0; i < this->arguments.size() - 1; i++)
+      delete[] this->arguments[i];
   }
 
   std::string printString();
@@ -482,6 +485,9 @@ typedef struct AST {
 
   ~AST() {
     delete this->parser;
+    for (int i = 0; i < this->Statements.size() - 1; i++) {
+      delete[] this->Statements[i];
+    }
   }
 
   void parseProgram();

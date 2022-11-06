@@ -151,6 +151,7 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = NULL) {
     case functionLiteral: {
       FunctionLiteral* fl = static_cast<FunctionLiteral*>(expr);
       Function* newf = new Function(fl->parameters, fl->body, env);
+      // env->gc.push_back(newf);
       env->set(fl->name->value, newf);
       break;
     }   
