@@ -1,2 +1,2 @@
 #!/usr/bin/zsh
-g++ -o a.out *.cpp;
+g++ -g -o a.out *.cpp;
