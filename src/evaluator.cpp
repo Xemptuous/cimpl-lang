@@ -108,6 +108,17 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = NULL) {
       env->gc.push_back(news);
       return news;
     }   
+    case arrayLiteral: {
+      ArrayLiteral* a = static_cast<ArrayLiteral*>(expr);
+      vector<Object*>elements = evalCallExpressions(a->elements, env);
+      if (elements.size() == 1 && isError(elements[0]))
+        return elements[0];
+      Array* newa = new Array(elements);
+      env->gc.push_back(newa);
+      return newa;
+    }   
+    case indexExpression:
+      break;
     case identifier: {
       IdentifierLiteral* i = static_cast<IdentifierLiteral*>(expr);
       Object* newi = evalIdentifier(i, env);
