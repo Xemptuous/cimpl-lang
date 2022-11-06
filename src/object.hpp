@@ -150,10 +150,7 @@ typedef struct Environment {
     this->outer = env;
   }
 
-  ~Environment() {
-    for (auto i : gc)
-      delete i;
-  }
+  ~Environment() = default;
 
   Object* get(std::string name) {
     try { 
