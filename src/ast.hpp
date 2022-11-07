@@ -408,6 +408,7 @@ typedef struct ArrayLiteral : Expression {
   std::vector<Expression*> elements;
 
   ArrayLiteral() {
+    this->nodetype = expression;
     this->type = arrayLiteral;
   }
 
@@ -523,4 +524,5 @@ const std::unordered_map<std::string, int> precedencesMap = {
   {TokenType.ASTERISK, Precedences.PRODUCT},
   {TokenType.MULT_EQ, Precedences.PRODUCT},
   {TokenType.LPAREN, Precedences.CALL},
+  {TokenType.LBRACKET, Precedences.INDEX},
 };

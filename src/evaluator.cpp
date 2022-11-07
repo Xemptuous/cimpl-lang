@@ -117,8 +117,16 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = NULL) {
       env->gc.push_back(newa);
       return newa;
     }   
-    case indexExpression:
-      break;
+    case indexExpression: {
+      IndexExpression* ie = static_cast<IndexExpression*>(expr);
+      Object* left = evalNode(ie->_left, env);
+      if (isError(left))
+        return left;
+      Object* index = evalNode(ie->index, env);
+      if (isError(index))
+        return index;
+      return evalIndexExpression(left, index, env);
+    }
     case identifier: {
       IdentifierLiteral* i = static_cast<IdentifierLiteral*>(expr);
       Object* newi = evalIdentifier(i, env);
@@ -415,6 +423,31 @@ Object* unwrapReturnValue(Object* evaluated) {
     return obj->value;
   }
   return evaluated;
+}
+
+
+Object* evalIndexExpression(Object* left, Object* index, shared_ptr<Environment> env) {
+  if (left->inspectType() == ObjectType.ARRAY_OBJ && 
+        index->inspectType() == ObjectType.INTEGER_OBJ)
+    return evalArrayIndexExpression(left, index, env);
+  else
+    return newError("index operator not supported: " + left->inspectType());
+}
+
+
+Object* evalArrayIndexExpression(Object* arr, Object* index, shared_ptr<Environment> env) {
+  Array* arrayObject = static_cast<Array*>(arr);
+  Integer* intObject = static_cast<Integer*>(index);
+  int idx = intObject->value;
+  int max = arrayObject->elements.size() - 1;
+  if (idx < 0 || idx > max) {
+    ostringstream ss;
+    ss << "index out of range. ";
+    ss << "Array contains " << max + 1 << " items, but trying to access item ";
+    ss << intObject->value + 1;
+    return newError(ss.str());
+  }
+  return arrayObject->elements[idx];
 }
 
 
