@@ -162,7 +162,21 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = NULL) {
       // env->gc.push_back(newf);
       env->set(fl->name->value, newf);
       break;
-    }   
+    }
+    case dotFunctionLiteral: {
+      DotFunctionLiteral* df = static_cast<DotFunctionLiteral*>(expr);
+      Object* evaluated = evalNode(df->_left, env);
+      if (isError(evaluated))
+        return evaluated;
+      Object* name = evalNode(df->name, env);
+      if (isError(name))
+        return name;
+      vector<Object*> args = evalCallExpressions(df->arguments, env);
+      if (args.size() == 1 && isError(args[0]))
+        return args[0];
+      return applyFunction(name, args, env);
+
+    }
     case callExpression: {
       CallExpression* ce = static_cast<CallExpression*>(expr);
       Object* func = evalNode(ce->_function, env);

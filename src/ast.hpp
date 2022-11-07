@@ -29,6 +29,7 @@ enum ExpressionType {
   infixExpression,
   ifExpression,
   functionLiteral,
+  dotFunctionLiteral,
   callExpression,
   arrayLiteral,
   indexExpression,
@@ -381,6 +382,30 @@ typedef struct FunctionLiteral : Expression {
   std::string printString();
   void setExpressionNode(Token);
 } FunctionLiteral;
+
+
+typedef struct DotFunctionLiteral : Expression {
+  Token token;
+  Expression* _left;
+  IdentifierLiteral* name;
+  std::vector<Expression*> arguments;
+
+  DotFunctionLiteral() {
+    this->type = dotFunctionLiteral;
+    this->nodetype = expression;
+    this->_left = NULL;
+    this->name = NULL;
+  }
+  ~DotFunctionLiteral() {
+    delete this->_left;
+    delete this->name;
+    for (int i = 0; i < this->arguments.size() - 1; i++)
+      delete[] this->arguments[i];
+  }
+
+  std::string printString();
+  void setExpressionNode(Token);
+} DotFunctionLiteral;
 
 
 typedef struct CallExpression : Expression { 

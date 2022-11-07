@@ -9,6 +9,7 @@ struct PrefixExpression;
 struct InfixExpression;
 struct IfExpression;
 struct FunctionLiteral;
+struct DotFunctionLiteral;
 struct CallExpression;
 struct IntegerLiteral;
 struct FloatLiteral;
@@ -74,6 +75,7 @@ class Parser {
     AssignmentExpressionStatement* parseAssignmentExpression();
     IfExpression* parseIfExpression();
     FunctionLiteral* parseFunctionLiteral();
+    DotFunctionLiteral* parseDotFunction(Expression*);
     std::vector<IdentifierLiteral*> parseFunctionParameters();
     CallExpression* parseCallExpression(Expression*);
     PrefixExpression* parsePrefixExpression();
@@ -109,7 +111,7 @@ enum prefix {
   PREFIX_DECREMENT,
   PREFIX_GROUPED_EXPR,
   PREFIX_ASSIGN,
-  PREFIX_ARRAY
+  PREFIX_ARRAY,
 };
 
 
@@ -140,6 +142,7 @@ enum infix {
   INFIX_STD,
   INFIX_CALL,
   INFIX_INDEX,
+  INFIX_DOT_FUNC
 };
 
 
@@ -154,5 +157,6 @@ const std::unordered_map<std::string, int> infixFunctions = {
   {TokenType.GT, INFIX_STD},
   {TokenType.LPAREN, INFIX_CALL},
   {TokenType.LBRACKET, INFIX_INDEX},
+  {TokenType.PERIOD, INFIX_DOT_FUNC}
 };
 

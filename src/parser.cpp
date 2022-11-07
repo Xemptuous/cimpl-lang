@@ -235,6 +235,9 @@ Expression* Parser::parseExpression(int precedence) {
       case INFIX_INDEX:
         leftExp = this->parseIndexExpression(leftExp);
         break;
+      case INFIX_DOT_FUNC:
+        leftExp = this->parseDotFunction(leftExp);
+        break;
     }
   }
   return leftExp;
@@ -372,20 +375,17 @@ FunctionStatement* Parser::parseFunctionStatement() {
 
   this->nextToken();
 
-  if (!(expectPeek(TokenType.IDENT))) {
+  if (!(expectPeek(TokenType.IDENT)))
     return NULL;
-  }
   stmt->name = parseIdentifier();
   this->nextToken();
 
-  if (!(expectPeek(TokenType.LPAREN))) {
+  if (!(expectPeek(TokenType.LPAREN)))
     return NULL;
-  }
   stmt->parameters = this->parseFunctionParameters();
 
-  if (!(expectPeek(TokenType.LBRACE))) {
+  if (!(expectPeek(TokenType.LBRACE)))
     return NULL;
-  }
   stmt->body = this->parseBlockStatement();
   // make sure return datatype is the same as funtion datatype
   this->checkFunctionReturn(stmt);
@@ -398,19 +398,16 @@ FunctionLiteral* Parser::parseFunctionLiteral() {
   FunctionLiteral* expr = new FunctionLiteral;
   expr->setExpressionNode(this->currentToken);
 
-  if (!(expectPeek(TokenType.IDENT))) {
+  if (!(expectPeek(TokenType.IDENT)))
     return NULL;
-  }
   expr->name = parseIdentifier();
 
-  if (!(expectPeek(TokenType.LPAREN))) {
+  if (!(expectPeek(TokenType.LPAREN)))
     return NULL;
-  }
   expr->parameters = this->parseFunctionParameters();
 
-  if (!(expectPeek(TokenType.LBRACE))) {
+  if (!(expectPeek(TokenType.LBRACE)))
     return NULL;
-  }
   expr->body = this->parseBlockStatement();
 
   return expr;
@@ -444,6 +441,22 @@ std::vector<IdentifierLiteral*> Parser::parseFunctionParameters() {
   }
 
   return identifiers;
+}
+
+
+DotFunctionLiteral* Parser::parseDotFunction(Expression* left) {
+  DotFunctionLiteral* dot = new DotFunctionLiteral;
+  dot->setExpressionNode(this->currentToken);
+  dot->_left = left;
+
+  this->nextToken();
+  dot->name = parseIdentifier();
+
+  if (!(expectPeek(TokenType.LPAREN)))
+    return NULL;
+
+  dot->arguments = parseExpressionList(TokenType.RPAREN);
+  return dot;
 }
 
 

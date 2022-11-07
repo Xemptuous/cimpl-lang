@@ -34,6 +34,13 @@ Object* built_in_len(vector<Object*> args, shared_ptr<Environment> env) {
     env->gc.push_back(newi);
     return newi;
   }
+  if (args[0]->inspectType() == ObjectType.ARRAY_OBJ) {
+    Array* a = static_cast<Array*>(args[0]);
+    Integer* newi = new Integer(a->elements.size());
+    env->gc.push_back(newi);
+    return newi;
+  }
+
   return NULL;
 }
 
