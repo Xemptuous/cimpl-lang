@@ -404,7 +404,6 @@ typedef struct DotFunctionLiteral : Expression {
   }
 
   std::string printString();
-  void setExpressionNode(Token);
 } DotFunctionLiteral;
 
 
@@ -549,5 +548,6 @@ const std::unordered_map<std::string, int> precedencesMap = {
   {TokenType.ASTERISK, Precedences.PRODUCT},
   {TokenType.MULT_EQ, Precedences.PRODUCT},
   {TokenType.LPAREN, Precedences.CALL},
+  {TokenType.PERIOD, Precedences.CALL},
   {TokenType.LBRACKET, Precedences.INDEX},
 };
