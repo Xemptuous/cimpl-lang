@@ -9,7 +9,7 @@ void AST::parseProgram() {
   while (this->parser->currentToken.type != TokenType._EOF) {
     Statement* stmt = this->parser->parseStatement();
 
-    if (stmt != NULL) {
+    if (stmt != nullptr) {
       this->Statements.push_back(stmt);
     }
 
@@ -154,7 +154,7 @@ std::string IdentifierStatement::printString() {
   ss << this->token.literal << " ";
   ss << this->name->printString() << " = ";
 
-  if (this->value != NULL) {
+  if (this->value != nullptr) {
     ss << this->value->printString();
   }
   ss << ";";
@@ -169,7 +169,7 @@ std::string LetStatement::printString() {
   ss << this->token.literal << " ";
   ss << this->name->printString() << " = ";
 
-  if (this->value != NULL) {
+  if (this->value != nullptr) {
     ss << this->value->printString();
   }
   ss << ";";
@@ -183,7 +183,7 @@ std::string ReturnStatement::printString() {
 
   ss << this->token.literal << " ";
 
-  if (this->returnValue != NULL) {
+  if (this->returnValue != nullptr) {
     ss << this->returnValue->printString();
   }
   ss << ";";
@@ -195,7 +195,7 @@ std::string ReturnStatement::printString() {
 std::string ExpressionStatement::printString() {
   std::ostringstream ss;
 
-  if (this->expression != NULL) {
+  if (this->expression != nullptr) {
     ss << this->expression->printString();
   }
 
@@ -243,7 +243,7 @@ std::string IfExpression::printString() {
       this->alternatives[i]->printString();
   }
 
-  if (this->alternative != NULL) {
+  if (this->alternative != nullptr) {
     ss << " else " << this->alternative->printString();
   }
 

@@ -7,13 +7,13 @@ using namespace std;
 // GLOBALS
 Boolean _TRUE_BOOL = Boolean(true);
 Boolean _FALSE_BOOL = Boolean(false);
-Null _NULL = Null{};
-shared_ptr<Environment> err_gc = NULL;
+Null _nullptr = Null{};
+shared_ptr<Environment> err_gc = nullptr;
 
 void setErrorGarbageCollector(shared_ptr<Environment> env) { err_gc = env; };
 
 
-Object* evalNode(Node* node, shared_ptr<Environment> env = NULL) {
+Object* evalNode(Node* node, shared_ptr<Environment> env = nullptr) {
   if (node->nodetype == statement) {
     Statement* stmt = static_cast<Statement*>(node);
     return evalStatements(stmt, env);
@@ -25,7 +25,7 @@ Object* evalNode(Node* node, shared_ptr<Environment> env = NULL) {
 }
 
 
-Object* evalStatements(Statement* stmt, shared_ptr<Environment> env = NULL) {
+Object* evalStatements(Statement* stmt, shared_ptr<Environment> env = nullptr) {
   switch (stmt->type) {
     case identifierStatement:{
       break;
@@ -61,7 +61,7 @@ Object* evalStatements(Statement* stmt, shared_ptr<Environment> env = NULL) {
       BlockStatement* bs = static_cast<BlockStatement*>(stmt);
       for (auto stmt : bs->statements) {
         Object* result = evalNode(stmt, env);
-        if (result != NULL && result->type == RETURN_OBJ)
+        if (result != nullptr && result->type == RETURN_OBJ)
           return result;
       }
     }
@@ -79,11 +79,11 @@ Object* evalStatements(Statement* stmt, shared_ptr<Environment> env = NULL) {
       break;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 
-Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = NULL) {
+Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr) {
   switch (expr->type) {
     case integerLiteral: {
       IntegerLiteral* i = static_cast<IntegerLiteral*>(expr);
@@ -188,7 +188,7 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = NULL) {
       return applyFunction(func, args, env);
     }   
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -210,10 +210,10 @@ Object* evalIfExpression(IfExpression* expr, shared_ptr<Environment> env) {
         return evalNode(expr->alternatives[i], env);
     }
     // if no else-ifs true/found, evaluate final else
-    if (expr->alternative != NULL)
+    if (expr->alternative != nullptr)
       return evalNode(expr->alternative, env);
     else
-      return NULL;
+      return nullptr;
   }
 }
 
@@ -353,7 +353,7 @@ Object* evalAssignmentExpression(
       return newError("incompatible assignment operator: " + val->inspectType() + " " + op);
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -393,7 +393,7 @@ Object* evalIdentifier(IdentifierLiteral* node, shared_ptr<Environment> env) {
   }
   
   Object* val = env->get(node->value);
-  if (val != NULL)
+  if (val != nullptr)
     return val;
 
   return newError("identifier not found: " + node->value);
@@ -525,7 +525,7 @@ Object* newError(string msg) {
 
 
 bool isError(Object* obj) {
-  if (obj != NULL) {
+  if (obj != nullptr) {
     return obj->type == ERROR_OBJ;
   }
   return false;

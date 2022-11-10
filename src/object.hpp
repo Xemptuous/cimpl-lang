@@ -175,7 +175,7 @@ typedef struct Environment {
   std::vector<Object*> gc{};
   std::shared_ptr<Environment> outer;
 
-  Environment(std::shared_ptr<Environment> env = NULL) {
+  Environment(std::shared_ptr<Environment> env = nullptr) {
     this->outer = env;
   }
 
@@ -187,13 +187,13 @@ typedef struct Environment {
       return res;
     }
     catch (...) {
-      if (this->outer != NULL) {
+      if (this->outer != nullptr) {
         try {
           this->outer->get(name);
         }
-        catch (...) { return NULL; }
+        catch (...) { return nullptr; }
       }
-      return NULL; 
+      return nullptr; 
     }
   }
 

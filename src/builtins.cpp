@@ -41,7 +41,7 @@ Object* built_in_len(vector<Object*> args, shared_ptr<Environment> env) {
     return newi;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 

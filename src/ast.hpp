@@ -94,8 +94,8 @@ typedef struct IdentifierStatement : Statement {
   Expression* value;
 
   IdentifierStatement() {
-    this->name = NULL;
-    this->value = NULL;
+    this->name = nullptr;
+    this->value = nullptr;
     this->type = identifierStatement;
     this->nodetype = statement;
   }
@@ -114,8 +114,8 @@ typedef struct LetStatement : Statement {
   Expression* value;
 
   LetStatement() {
-    this->name = NULL;
-    this->value = NULL;
+    this->name = nullptr;
+    this->value = nullptr;
     this->type = letStatement;
     this->nodetype = statement;
   }
@@ -135,8 +135,8 @@ typedef struct AssignmentExpressionStatement : Statement {
   Expression* value;
 
   AssignmentExpressionStatement() {
-    this->name = NULL;
-    this->value = NULL;
+    this->name = nullptr;
+    this->value = nullptr;
     this->type = assignmentExpressionStatement;
     this->nodetype = statement;
   }
@@ -154,7 +154,7 @@ typedef struct ReturnStatement : Statement {
   Expression* returnValue;
 
   ReturnStatement() {
-    this->returnValue = NULL;
+    this->returnValue = nullptr;
     this->type = returnStatement;
     this->nodetype = statement;
   }
@@ -171,7 +171,7 @@ typedef struct ExpressionStatement : Statement {
   Expression* expression;
 
   ExpressionStatement() {
-    this->expression = NULL;
+    this->expression = nullptr;
     this->type = expressionStatement;
     this->nodetype = statement;
   }
@@ -189,7 +189,7 @@ typedef struct PrefixExpression : Expression {
   Expression* _right;
 
   PrefixExpression() {
-    this->_right = NULL;
+    this->_right = nullptr;
     this->type = prefixExpression;
     this->nodetype = expression;
   }
@@ -210,8 +210,8 @@ typedef struct InfixExpression : Expression {
   Expression* _right;
 
   InfixExpression() {
-    this->_left = NULL;
-    this->_right = NULL;
+    this->_left = nullptr;
+    this->_right = nullptr;
     this->type = infixExpression;
     this->nodetype = expression;
   }
@@ -310,9 +310,9 @@ typedef struct IfExpression : Expression {
   IfExpression() {
     this->type = ifExpression;
     this->nodetype = expression;
-    this->condition = NULL;
-    this->consequence = NULL;
-    this->alternative = NULL;
+    this->condition = nullptr;
+    this->consequence = nullptr;
+    this->alternative = nullptr;
   }
   ~IfExpression() {
     delete this->condition;
@@ -340,8 +340,8 @@ typedef struct FunctionStatement : Statement {
   FunctionStatement() {
     this->type = functionStatement;
     this->nodetype = statement;
-    this->body = NULL;
-    this->name = NULL;
+    this->body = nullptr;
+    this->name = nullptr;
   }
   ~FunctionStatement() {
     delete this->body;
@@ -366,8 +366,8 @@ typedef struct FunctionLiteral : Expression {
   FunctionLiteral() {
     this->type = functionLiteral;
     this->nodetype = expression;
-    this->name = NULL;
-    this->body = NULL;
+    this->name = nullptr;
+    this->body = nullptr;
   }
   ~FunctionLiteral() {
     delete this->body;
@@ -393,8 +393,8 @@ typedef struct DotFunctionLiteral : Expression {
   DotFunctionLiteral() {
     this->type = dotFunctionLiteral;
     this->nodetype = expression;
-    this->_left = NULL;
-    this->name = NULL;
+    this->_left = nullptr;
+    this->name = nullptr;
   }
   ~DotFunctionLiteral() {
     delete this->_left;
@@ -415,7 +415,7 @@ typedef struct CallExpression : Expression {
   CallExpression() {
     this->nodetype = expression;
     this->type = callExpression;
-    this->_function = NULL;
+    this->_function = nullptr;
   }
   ~CallExpression() {
     delete this->_function;
@@ -453,8 +453,8 @@ typedef struct IndexExpression : Expression {
   IndexExpression() {
     this->nodetype = expression;
     this->type = indexExpression;
-    this->_left = NULL;
-    this->index = NULL;
+    this->_left = nullptr;
+    this->index = nullptr;
   }
   ~IndexExpression() {
     delete this->_left;
