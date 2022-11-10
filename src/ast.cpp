@@ -287,24 +287,6 @@ std::string FunctionLiteral::printString() {
 }
 
 
-std::string DotFunctionLiteral::printString() {
-  std::ostringstream ss;
-  std::vector<std::string> params{};
-
-  for (int i = 0; i < this->arguments.size(); i++) {
-    params.push_back(this->arguments[i]->printString());
-  }
-
-  ss << DatatypeMap.at(this->datatype) << " " << 
-    this->name->token.literal << "(";
-  for (std::string param : params) {
-    ss << param << ", ";
-  }
-  ss << ") ";
-  return ss.str();
-}
-
-
 std::string CallExpression::printString() {
   std::ostringstream ss;
   std::vector<std::string> args{};

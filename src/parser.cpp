@@ -235,9 +235,6 @@ Expression* Parser::parseExpression(int precedence) {
       case INFIX_INDEX:
         leftExp = this->parseIndexExpression(leftExp);
         break;
-      case INFIX_DOT_FUNC:
-        leftExp = this->parseDotFunction(leftExp);
-        break;
     }
   }
   return leftExp;
@@ -441,22 +438,6 @@ std::vector<IdentifierLiteral*> Parser::parseFunctionParameters() {
   }
 
   return identifiers;
-}
-
-
-DotFunctionLiteral* Parser::parseDotFunction(Expression* left) {
-  DotFunctionLiteral* dot = new DotFunctionLiteral;
-  dot->setExpressionNode(this->currentToken);
-  dot->_left = left;
-
-  this->nextToken();
-  dot->name = parseIdentifier();
-
-  if (!(expectPeek(TokenType.LPAREN)))
-    return nullptr;
-
-  dot->arguments = parseExpressionList(TokenType.RPAREN);
-  return dot;
 }
 
 

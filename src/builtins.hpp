@@ -6,16 +6,17 @@ Object* built_in_len(std::vector<Object*>, std::shared_ptr<Environment>);
 Object* built_in_print(std::vector<Object*>, std::shared_ptr<Environment>);
 Object* built_in_max(std::vector<Object*>, std::shared_ptr<Environment>);
 Object* built_in_min(std::vector<Object*>, std::shared_ptr<Environment>);
+Object* built_in_pop(std::vector<Object*>, std::shared_ptr<Environment>);
+Object* built_in_push(std::vector<Object*>, std::shared_ptr<Environment>);
 Object* newError(std::string);
 
 
 typedef struct Builtin : Object {
-  int function_type;
   int builtin_type;
+  int function_type;
 
   Builtin() {
     this->type = BUILTIN_OBJ;
-    this->function_type = builtinFunction;
   }
 
   inline std::string inspectType() { return ObjectType.BUILTIN_OBJ; };
@@ -28,6 +29,8 @@ enum BuiltinFunctions {
   builtin_print,
   builtin_max,
   builtin_min,
+  builtin_pop,
+  builtin_push,
 };
 
 
@@ -35,6 +38,8 @@ const std::unordered_map<std::string, int> builtins {
   {"len", builtin_len},
   {"print", builtin_print},
   {"max", builtin_max},
-  {"min", builtin_min}
+  {"min", builtin_min},
+  {"pop", builtin_pop},
+  {"push", builtin_push}
 };
 
