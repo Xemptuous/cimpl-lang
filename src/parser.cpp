@@ -196,6 +196,8 @@ Expression* Parser::parseLeftPrefix(int prefix) {
       return this->parseFunctionLiteral();
     case PREFIX_ARRAY:
       return this->parseArrayLiteral();
+    case PREFIX_HASH:
+      return this->parseHashLiteral();
     default:
       return this->parsePrefixExpression();
   }
@@ -500,6 +502,36 @@ Expression* Parser::parseIndexExpression(Expression* _left) {
   }
   
   return expr;
+}
+
+
+HashLiteral* Parser::parseHashLiteral() {
+  HashLiteral* hash = new HashLiteral;
+  hash->setExpressionNode(this->currentToken);
+
+  while (this->peekToken.type != TokenType.RBRACE) {
+    if (this->currentToken.type == TokenType._EOF) {
+      std::ostringstream ss;
+      ss << "Brace never closed\n";
+      this->errors.push_back(ss.str());
+    }
+    this->nextToken();
+    Expression* key = this->parseExpression(Precedences.LOWEST);
+
+    if (!expectPeek(TokenType.COLON))
+      return nullptr;
+
+    this->nextToken();
+    Expression* value = this->parseExpression(Precedences.LOWEST);
+    hash->pairs[key] = value;
+
+    if (this->peekToken.type != TokenType.RBRACE && !expectPeek(TokenType.COMMA))
+      return nullptr;
+  }
+
+  if (!expectPeek(TokenType.RBRACE))
+    return nullptr;
+  return hash;
 }
 
 

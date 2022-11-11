@@ -17,6 +17,7 @@ struct BooleanLiteral;
 struct IdentifierLiteral;
 struct ArrayLiteral;
 struct IndexExpression;
+struct HashLiteral;
 
 struct Statement;
 struct LetStatement;
@@ -84,6 +85,7 @@ class Parser {
     StringLiteral* parseStringLiteral();
     BooleanLiteral* parseBooleanLiteral();
     ArrayLiteral* parseArrayLiteral();
+    HashLiteral* parseHashLiteral();
 
     // Statement Methods
     LetStatement* parseLetStatement();
@@ -110,6 +112,7 @@ enum prefix {
   PREFIX_GROUPED_EXPR,
   PREFIX_ASSIGN,
   PREFIX_ARRAY,
+  PREFIX_HASH,
 };
 
 
@@ -132,6 +135,7 @@ const std::unordered_map<std::string, int> prefixFunctions = {
   {TokenType.MULT_EQ, PREFIX_ASSIGN},
   {TokenType.DIV_EQ, PREFIX_ASSIGN},
   {TokenType.LBRACKET, PREFIX_ARRAY},
+  {TokenType.LBRACE, PREFIX_HASH},
 };
 
 
