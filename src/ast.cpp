@@ -347,6 +347,25 @@ std::string IndexExpression::printString() {
 }
 
 
+std::string HashLiteral::printString() {
+  std::ostringstream ss;
+  std::vector<std::string> pairs{};
+
+
+  for (std::pair<Expression*, Expression*> pair : this->pairs) {
+    std::ostringstream p;
+    p << pair.first->printString() << ":" << pair.second->printString();
+    pairs.push_back(p.str());
+  }
+
+  ss << "{";
+  for (std::string el : pairs) {
+    ss << el << ", ";
+  }
+  ss << "} ";
+  return ss.str();
+}
+
 
 std::string AST::printString() {
   std::ostringstream ss;

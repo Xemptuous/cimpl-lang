@@ -89,6 +89,9 @@ Token Lexer::nextToken() {
     case ';':
       tok = newToken(TokenType.SEMICOLON, this->ch);
       break;
+    case ':':
+      tok = newToken(TokenType.COLON, this->ch);
+      break;
     case '!':
       if (this->peekChar() == '=') {
         this->readChar();

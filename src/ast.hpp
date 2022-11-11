@@ -32,6 +32,7 @@ enum ExpressionType {
   callExpression,
   arrayLiteral,
   indexExpression,
+  hashLiteral,
 };
 
 
@@ -438,6 +439,18 @@ typedef struct IndexExpression : Expression {
   }
   std::string printString();
 } IndexExpression;
+
+
+typedef struct HashLiteral : Expression {
+  Token token;
+  std::unordered_map<Expression*, Expression*> pairs;
+
+  HashLiteral() {
+    this->nodetype = expression;
+    this->type = hashLiteral;
+  }
+  std::string printString();
+} HashLiteral;
 
 
 const std::unordered_map<int, std::string> StatementMap = {
