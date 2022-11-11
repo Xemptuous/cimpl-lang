@@ -442,12 +442,19 @@ Object* evalArrayIndexExpression(Object* arr, Object* index, shared_ptr<Environm
   Array* arrayObject = static_cast<Array*>(arr);
   Integer* intObject = static_cast<Integer*>(index);
   int idx = intObject->value;
-  int max = arrayObject->elements.size() - 1;
-  if (idx < 0 || idx > max) {
+  int max = arrayObject->elements.size();
+  // evaluate negative (reverse) index
+  if (idx < 0) {
+    if (idx + max < 0) {
+      ostringstream ss;
+      ss << "index out of range.";
+      return newError(ss.str());
+    }
+    return arrayObject->elements[idx + max];
+  }
+  if (idx > max - 1) {
     ostringstream ss;
-    ss << "index out of range. ";
-    ss << "Array contains " << max + 1 << " items, but trying to access item ";
-    ss << intObject->value + 1;
+    ss << "index out of range.";
     return newError(ss.str());
   }
   return arrayObject->elements[idx];
@@ -458,15 +465,26 @@ Object* evalStringIndexExpression(Object* str, Object* index, shared_ptr<Environ
   String* stringObject = static_cast<String*>(str);
   Integer* intObject = static_cast<Integer*>(index);
   int idx = intObject->value;
-  int max = stringObject->value.length() - 1;
-  if (idx < 0 || idx > max) {
+  int max = stringObject->value.length();
+  if (idx < 0) {
+    if (idx + max < 0) {
+      ostringstream ss;
+      ss << "index out of range.";
+      return newError(ss.str());
+    }
+    string s(1, stringObject->value[idx + max]);
+    String* news = new String(s);
+    env->gc.push_back(news);
+    return news;
+  }
+  if (idx > max - 1) {
     ostringstream ss;
-    ss << "index out of range. ";
-    ss << "String length is " << max + 1 << " items, but trying to access char at ";
-    ss << intObject->value + 1;
+    ss << "index out of range.";
     return newError(ss.str());
   }
-  String* news = new String(to_string(stringObject->value[idx]));
+  string s(1, stringObject->value[idx]);
+  String* news = new String(s);
+  env->gc.push_back(news);
   return news;
 }
 
