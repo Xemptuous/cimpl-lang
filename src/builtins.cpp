@@ -16,6 +16,10 @@ Object* evalBuiltinFunction(Object* fn, vector<Object*> args, shared_ptr<Environ
       return built_in_max(args, env);
     case builtin_min:
       return built_in_min(args, env);
+    case builtin_push:
+      return built_in_push(args, env);
+    case builtin_pop:
+      return built_in_pop(args, env);
     default:
       return newError("not a valid function");
   }
@@ -91,4 +95,38 @@ Object* built_in_min(vector<Object*> args, shared_ptr<Environment> env) {
   String* news = new String(to_string(result));
   env->gc.push_back(news);
   return news;
+}
+
+
+Object* built_in_push(vector<Object*> args, shared_ptr<Environment> env) {
+  if (args.size() != 2)
+    return newError(
+      "Wrong number of arguments for push(). Expected 2, got " + to_string(args.size())
+    );
+  if (args[0]->inspectType() != ObjectType.ARRAY_OBJ)
+    return newError(
+      "Argument 1 to push() must be ARRAY. Instead got " + args[0]->inspectType()
+    );
+  std::vector<Object*> arg = static_cast<Array*>(args[0])->elements;
+  arg.push_back(args[1]);
+  Array* arr = new Array(arg);
+  env->gc.push_back(arr);
+  return arr;
+}
+
+
+Object* built_in_pop(vector<Object*> args, shared_ptr<Environment> env) {
+  if (args.size() != 1)
+    return newError(
+      "Wrong number of arguments for pop(). Expected 1, got " + to_string(args.size())
+    );
+  if (args[0]->inspectType() != ObjectType.ARRAY_OBJ)
+    return newError(
+      "Argument 1 to pop() must be ARRAY. Instead got " + args[0]->inspectType()
+    );
+  std::vector<Object*> arg = static_cast<Array*>(args[0])->elements;
+  arg.pop_back();
+  Array* arr = new Array(arg);
+  env->gc.push_back(arr);
+  return arr;
 }
