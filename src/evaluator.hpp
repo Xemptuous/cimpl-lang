@@ -14,6 +14,7 @@ Object* evalMinusOperatorExpression(Object*, std::shared_ptr<Environment>);
 Object* evalInfixExpression(std::string, Object*, Object*, std::shared_ptr<Environment>);
 Object* evalIndexExpression(Object*, Object*, std::shared_ptr<Environment>);
 Object* evalArrayIndexExpression(Object*, Object*, std::shared_ptr<Environment>);
+Object* evalStringIndexExpression(Object*, Object*, std::shared_ptr<Environment>);
 Object* evalIntegerInfixExpression(std::string, Object*, Object*, std::shared_ptr<Environment>);
 Object* evalStringInfixExpression(std::string, Object*, Object*, std::shared_ptr<Environment>);
 Object* evalIfExpression(IfExpression*, std::shared_ptr<Environment>);

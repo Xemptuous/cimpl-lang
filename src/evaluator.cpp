@@ -430,6 +430,9 @@ Object* evalIndexExpression(Object* left, Object* index, shared_ptr<Environment>
   if (left->inspectType() == ObjectType.ARRAY_OBJ && 
         index->inspectType() == ObjectType.INTEGER_OBJ)
     return evalArrayIndexExpression(left, index, env);
+  if (left->inspectType() == ObjectType.STRING_OBJ && 
+        index->inspectType() == ObjectType.INTEGER_OBJ)
+    return evalStringIndexExpression(left, index, env);
   else
     return newError("index operator not supported: " + left->inspectType());
 }
@@ -448,6 +451,23 @@ Object* evalArrayIndexExpression(Object* arr, Object* index, shared_ptr<Environm
     return newError(ss.str());
   }
   return arrayObject->elements[idx];
+}
+
+
+Object* evalStringIndexExpression(Object* str, Object* index, shared_ptr<Environment> env) {
+  String* stringObject = static_cast<String*>(str);
+  Integer* intObject = static_cast<Integer*>(index);
+  int idx = intObject->value;
+  int max = stringObject->value.length() - 1;
+  if (idx < 0 || idx > max) {
+    ostringstream ss;
+    ss << "index out of range. ";
+    ss << "String length is " << max + 1 << " items, but trying to access char at ";
+    ss << intObject->value + 1;
+    return newError(ss.str());
+  }
+  String* news = new String(to_string(stringObject->value[idx]));
+  return news;
 }
 
 
