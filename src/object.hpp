@@ -13,6 +13,7 @@ enum ObjectEnum {
   STRING_OBJ,
   RETURN_OBJ,
   IDENT_OBJ,
+  ARRAY_OBJ,
   FLOAT_OBJ,
   ERROR_OBJ,
   NULL_OBJ,
@@ -34,6 +35,7 @@ const struct Objecttype {
   std::string STRING_OBJ = {"STRING"};
   std::string RETURN_OBJ = {"RETURN"};
   std::string IDENT_OBJ = {"IDENT"};
+  std::string ARRAY_OBJ = {"ARRAY"};
   std::string FLOAT_OBJ = {"FLOAT"};
   std::string ERROR_OBJ = {"ERROR"};
   std::string NULL_OBJ = {"NULL"};
@@ -106,6 +108,33 @@ typedef struct String : Object {
 } String;
 
 
+typedef struct Array: Object {
+  std::vector<Object*> elements;
+
+  Array(std::vector<Object*> el) {
+    this->elements = el;
+    this->type = ARRAY_OBJ;
+  }
+  ~Array() {
+    for (auto el : this->elements)
+      delete el;
+  }
+
+  inline std::string inspectType() { return ObjectType.ARRAY_OBJ; }
+  inline std::string inspectObject() {
+    std::ostringstream ss;
+    std::vector<std::string> elements;
+    for (auto el : this->elements)
+      elements.push_back(el->inspectObject());
+    ss << "[";
+    for (auto el : elements)
+      ss << el << ", ";
+    ss << "]";
+    return ss.str();
+  }
+} Array;
+
+
 typedef struct Null : Object {
 
   Null() { this->type = NULL_OBJ; }
@@ -146,7 +175,7 @@ typedef struct Environment {
   std::vector<Object*> gc{};
   std::shared_ptr<Environment> outer;
 
-  Environment(std::shared_ptr<Environment> env = NULL) {
+  Environment(std::shared_ptr<Environment> env = nullptr) {
     this->outer = env;
   }
 
@@ -158,13 +187,13 @@ typedef struct Environment {
       return res;
     }
     catch (...) {
-      if (this->outer != NULL) {
+      if (this->outer != nullptr) {
         try {
           this->outer->get(name);
         }
-        catch (...) { return NULL; }
+        catch (...) { return nullptr; }
       }
-      return NULL; 
+      return nullptr; 
     }
   }
 

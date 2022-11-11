@@ -42,7 +42,7 @@ Statement* Parser::parseStatement() {
     return this->parseAssignmentExpression();
   else 
     return this->parseExpressionStatement();
-  return NULL;
+  return nullptr;
 }
 
 
@@ -62,7 +62,7 @@ IdentifierStatement* Parser::parseIdentifierStatement() {
     ss << "line:" << this->linenumber << ": Could not parse " << 
       this->currentToken.literal << "; no assignment operator";
     this->errors.push_back(ss.str());
-    return NULL;
+    return nullptr;
   }
 
   // Setting expression value
@@ -78,7 +78,7 @@ IdentifierStatement* Parser::parseIdentifierStatement() {
       ss << "No Semicolon present at end of line for " << StatementMap.at(stmt->type) << 
         " with value " << stmt->value->token.literal;
       this->errors.push_back(ss.str());
-      return NULL;
+      return nullptr;
     }
     this->nextToken();
   }
@@ -97,7 +97,7 @@ LetStatement* Parser::parseLetStatement() {
     std::ostringstream ss;
     ss << "Could not parse " << this->currentToken.literal << "; no identifier given";
     this->errors.push_back(ss.str());
-    return NULL;
+    return nullptr;
   }
 
   // Getting the identifier
@@ -107,7 +107,7 @@ LetStatement* Parser::parseLetStatement() {
     std::ostringstream ss;
     ss << "Could not parse " << this->currentToken.literal << "; no assignment operator";
     this->errors.push_back(ss.str());
-    return NULL;
+    return nullptr;
   }
 
   // Setting expression value
@@ -121,7 +121,7 @@ LetStatement* Parser::parseLetStatement() {
       ss << "No Semicolon present at end of line for " << StatementMap.at(stmt->type) << 
         " with value " << stmt->value->token.literal;
       this->errors.push_back(ss.str());
-      return NULL;
+      return nullptr;
     }
     this->nextToken();
   }
@@ -136,7 +136,7 @@ ReturnStatement* Parser::parseReturnStatement() {
   this->nextToken();
 
   stmt->returnValue = this->parseExpression(Precedences.LOWEST);
-  if (stmt->returnValue == NULL) {
+  if (stmt->returnValue == nullptr) {
     stmt->datatype = VOID;
   }
   else {
@@ -149,7 +149,7 @@ ReturnStatement* Parser::parseReturnStatement() {
       ss << "No Semicolon present at end of line for " << StatementMap.at(stmt->type) << 
         " with value " << stmt->returnValue->token.literal;
       this->errors.push_back(ss.str());
-      return NULL;
+      return nullptr;
     }
     this->nextToken();
   }
@@ -194,6 +194,8 @@ Expression* Parser::parseLeftPrefix(int prefix) {
       return this->parseGroupedExpression();
     case PREFIX_FUNCTION:
       return this->parseFunctionLiteral();
+    case PREFIX_ARRAY:
+      return this->parseArrayLiteral();
     default:
       return this->parsePrefixExpression();
   }
@@ -206,12 +208,12 @@ Expression* Parser::parseExpression(int precedence) {
     std::ostringstream ss;
     ss << "No prefix parse function found for " << this->currentToken.literal << '\n';
     this->errors.push_back(ss.str());
-    return NULL;
+    return nullptr;
   }
 
   Expression* leftExp = this->parseLeftPrefix(prefix->second);
-  if (leftExp == NULL) {
-    return NULL;
+  if (leftExp == nullptr) {
+    return nullptr;
   }
   leftExp->setDataType(leftExp->token.literal);
 
@@ -229,6 +231,9 @@ Expression* Parser::parseExpression(int precedence) {
         break;
       case INFIX_CALL:
         leftExp = this->parseCallExpression(leftExp);
+        break;
+      case INFIX_INDEX:
+        leftExp = this->parseIndexExpression(leftExp);
         break;
     }
   }
@@ -279,7 +284,7 @@ AssignmentExpressionStatement* Parser::parseAssignmentExpression() {
       ss << "No Semicolon present at end of line for " << StatementMap.at(expr->type) << 
         " with value " << expr->value->token.literal;
       this->errors.push_back(ss.str());
-      return NULL;
+      return nullptr;
     }
     this->nextToken();
   }
@@ -291,7 +296,7 @@ Expression* Parser::parseGroupedExpression() {
   this->nextToken();
   Expression* expr = this->parseExpression(Precedences.LOWEST);
   if (!(this->expectPeek(TokenType.RPAREN))) {
-    return NULL;
+    return nullptr;
   }
   return expr;
 }
@@ -306,7 +311,7 @@ BlockStatement* Parser::parseBlockStatement() {
   while (this->currentToken.type != TokenType.RBRACE && this->currentToken.type != TokenType._EOF) {
     Statement* stmt = this->parseStatement();
 
-    if (stmt != NULL) {
+    if (stmt != nullptr) {
       block->statements.push_back(stmt);
     }
     this->nextToken();
@@ -320,18 +325,18 @@ IfExpression* Parser::parseIfExpression() {
   expr->setExpressionNode(this->currentToken);
 
   if (!(expectPeek(TokenType.LPAREN))) {
-    return NULL;
+    return nullptr;
   }
 
   this->nextToken();
   expr->condition = this->parseExpression(Precedences.LOWEST);
 
   if (!(expectPeek(TokenType.RPAREN))) {
-    return NULL;
+    return nullptr;
   }
 
   if (!(expectPeek(TokenType.LBRACE))) {
-    return NULL;
+    return nullptr;
   }
   expr->consequence = this->parseBlockStatement();
 
@@ -341,17 +346,17 @@ IfExpression* Parser::parseIfExpression() {
     if (this->peekToken.type == TokenType.IF) 
     {
       this->nextToken();
-      if (!(expectPeek(TokenType.LPAREN))) { return NULL; }
+      if (!(expectPeek(TokenType.LPAREN))) { return nullptr; }
       this->nextToken();
       expr->conditions.push_back( this->parseExpression(Precedences.LOWEST) );
-      if (!(expectPeek(TokenType.RPAREN))) { return NULL; }
-      if (!(expectPeek(TokenType.LBRACE))) { return NULL; }
+      if (!(expectPeek(TokenType.RPAREN))) { return nullptr; }
+      if (!(expectPeek(TokenType.LBRACE))) { return nullptr; }
       expr->alternatives.push_back ( this->parseBlockStatement() );
     }
     else 
     {
       if (!(expectPeek(TokenType.LBRACE))) {
-        return NULL;
+        return nullptr;
       }
       expr->alternative = this->parseBlockStatement();
     }
@@ -367,20 +372,17 @@ FunctionStatement* Parser::parseFunctionStatement() {
 
   this->nextToken();
 
-  if (!(expectPeek(TokenType.IDENT))) {
-    return NULL;
-  }
+  if (!(expectPeek(TokenType.IDENT)))
+    return nullptr;
   stmt->name = parseIdentifier();
   this->nextToken();
 
-  if (!(expectPeek(TokenType.LPAREN))) {
-    return NULL;
-  }
+  if (!(expectPeek(TokenType.LPAREN)))
+    return nullptr;
   stmt->parameters = this->parseFunctionParameters();
 
-  if (!(expectPeek(TokenType.LBRACE))) {
-    return NULL;
-  }
+  if (!(expectPeek(TokenType.LBRACE)))
+    return nullptr;
   stmt->body = this->parseBlockStatement();
   // make sure return datatype is the same as funtion datatype
   this->checkFunctionReturn(stmt);
@@ -393,19 +395,16 @@ FunctionLiteral* Parser::parseFunctionLiteral() {
   FunctionLiteral* expr = new FunctionLiteral;
   expr->setExpressionNode(this->currentToken);
 
-  if (!(expectPeek(TokenType.IDENT))) {
-    return NULL;
-  }
+  if (!(expectPeek(TokenType.IDENT)))
+    return nullptr;
   expr->name = parseIdentifier();
 
-  if (!(expectPeek(TokenType.LPAREN))) {
-    return NULL;
-  }
+  if (!(expectPeek(TokenType.LPAREN)))
+    return nullptr;
   expr->parameters = this->parseFunctionParameters();
 
-  if (!(expectPeek(TokenType.LBRACE))) {
-    return NULL;
-  }
+  if (!(expectPeek(TokenType.LBRACE)))
+    return nullptr;
   expr->body = this->parseBlockStatement();
 
   return expr;
@@ -446,35 +445,61 @@ CallExpression* Parser::parseCallExpression(Expression* func) {
   CallExpression* expr = new CallExpression;
   expr->setExpressionNode(this->currentToken);
   expr->_function = func;
-  expr->arguments = this->parseCallArguments();
+  expr->arguments = this->parseExpressionList(TokenType.RPAREN);
   return expr;
 }
 
 
-std::vector<Expression*> Parser::parseCallArguments() {
-  std::vector<Expression*> args{};
+ArrayLiteral* Parser::parseArrayLiteral() {
+  ArrayLiteral* arr = new ArrayLiteral;
+  arr->setExpressionNode(this->currentToken);
+  arr->elements = this->parseExpressionList(TokenType.RBRACKET);
+  return arr;
+}
 
-  if (this->peekToken.type == TokenType.RPAREN) {
+
+std::vector<Expression*> Parser::parseExpressionList(std::string end) {
+  std::vector<Expression*> list{};
+
+  if (this->peekToken.type == end) {
     this->nextToken();
-    return args;
+    return list;
   }
 
   this->nextToken();
-  args.push_back(this->parseExpression(Precedences.LOWEST));
+  list.push_back(this->parseExpression(Precedences.LOWEST));
 
   while (this->peekToken.type == TokenType.COMMA) {
     this->nextToken();
     this->nextToken();
-    args.push_back(this->parseExpression(Precedences.LOWEST));
+    list.push_back(this->parseExpression(Precedences.LOWEST));
   }
 
-  if (!(expectPeek(TokenType.RPAREN))) {
+  if (!(expectPeek(end))) {
     std::ostringstream ss;
-    ss << "Parenthesis never closed for function call\n";
+    ss << "Parenthesis/Bracket never closed\n";
     this->errors.push_back(ss.str());
   }
 
-  return args;
+  return list;
+}
+
+
+Expression* Parser::parseIndexExpression(Expression* _left) {
+  IndexExpression* expr = new IndexExpression;
+  expr->setExpressionNode(this->currentToken);
+  expr->_left = _left;
+
+  this->nextToken();
+  expr->index = this->parseExpression(Precedences.LOWEST);
+
+  if (!(expectPeek(TokenType.RBRACKET))) {
+    std::ostringstream ss;
+    ss << "Index Bracket never closed\n";
+    this->errors.push_back(ss.str());
+  }
+  
+  return expr;
 }
 
 
@@ -490,7 +515,7 @@ IntegerLiteral* Parser::parseIntegerLiteral() {
     std::ostringstream ss;
     ss << "Could not parse " << this->currentToken.literal << " as integer";
     this->errors.push_back(ss.str());
-    return NULL;
+    return nullptr;
   }
   expr->value = value;
 
@@ -510,7 +535,7 @@ FloatLiteral* Parser::parseFloatLiteral() {
     std::ostringstream ss;
     ss << "Could not parse " << this->currentToken.literal << " as float";
     this->errors.push_back(ss.str());
-    return NULL;
+    return nullptr;
   }
   expr->value = value;
 

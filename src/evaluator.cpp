@@ -7,13 +7,13 @@ using namespace std;
 // GLOBALS
 Boolean _TRUE_BOOL = Boolean(true);
 Boolean _FALSE_BOOL = Boolean(false);
-Null _NULL = Null{};
-shared_ptr<Environment> err_gc = NULL;
+Null _nullptr = Null{};
+shared_ptr<Environment> err_gc = nullptr;
 
 void setErrorGarbageCollector(shared_ptr<Environment> env) { err_gc = env; };
 
 
-Object* evalNode(Node* node, shared_ptr<Environment> env = NULL) {
+Object* evalNode(Node* node, shared_ptr<Environment> env = nullptr) {
   if (node->nodetype == statement) {
     Statement* stmt = static_cast<Statement*>(node);
     return evalStatements(stmt, env);
@@ -25,7 +25,7 @@ Object* evalNode(Node* node, shared_ptr<Environment> env = NULL) {
 }
 
 
-Object* evalStatements(Statement* stmt, shared_ptr<Environment> env = NULL) {
+Object* evalStatements(Statement* stmt, shared_ptr<Environment> env = nullptr) {
   switch (stmt->type) {
     case identifierStatement:{
       break;
@@ -61,7 +61,7 @@ Object* evalStatements(Statement* stmt, shared_ptr<Environment> env = NULL) {
       BlockStatement* bs = static_cast<BlockStatement*>(stmt);
       for (auto stmt : bs->statements) {
         Object* result = evalNode(stmt, env);
-        if (result != NULL && result->type == RETURN_OBJ)
+        if (result != nullptr && result->type == RETURN_OBJ)
           return result;
       }
     }
@@ -79,11 +79,11 @@ Object* evalStatements(Statement* stmt, shared_ptr<Environment> env = NULL) {
       break;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 
-Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = NULL) {
+Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr) {
   switch (expr->type) {
     case integerLiteral: {
       IntegerLiteral* i = static_cast<IntegerLiteral*>(expr);
@@ -108,6 +108,25 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = NULL) {
       env->gc.push_back(news);
       return news;
     }   
+    case arrayLiteral: {
+      ArrayLiteral* a = static_cast<ArrayLiteral*>(expr);
+      vector<Object*>elements = evalCallExpressions(a->elements, env);
+      if (elements.size() == 1 && isError(elements[0]))
+        return elements[0];
+      Array* newa = new Array(elements);
+      env->gc.push_back(newa);
+      return newa;
+    }   
+    case indexExpression: {
+      IndexExpression* ie = static_cast<IndexExpression*>(expr);
+      Object* left = evalNode(ie->_left, env);
+      if (isError(left))
+        return left;
+      Object* index = evalNode(ie->index, env);
+      if (isError(index))
+        return index;
+      return evalIndexExpression(left, index, env);
+    }
     case identifier: {
       IdentifierLiteral* i = static_cast<IdentifierLiteral*>(expr);
       Object* newi = evalIdentifier(i, env);
@@ -143,7 +162,7 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = NULL) {
       // env->gc.push_back(newf);
       env->set(fl->name->value, newf);
       break;
-    }   
+    }
     case callExpression: {
       CallExpression* ce = static_cast<CallExpression*>(expr);
       Object* func = evalNode(ce->_function, env);
@@ -155,7 +174,7 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = NULL) {
       return applyFunction(func, args, env);
     }   
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -177,10 +196,10 @@ Object* evalIfExpression(IfExpression* expr, shared_ptr<Environment> env) {
         return evalNode(expr->alternatives[i], env);
     }
     // if no else-ifs true/found, evaluate final else
-    if (expr->alternative != NULL)
+    if (expr->alternative != nullptr)
       return evalNode(expr->alternative, env);
     else
-      return NULL;
+      return nullptr;
   }
 }
 
@@ -320,7 +339,7 @@ Object* evalAssignmentExpression(
       return newError("incompatible assignment operator: " + val->inspectType() + " " + op);
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -360,7 +379,7 @@ Object* evalIdentifier(IdentifierLiteral* node, shared_ptr<Environment> env) {
   }
   
   Object* val = env->get(node->value);
-  if (val != NULL)
+  if (val != nullptr)
     return val;
 
   return newError("identifier not found: " + node->value);
@@ -404,6 +423,69 @@ Object* unwrapReturnValue(Object* evaluated) {
     return obj->value;
   }
   return evaluated;
+}
+
+
+Object* evalIndexExpression(Object* left, Object* index, shared_ptr<Environment> env) {
+  if (left->inspectType() == ObjectType.ARRAY_OBJ && 
+        index->inspectType() == ObjectType.INTEGER_OBJ)
+    return evalArrayIndexExpression(left, index, env);
+  if (left->inspectType() == ObjectType.STRING_OBJ && 
+        index->inspectType() == ObjectType.INTEGER_OBJ)
+    return evalStringIndexExpression(left, index, env);
+  else
+    return newError("index operator not supported: " + left->inspectType());
+}
+
+
+Object* evalArrayIndexExpression(Object* arr, Object* index, shared_ptr<Environment> env) {
+  Array* arrayObject = static_cast<Array*>(arr);
+  Integer* intObject = static_cast<Integer*>(index);
+  int idx = intObject->value;
+  int max = arrayObject->elements.size();
+  // evaluate negative (reverse) index
+  if (idx < 0) {
+    if (idx + max < 0) {
+      ostringstream ss;
+      ss << "index out of range.";
+      return newError(ss.str());
+    }
+    return arrayObject->elements[idx + max];
+  }
+  if (idx > max - 1) {
+    ostringstream ss;
+    ss << "index out of range.";
+    return newError(ss.str());
+  }
+  return arrayObject->elements[idx];
+}
+
+
+Object* evalStringIndexExpression(Object* str, Object* index, shared_ptr<Environment> env) {
+  String* stringObject = static_cast<String*>(str);
+  Integer* intObject = static_cast<Integer*>(index);
+  int idx = intObject->value;
+  int max = stringObject->value.length();
+  if (idx < 0) {
+    if (idx + max < 0) {
+      ostringstream ss;
+      ss << "index out of range.";
+      return newError(ss.str());
+    }
+    string s(1, stringObject->value[idx + max]);
+    String* news = new String(s);
+    env->gc.push_back(news);
+    return news;
+  }
+  if (idx > max - 1) {
+    ostringstream ss;
+    ss << "index out of range.";
+    return newError(ss.str());
+  }
+  string s(1, stringObject->value[idx]);
+  String* news = new String(s);
+  env->gc.push_back(news);
+  return news;
 }
 
 
@@ -467,7 +549,7 @@ Object* newError(string msg) {
 
 
 bool isError(Object* obj) {
-  if (obj != NULL) {
+  if (obj != nullptr) {
     return obj->type == ERROR_OBJ;
   }
   return false;

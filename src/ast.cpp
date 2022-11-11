@@ -9,7 +9,7 @@ void AST::parseProgram() {
   while (this->parser->currentToken.type != TokenType._EOF) {
     Statement* stmt = this->parser->parseStatement();
 
-    if (stmt != NULL) {
+    if (stmt != nullptr) {
       this->Statements.push_back(stmt);
     }
 
@@ -154,7 +154,7 @@ std::string IdentifierStatement::printString() {
   ss << this->token.literal << " ";
   ss << this->name->printString() << " = ";
 
-  if (this->value != NULL) {
+  if (this->value != nullptr) {
     ss << this->value->printString();
   }
   ss << ";";
@@ -169,7 +169,7 @@ std::string LetStatement::printString() {
   ss << this->token.literal << " ";
   ss << this->name->printString() << " = ";
 
-  if (this->value != NULL) {
+  if (this->value != nullptr) {
     ss << this->value->printString();
   }
   ss << ";";
@@ -183,7 +183,7 @@ std::string ReturnStatement::printString() {
 
   ss << this->token.literal << " ";
 
-  if (this->returnValue != NULL) {
+  if (this->returnValue != nullptr) {
     ss << this->returnValue->printString();
   }
   ss << ";";
@@ -195,7 +195,7 @@ std::string ReturnStatement::printString() {
 std::string ExpressionStatement::printString() {
   std::ostringstream ss;
 
-  if (this->expression != NULL) {
+  if (this->expression != nullptr) {
     ss << this->expression->printString();
   }
 
@@ -243,7 +243,7 @@ std::string IfExpression::printString() {
       this->alternatives[i]->printString();
   }
 
-  if (this->alternative != NULL) {
+  if (this->alternative != nullptr) {
     ss << " else " << this->alternative->printString();
   }
 
@@ -317,6 +317,35 @@ std::string BooleanLiteral::printString() {
 
   return ss.str();
 }
+
+
+std::string ArrayLiteral::printString() {
+  std::ostringstream ss;
+  std::vector<std::string> elements{};
+
+  for (int i = 0; i < this->elements.size(); i++) {
+    elements.push_back(this->elements[i]->printString());
+  }
+
+  ss << "[";
+  for (std::string el : elements) {
+    ss << el << ", ";
+  }
+  ss << "] ";
+  return ss.str();
+}
+
+
+std::string IndexExpression::printString() {
+  std::ostringstream ss;
+  ss << "(";
+  ss << this->_left->printString();
+  ss << "[";
+  ss << this->index->printString();
+  ss << "]) ";
+  return ss.str();
+}
+
 
 
 std::string AST::printString() {

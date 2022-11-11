@@ -30,6 +30,8 @@ enum ExpressionType {
   ifExpression,
   functionLiteral,
   callExpression,
+  arrayLiteral,
+  indexExpression,
 };
 
 
@@ -91,8 +93,8 @@ typedef struct IdentifierStatement : Statement {
   Expression* value;
 
   IdentifierStatement() {
-    this->name = NULL;
-    this->value = NULL;
+    this->name = nullptr;
+    this->value = nullptr;
     this->type = identifierStatement;
     this->nodetype = statement;
   }
@@ -111,8 +113,8 @@ typedef struct LetStatement : Statement {
   Expression* value;
 
   LetStatement() {
-    this->name = NULL;
-    this->value = NULL;
+    this->name = nullptr;
+    this->value = nullptr;
     this->type = letStatement;
     this->nodetype = statement;
   }
@@ -132,8 +134,8 @@ typedef struct AssignmentExpressionStatement : Statement {
   Expression* value;
 
   AssignmentExpressionStatement() {
-    this->name = NULL;
-    this->value = NULL;
+    this->name = nullptr;
+    this->value = nullptr;
     this->type = assignmentExpressionStatement;
     this->nodetype = statement;
   }
@@ -151,7 +153,7 @@ typedef struct ReturnStatement : Statement {
   Expression* returnValue;
 
   ReturnStatement() {
-    this->returnValue = NULL;
+    this->returnValue = nullptr;
     this->type = returnStatement;
     this->nodetype = statement;
   }
@@ -168,7 +170,7 @@ typedef struct ExpressionStatement : Statement {
   Expression* expression;
 
   ExpressionStatement() {
-    this->expression = NULL;
+    this->expression = nullptr;
     this->type = expressionStatement;
     this->nodetype = statement;
   }
@@ -186,7 +188,7 @@ typedef struct PrefixExpression : Expression {
   Expression* _right;
 
   PrefixExpression() {
-    this->_right = NULL;
+    this->_right = nullptr;
     this->type = prefixExpression;
     this->nodetype = expression;
   }
@@ -207,8 +209,8 @@ typedef struct InfixExpression : Expression {
   Expression* _right;
 
   InfixExpression() {
-    this->_left = NULL;
-    this->_right = NULL;
+    this->_left = nullptr;
+    this->_right = nullptr;
     this->type = infixExpression;
     this->nodetype = expression;
   }
@@ -307,9 +309,9 @@ typedef struct IfExpression : Expression {
   IfExpression() {
     this->type = ifExpression;
     this->nodetype = expression;
-    this->condition = NULL;
-    this->consequence = NULL;
-    this->alternative = NULL;
+    this->condition = nullptr;
+    this->consequence = nullptr;
+    this->alternative = nullptr;
   }
   ~IfExpression() {
     delete this->condition;
@@ -337,8 +339,8 @@ typedef struct FunctionStatement : Statement {
   FunctionStatement() {
     this->type = functionStatement;
     this->nodetype = statement;
-    this->body = NULL;
-    this->name = NULL;
+    this->body = nullptr;
+    this->name = nullptr;
   }
   ~FunctionStatement() {
     delete this->body;
@@ -363,8 +365,8 @@ typedef struct FunctionLiteral : Expression {
   FunctionLiteral() {
     this->type = functionLiteral;
     this->nodetype = expression;
-    this->name = NULL;
-    this->body = NULL;
+    this->name = nullptr;
+    this->body = nullptr;
   }
   ~FunctionLiteral() {
     delete this->body;
@@ -389,7 +391,7 @@ typedef struct CallExpression : Expression {
   CallExpression() {
     this->nodetype = expression;
     this->type = callExpression;
-    this->_function = NULL;
+    this->_function = nullptr;
   }
   ~CallExpression() {
     delete this->_function;
@@ -399,6 +401,43 @@ typedef struct CallExpression : Expression {
 
   std::string printString();
 } CallExpression;
+
+
+typedef struct ArrayLiteral : Expression {
+  Token token;
+  std::vector<Expression*> elements;
+
+  ArrayLiteral() {
+    this->nodetype = expression;
+    this->type = arrayLiteral;
+  }
+
+  ~ArrayLiteral() {
+    for (auto el : this->elements)
+      delete el;
+  }
+
+  std::string printString();
+} ArrayLiteral;
+
+
+typedef struct IndexExpression : Expression {
+  Token token;
+  Expression* _left;
+  Expression* index;
+
+  IndexExpression() {
+    this->nodetype = expression;
+    this->type = indexExpression;
+    this->_left = nullptr;
+    this->index = nullptr;
+  }
+  ~IndexExpression() {
+    delete this->_left;
+    delete this->index;
+  }
+  std::string printString();
+} IndexExpression;
 
 
 const std::unordered_map<int, std::string> StatementMap = {
@@ -423,6 +462,8 @@ const std::unordered_map<int, std::string> ExpressionMap = {
   {7, "If Expression"},
   {8, "Function Literal"},
   {9, "Call Expression"},
+  {10, "Array Literal"},
+  {11, "Index Expression"},
 };
 
 
@@ -465,6 +506,7 @@ const struct Precedences {
   int PRODUCT {5};
   int PREFIX {6};
   int CALL {7};
+  int INDEX {8};
 } Precedences{};
 
 
@@ -482,4 +524,6 @@ const std::unordered_map<std::string, int> precedencesMap = {
   {TokenType.ASTERISK, Precedences.PRODUCT},
   {TokenType.MULT_EQ, Precedences.PRODUCT},
   {TokenType.LPAREN, Precedences.CALL},
+  {TokenType.PERIOD, Precedences.CALL},
+  {TokenType.LBRACKET, Precedences.INDEX},
 };
