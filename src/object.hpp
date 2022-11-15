@@ -1,6 +1,7 @@
 #pragma once
 #include "ast.hpp"
 #include <sstream>
+#include <functional>
 
 using namespace std;
 
@@ -153,24 +154,18 @@ class Function : public Object {
 
 class Hash : public Object {
   public:
-    unordered_map<HashKey*, HashPair*> pairs{};
+    // unordered_map<HashKey*, HashPair*> pairs{};
+    unordered_map<size_t, HashPair*> pairs{};
 
     inline string inspectType() { return ObjectType.HASH_OBJ; };
     string inspectObject();
-};
-
-class HashKey: public Object {
-  public:
-    HashKey(string, int);
-
-    string obj_type;
-    int value;
 };
 
 
 class HashPair : public Object {
   public:
     HashPair(Object*, Object*);
+    ~HashPair();
 
     Object* key;
     Object* value;

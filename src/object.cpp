@@ -1,9 +1,7 @@
 # include "object.hpp"
+
 using namespace std;
 
-/***************
-  Constructors 
-***************/
 
 Object::Object() { this->type = OBJECT_OBJ; };
 
@@ -56,14 +54,14 @@ Function::~Function() {
   delete this->body;
 }
 
-HashKey::HashKey(string type, int val) {
-  this->obj_type = type;
+HashPair::HashPair(Object* key, Object* val) {
+  this->key = key;
   this->value = val;
 }
 
-HashPair::HashPair(Object* type, Object* val) {
-  this->key = type;
-  this->value = val;
+HashPair::~HashPair() {
+  delete this->key;
+  delete this->value;
 }
 
 Integer::Integer(int val) {
@@ -186,7 +184,7 @@ string Hash::inspectObject() {
   ostringstream ss;
   vector<string> pairs{};
 
-  for (pair<HashKey*, HashPair*> pair : this->pairs)
+  for (pair<size_t, HashPair*> pair : this->pairs)
     pairs.push_back(
       pair.second->key->inspectObject() + ": "+ 
       pair.second->value->inspectObject()

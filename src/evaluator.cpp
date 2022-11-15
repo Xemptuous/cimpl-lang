@@ -1,6 +1,5 @@
 #include "evaluator.hpp"
 #include "builtins.hpp"
-#include <iostream>
 
 using namespace std;
 
@@ -169,7 +168,6 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
     case hashLiteral: {
       HashLiteral* h = static_cast<HashLiteral*>(expr);
       return evalHashLiteral(h, env);
-      break;
     }
     case identifier: {
       IdentifierLiteral* i = static_cast<IdentifierLiteral*>(expr);
@@ -227,9 +225,33 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
 }
 
 
+Object* evalHashIndexExpression(Object* hash, Object* index) {
+  Hash* hashObject = static_cast<Hash*>(hash);
+  size_t key;
+  HashPair* pair;
+  if (index->inspectType() == ObjectType.BOOLEAN_OBJ)
+    key = hashKey(static_cast<Boolean*>(index));
+  else if (index->inspectType() == ObjectType.INTEGER_OBJ)
+    key = hashKey(static_cast<Integer*>(index));
+  else if (index->inspectType() == ObjectType.STRING_OBJ)
+    key = hashKey(static_cast<String*>(index));
+  else
+    return newError("unusable as hash key: " + index->inspectType());
+  try {
+    pair = hashObject->pairs[key];
+  }
+  catch (...) {
+    return newError("key not in hash");
+  }
+  return pair->value;
+}
+
+
 Object* evalHashLiteral(HashLiteral* expr, shared_ptr<Environment> env) {
-  unordered_map<HashKey*, HashPair*> pairs;
-  HashKey* hashed = nullptr;
+  // unordered_map<HashKey*, HashPair*> pairs;
+  unordered_map<size_t, HashPair*> pairs;
+  // HashKey* hashed = nullptr;
+  size_t hashed;
   for (pair<Expression*, Expression*> el : expr->pairs) {
     Object* key = evalNode(el.first, env);
     if (isError(key))
@@ -240,11 +262,11 @@ Object* evalHashLiteral(HashLiteral* expr, shared_ptr<Environment> env) {
       return val;
 
     if (key->inspectType() == ObjectType.INTEGER_OBJ)
-      hashed = hashKey(static_cast<Integer*>(key), env);
+      hashed = hashKey(static_cast<Integer*>(key));
     else if (key->inspectType() == ObjectType.STRING_OBJ)
-      hashed = hashKey(static_cast<String*>(key), env);
+      hashed = hashKey(static_cast<String*>(key));
     else if (key->inspectType() == ObjectType.BOOLEAN_OBJ)
-      hashed = hashKey(static_cast<Boolean*>(key), env);
+      hashed = hashKey(static_cast<Boolean*>(key));
     else
       return newError("unusable as hash key: " + key->inspectType());
 
@@ -253,6 +275,7 @@ Object* evalHashLiteral(HashLiteral* expr, shared_ptr<Environment> env) {
     env->gc.push_back(newh);
   }
   Hash* hash = new Hash;
+  env->gc.push_back(hash);
   hash->pairs = pairs;
   return hash;
 }
@@ -309,6 +332,8 @@ Object* evalIndexExpression(Object* left, Object* index, shared_ptr<Environment>
   if (left->inspectType() == ObjectType.STRING_OBJ && 
         index->inspectType() == ObjectType.INTEGER_OBJ)
     return evalStringIndexExpression(left, index, env);
+  if (left->inspectType() == ObjectType.HASH_OBJ)
+    return evalHashIndexExpression(left, index);
   else
     return newError("index operator not supported: " + left->inspectType());
 }
@@ -543,31 +568,17 @@ shared_ptr<Environment> extendFunction(Function* fn, vector<Object*> args) {
 }
 
 
-HashKey* hashKey(Boolean* b, shared_ptr<Environment> env) {
-  int val{};
-  if (b->value)
-    val = 1;
-  else
-    val = 0;
-  HashKey* hash = new HashKey(b->inspectType(), b->value);
-  env->gc.push_back(hash);
-  return hash;
+size_t hashKey(Boolean* b) {
+  return b->value ? 1 : 0;
 }
 
 
-HashKey* hashKey(Integer* i, shared_ptr<Environment> env) {
-  HashKey* hash = new HashKey(i->inspectType(), i->value);
-  env->gc.push_back(hash);
-  return hash;
+size_t hashKey(Integer* i) {
+  return i->value;
 }
 
-HashKey* hashKey(String* s, shared_ptr<Environment> env) {
-  hash<string> hasher;
-  size_t hash = hasher(s->value);
-
-  HashKey* hashkey = new HashKey(s->inspectType(), hash);
-  env->gc.push_back(hashkey);
-  return hashkey;
+size_t hashKey(String* s) {
+  return hash<string>{}(s->value);
 }
 
 
