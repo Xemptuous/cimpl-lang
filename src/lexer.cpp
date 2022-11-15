@@ -5,6 +5,12 @@
 using namespace std;
 
 
+Lexer::Lexer(string input) {
+  this->input = input;
+  this->readChar();
+}
+
+
 Token Lexer::nextToken() {
   Token tok;
   this->skipWhitespace();
@@ -66,13 +72,13 @@ Token Lexer::nextToken() {
       }
       else if (this->peekChar() == '/') {
         this->readChar();
-        std::string comment = this->readComment();
+        string comment = this->readComment();
         tok.type = TokenType.COMMENT;
         tok.literal = comment;
       }
       else if (this->peekChar() == '*') {
         this->readChar();
-        std::string comment = this->readBlockComment();
+        string comment = this->readBlockComment();
         tok.type = TokenType.BLOCK_COMMENT;
         tok.literal = comment;
       }
@@ -88,6 +94,9 @@ Token Lexer::nextToken() {
       break;
     case ';':
       tok = newToken(TokenType.SEMICOLON, this->ch);
+      break;
+    case ':':
+      tok = newToken(TokenType.COLON, this->ch);
       break;
     case '!':
       if (this->peekChar() == '=') {
@@ -129,7 +138,7 @@ Token Lexer::nextToken() {
       break;
     case '\"': {
       this->readChar();
-      std::string str = this->readString();
+      string str = this->readString();
       tok.literal = str;
       tok.type = TokenType._STRING;
       break;
@@ -162,11 +171,11 @@ Token Lexer::nextToken() {
 
 Token Lexer::evaluateNumber() {
   Token tok;
-  std::string result = this->readNumber();
+  string result = this->readNumber();
   tok.literal = result;
   // if number has decimal (is float)
-  if (result.find('.') != std::string::npos) {
-    int c = std::count(result.begin(), result.end(), '.');
+  if (result.find('.') != string::npos) {
+    int c = count(result.begin(), result.end(), '.');
     // if multiple decimals, illegal
     if (c > 1) {
       tok.type = TokenType.ILLEGAL;
@@ -182,46 +191,17 @@ Token Lexer::evaluateNumber() {
 }
 
 
-std::string Lexer::readIdentifier() {
-  int position = this->position;
-  while (isalpha(this->ch) || this->ch == '_')
-    this->readChar();
-  int diff = this->position - position;
-  std::string result = this->input.substr(position, diff);
-  return result;
+char Lexer::peekChar() {
+  if (this->readPosition > this->input.length()) {
+    return '\0';
+  }
+  else {
+    return this->input[this->readPosition];
+  }
 }
 
 
-std::string Lexer::readNumber() {
-  int position = this->position;
-  while (isdigit(this->ch) || this->ch == '.')
-    this->readChar();
-  int diff = this->position - position;
-  std::string result = this->input.substr(position, diff);
-  return result;
-}
-
-
-std::string Lexer::readString() {
-  int position = this->position;
-  while(this->ch != '\"' && this->ch != '\0')
-    this->readChar();
-  int diff = this->position - position;
-  std::string result = this->input.substr(position, diff);
-  return result;
-}
-
-
-std::string Lexer::readComment() {
-  int position = this->position + 1;
-  while (this->ch != '\0' && this->ch != '\n')
-    this->readChar();
-  int diff = this->position - position;
-  std::string result = this->input.substr(position, diff + 2);
-  return result;
-}
-
-std::string Lexer::readBlockComment() {
+string Lexer::readBlockComment() {
   int position = this->position + 1;
   while (this->ch != '\0') {
     if (this->ch == '*' && this->peekChar() == '/') {
@@ -231,7 +211,7 @@ std::string Lexer::readBlockComment() {
     this->readChar();
   }
   int diff = this->position - position;
-  std::string result = this->input.substr(position, diff - 1);
+  string result = this->input.substr(position, diff - 1);
   return result;
 }
 
@@ -249,13 +229,43 @@ void Lexer::readChar() {
 }
 
 
-char Lexer::peekChar() {
-  if (this->readPosition > this->input.length()) {
-    return '\0';
-  }
-  else {
-    return this->input[this->readPosition];
-  }
+string Lexer::readComment() {
+  int position = this->position + 1;
+  while (this->ch != '\0' && this->ch != '\n')
+    this->readChar();
+  int diff = this->position - position;
+  string result = this->input.substr(position, diff + 2);
+  return result;
+}
+
+
+string Lexer::readIdentifier() {
+  int position = this->position;
+  while (isalpha(this->ch) || this->ch == '_')
+    this->readChar();
+  int diff = this->position - position;
+  string result = this->input.substr(position, diff);
+  return result;
+}
+
+
+string Lexer::readNumber() {
+  int position = this->position;
+  while (isdigit(this->ch) || this->ch == '.')
+    this->readChar();
+  int diff = this->position - position;
+  string result = this->input.substr(position, diff);
+  return result;
+}
+
+
+string Lexer::readString() {
+  int position = this->position;
+  while(this->ch != '\"' && this->ch != '\0')
+    this->readChar();
+  int diff = this->position - position;
+  string result = this->input.substr(position, diff);
+  return result;
 }
 
 
@@ -267,21 +277,19 @@ void Lexer::skipWhitespace() {
 }
 
 
-std::string lookupIdentifier(std::string ident) {
-  try 
-  {
+string lookupIdentifier(string ident) {
+  try {
     return keywords.at(ident);
   } 
-  catch (const std::out_of_range&) 
-  {
+  catch (const out_of_range&) {
     return TokenType.IDENT;
   }
 }
 
 
-Token newToken(std::string type, char ch) {
+Token newToken(string type, char ch) {
   // converting char to string
-  std::string str(1, ch);
+  string str(1, ch);
   Token tok = {type, str};
   return tok;
 }

@@ -4,32 +4,27 @@
 
 class Lexer {
   public:
-    // Constructors
-    Lexer(std::string _input) {
-      input = _input;
-      this->readChar();
-    }
+    Lexer(std::string);
     ~Lexer() = default;
 
-      Token nextToken();
-  private:
-    // Attributes
     std::string input;
+
+    Token nextToken();
+  private:
+    char ch = input[0];
     int position = 0;
     int readPosition = 0;
-    char ch = input[0];
 
-    // Methods
-    void skipWhitespace();
-    void testNextToken();
-    void readChar();
+    Token evaluateNumber();
     char peekChar();
-    std::string readIdentifier();
+    void readChar();
     std::string readBlockComment();
     std::string readComment();
-    std::string readString();
+    std::string readIdentifier();
     std::string readNumber();
-    Token evaluateNumber();
+    std::string readString();
+    void skipWhitespace();
+    void testNextToken();
 };
 
 std::string lookupIdentifier(std::string);

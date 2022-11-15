@@ -65,6 +65,7 @@ const struct Tokentype {
   // Delimiters
   std::string COMMA = {"COMMA"};
   std::string PERIOD = {"PERIOD"};
+  std::string COLON = {"COLON"};
   std::string SEMICOLON = {"SEMICOLON"};
   std::string BANG = {"BANG"};
   std::string LPAREN = {"LPAREN"};

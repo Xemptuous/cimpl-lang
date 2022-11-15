@@ -1,22 +1,41 @@
 #pragma once
 #include "ast.hpp"
 #include <sstream>
+#include <functional>
+
+using namespace std;
+
+class Array;
+class Boolean;
+class Environment;
+class Error;
+class Float;
+class Function;
+class Hash;
+class HashKey;
+class HashPair;
+class Integer;
+class Null;
+class ReturnValue;
+class String;
 
 
 enum ObjectEnum {
-  OBJECT_OBJ,
-  INTEGER_OBJ,
-  FUNCTION_OBJ,
-  BUILTIN_OBJ,
-  BOOLEAN_TRUE,
-  BOOLEAN_FALSE,
-  STRING_OBJ,
-  RETURN_OBJ,
-  IDENT_OBJ,
   ARRAY_OBJ,
-  FLOAT_OBJ,
+  BOOLEAN_FALSE,
+  BOOLEAN_TRUE,
+  BOOLEAN_OBJ,
+  BUILTIN_OBJ,
   ERROR_OBJ,
+  FLOAT_OBJ,
+  FUNCTION_OBJ,
+  HASH_OBJ,
+  IDENT_OBJ,
+  INTEGER_OBJ,
   NULL_OBJ,
+  OBJECT_OBJ,
+  RETURN_OBJ,
+  STRING_OBJ,
 };
 
 
@@ -27,219 +46,170 @@ enum FunctionEnum {
 
 
 const struct Objecttype {
-  std::string OBJECT_OBJ = {"OBJECT"};
-  std::string INTEGER_OBJ = {"INTEGER"};
-  std::string FUNCTION_OBJ = {"FUNCTION"};
-  std::string BUILTIN_OBJ = {"BUILTIN"};
-  std::string BOOLEAN_OBJ = {"BOOLEAN"};
-  std::string STRING_OBJ = {"STRING"};
-  std::string RETURN_OBJ = {"RETURN"};
-  std::string IDENT_OBJ = {"IDENT"};
-  std::string ARRAY_OBJ = {"ARRAY"};
-  std::string FLOAT_OBJ = {"FLOAT"};
-  std::string ERROR_OBJ = {"ERROR"};
-  std::string NULL_OBJ = {"NULL"};
+  string ARRAY_OBJ = {"ARRAY"};
+  string BOOLEAN_OBJ = {"BOOLEAN"};
+  string BUILTIN_OBJ = {"BUILTIN"};
+  string ERROR_OBJ = {"ERROR"};
+  string FLOAT_OBJ = {"FLOAT"};
+  string FUNCTION_OBJ = {"FUNCTION"};
+  string HASH_OBJ = {"HASH"};
+  string IDENT_OBJ = {"IDENT"};
+  string INTEGER_OBJ = {"INTEGER"};
+  string NULL_OBJ = {"NULL"};
+  string OBJECT_OBJ = {"OBJECT"};
+  string RETURN_OBJ = {"RETURN"};
+  string STRING_OBJ = {"STRING"};
 } ObjectType;
 
 
-typedef struct Object {
-  int type;
+class Object {
+  public:
+    Object();
+    ~Object() = default;
 
-  Object() {
-    this->type = OBJECT_OBJ;
-  };
-  ~Object() = default;
+    int type;
 
-  virtual inline std::string inspectObject() { return "OBJECT"; };
-  virtual inline std::string inspectType() { return ObjectType.OBJECT_OBJ; };
-} Object;
-
-
-typedef struct Integer : Object {
-  int value;
-
-  Integer(int v) {
-    this->value = v;
-    this->type = INTEGER_OBJ;
-  }
-
-  inline std::string inspectObject() { return std::to_string(this->value); }
-  inline std::string inspectType() { return ObjectType.INTEGER_OBJ; }
-} Integer;
+    virtual string inspectType();
+    virtual string inspectObject();
+};
 
 
-typedef struct Boolean : Object {
-  bool value;
+class Array: public Object {
+  public:
+    Array(vector<Object*>);
+    ~Array();
 
-  Boolean(bool b) {
-    this->value = b;
-    if (b) { this->type = BOOLEAN_TRUE; }
-    else { this->type = BOOLEAN_FALSE; }
-  }
+    vector<Object*> elements;
 
-  inline std::string inspectObject() { return this->value ? "true" : "false"; }
-  inline std::string inspectType() { return ObjectType.BOOLEAN_OBJ; }
-} Boolean;
+    string inspectType();
+    string inspectObject();
+};
 
 
-typedef struct Float : Object {
-  float value;
+class Boolean : public Object {
+  public:
+    Boolean(bool);
 
-  Float(float b) {
-    this->value = b;
-    this->type = FLOAT_OBJ;
-  }
+    bool value;
 
-  inline std::string inspectObject() { return std::to_string(this->value); }
-  inline std::string inspectType() { return ObjectType.FLOAT_OBJ; }
-} Float;
+    string inspectType();
+    string inspectObject();
+};
 
 
-typedef struct String : Object {
-  std::string value;
+class Environment : public Object {
+  public:
+    Environment(shared_ptr<Environment> = nullptr);
 
-  String(std::string b) {
-    this->value = b;
-    this->type = STRING_OBJ;
-  }
+    unordered_map<string, Object*> store{};
+    vector<Object*> gc{};
+    shared_ptr<Environment> outer;
 
-  inline std::string inspectObject() { return this->value; }
-  inline std::string inspectType() { return ObjectType.STRING_OBJ; }
-} String;
-
-
-typedef struct Array: Object {
-  std::vector<Object*> elements;
-
-  Array(std::vector<Object*> el) {
-    this->elements = el;
-    this->type = ARRAY_OBJ;
-  }
-  ~Array() {
-    for (auto el : this->elements)
-      delete el;
-  }
-
-  inline std::string inspectType() { return ObjectType.ARRAY_OBJ; }
-  inline std::string inspectObject() {
-    std::ostringstream ss;
-    std::vector<std::string> elements;
-    for (auto el : this->elements)
-      elements.push_back(el->inspectObject());
-    ss << "[";
-    for (auto el : elements)
-      ss << el << ", ";
-    ss << "]";
-    return ss.str();
-  }
-} Array;
+    Object* get(string);
+    Object* set(string, Object*);
+};
 
 
-typedef struct Null : Object {
+class Error : public Object {
+  public:
+    Error(string);
 
-  Null() { this->type = NULL_OBJ; }
+    string message;
 
-  inline std::string inspectObject() { return "null"; }
-  inline std::string inspectType() { return ObjectType.NULL_OBJ; }
-} Null;
-
-
-typedef struct ReturnValue : Object {
-  Object* value;
-
-  ReturnValue(Object* obj) {
-    this->value = obj;
-    this->type = RETURN_OBJ;
-  }
-
-  inline std::string inspectObject() { return value->inspectObject(); }
-  inline std::string inspectType() { return ObjectType.RETURN_OBJ; }
-} ReturnValue;
+    string inspectType();
+    string inspectObject();
+};
 
 
-typedef struct Error : Object {
-  std::string message;
+class Float : public Object {
+  public:
+    Float(float);
 
-  Error(std::string msg) {
-    this->message = msg;
-    this->type = ERROR_OBJ;
-  }
+    float value;
 
-  inline std::string inspectObject() { return "ERROR: " + this->message; }
-  inline std::string inspectType() { return ObjectType.ERROR_OBJ; }
-} Error;
+    string inspectType();
+    string inspectObject();
+};
 
 
-typedef struct Environment {
-  std::unordered_map<std::string, Object*> store{};
-  std::vector<Object*> gc{};
-  std::shared_ptr<Environment> outer;
+class Function : public Object {
+  public:
+    Function(
+      vector<IdentifierLiteral*>, 
+      BlockStatement*, 
+      shared_ptr<Environment>
+    );
+    ~Function();
 
-  Environment(std::shared_ptr<Environment> env = nullptr) {
-    this->outer = env;
-  }
-
-  ~Environment() = default;
-
-  Object* get(std::string name) {
-    try { 
-      Object* res = this->store[name]; 
-      return res;
-    }
-    catch (...) {
-      if (this->outer != nullptr) {
-        try {
-          this->outer->get(name);
-        }
-        catch (...) { return nullptr; }
-      }
-      return nullptr; 
-    }
-  }
-
-  Object* set(std::string name, Object* val) {
-    this->store[name] = val;
-    return val;
-  }
-} Environment;
+    vector<IdentifierLiteral*> parameters;
+    BlockStatement* body;
+    shared_ptr<Environment> env;
+    int function_type;
 
 
-typedef struct Function : Object {
-  std::vector<IdentifierLiteral*> parameters;
-  BlockStatement* body;
-  std::shared_ptr<Environment> env;
-  int function_type;
+    string inspectType();
+    string inspectObject();
+};
 
-  Function(
-      std::vector<IdentifierLiteral*> params, 
-      BlockStatement* body, 
-      std::shared_ptr<Environment> env
-    ) {
-    this->type = FUNCTION_OBJ;
-    this->parameters = params;
-    this->body = body;
-    this->env = env;
-    this->function_type = standardFunction;
-  }
-  ~Function() {
-    for (auto param : this->parameters)
-      delete param;
-    delete this->body;
-  }
 
-  inline std::string inspectType() { return ObjectType.FUNCTION_OBJ; };
-  inline std::string inspectObject() {
-    std::vector<std::string> params{};
+class Hash : public Object {
+  public:
+    // unordered_map<HashKey*, HashPair*> pairs{};
+    unordered_map<size_t, HashPair*> pairs{};
 
-    for (auto param : this->parameters)
-      params.push_back(param->printString());
+    inline string inspectType() { return ObjectType.HASH_OBJ; };
+    string inspectObject();
+};
 
-    std::ostringstream ss;
-    for (std::string param : params) {
-      ss << "fn(" << param << ", ) {\n" << 
-        this->body->printString() << "\n}\n";
-    }
-    return ss.str();
-  }
-} Function;
+
+class HashPair : public Object {
+  public:
+    HashPair(Object*, Object*);
+    ~HashPair();
+
+    Object* key;
+    Object* value;
+};
+
+
+class Integer : public Object {
+  public:
+    Integer(int);
+
+    int value;
+
+    string inspectType();
+    string inspectObject();
+};
+
+
+class Null : public Object {
+  public:
+    Null();
+
+    string inspectType();
+    string inspectObject();
+};
+
+
+class ReturnValue : public Object {
+  public:
+    ReturnValue(Object*);
+
+    Object* value;
+
+    string inspectType();
+    string inspectObject();
+};
+
+
+class String : public Object {
+  public:
+    String(string);
+
+    string value;
+
+    string inspectType();
+    string inspectObject();
+};
 
