@@ -4,21 +4,36 @@
 
 using namespace std;
 
+class Array;
+class Boolean;
+class Environment;
+class Error;
+class Float;
+class Function;
+class Hash;
+class HashKey;
+class HashPair;
+class Integer;
+class Null;
+class ReturnValue;
+class String;
+
 
 enum ObjectEnum {
-  OBJECT_OBJ,
-  INTEGER_OBJ,
-  FUNCTION_OBJ,
-  BUILTIN_OBJ,
-  BOOLEAN_TRUE,
-  BOOLEAN_FALSE,
-  STRING_OBJ,
-  RETURN_OBJ,
-  IDENT_OBJ,
   ARRAY_OBJ,
-  FLOAT_OBJ,
+  BOOLEAN_FALSE,
+  BOOLEAN_TRUE,
+  BUILTIN_OBJ,
   ERROR_OBJ,
+  FLOAT_OBJ,
+  FUNCTION_OBJ,
+  HASH_OBJ,
+  IDENT_OBJ,
+  INTEGER_OBJ,
   NULL_OBJ,
+  OBJECT_OBJ,
+  RETURN_OBJ,
+  STRING_OBJ,
 };
 
 
@@ -29,18 +44,19 @@ enum FunctionEnum {
 
 
 const struct Objecttype {
-  string OBJECT_OBJ = {"OBJECT"};
-  string INTEGER_OBJ = {"INTEGER"};
-  string FUNCTION_OBJ = {"FUNCTION"};
-  string BUILTIN_OBJ = {"BUILTIN"};
-  string BOOLEAN_OBJ = {"BOOLEAN"};
-  string STRING_OBJ = {"STRING"};
-  string RETURN_OBJ = {"RETURN"};
-  string IDENT_OBJ = {"IDENT"};
   string ARRAY_OBJ = {"ARRAY"};
-  string FLOAT_OBJ = {"FLOAT"};
+  string BOOLEAN_OBJ = {"BOOLEAN"};
+  string BUILTIN_OBJ = {"BUILTIN"};
   string ERROR_OBJ = {"ERROR"};
+  string FLOAT_OBJ = {"FLOAT"};
+  string FUNCTION_OBJ = {"FUNCTION"};
+  string HASH_OBJ = {"HASH"};
+  string IDENT_OBJ = {"IDENT"};
+  string INTEGER_OBJ = {"INTEGER"};
   string NULL_OBJ = {"NULL"};
+  string OBJECT_OBJ = {"OBJECT"};
+  string RETURN_OBJ = {"RETURN"};
+  string STRING_OBJ = {"STRING"};
 } ObjectType;
 
 
@@ -131,6 +147,37 @@ class Function : public Object {
 
     string inspectType();
     string inspectObject();
+};
+
+
+class Hash : public Object {
+  public:
+    unordered_map<HashKey*, HashPair*> pairs{};
+
+    inline string inspectType() { return ObjectType.HASH_OBJ; };
+    string inspectObject();
+};
+
+class HashKey: public Object {
+  public:
+    HashKey(string, int);
+
+    string obj_type;
+    int value;
+
+    HashKey* hashKey(Integer*, shared_ptr<Environment>);
+    HashKey* hashKey(Boolean*, shared_ptr<Environment>);
+    HashKey* hashKey(String*, shared_ptr<Environment>);
+
+};
+
+
+class HashPair : public Object {
+  public:
+    HashPair(Object*, Object*);
+
+    Object* key;
+    Object* value;
 };
 
 

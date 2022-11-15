@@ -56,11 +56,20 @@ Function::~Function() {
   delete this->body;
 }
 
+HashKey::HashKey(string type, int val) {
+  this->obj_type = type;
+  this->value = val;
+}
+
+HashPair::HashPair(Object* type, Object* val) {
+  this->key = type;
+  this->value = val;
+}
+
 Integer::Integer(int val) {
   this->value = val;
   this->type = INTEGER_OBJ;
 }
-
 
 Null::Null() { this->type = NULL_OBJ; }
 
@@ -170,6 +179,48 @@ string Function::inspectObject() {
       this->body->printString() << "\n}\n";
   }
   return ss.str();
+}
+
+
+string Hash::inspectObject() {
+  ostringstream ss;
+  vector<string> pairs{};
+
+  for (pair<Object*, Object*> pair : this->pairs)
+    pairs.push_back(pair.first->inspectObject() + " " + pair.second->inspectObject());
+  ss << "{";
+  for (string p : pairs)
+    ss << p + ", ";
+  ss << "}";
+  return ss.str();
+}
+
+
+HashKey* HashKey::hashKey(Boolean* b, shared_ptr<Environment> env) {
+  int val{};
+  if (b->value)
+    val = 1;
+  else
+    val = 0;
+  HashKey* hash = new HashKey(b->inspectType(), b->value);
+  env->gc.push_back(hash);
+  return hash;
+}
+
+
+HashKey* HashKey::hashKey(Integer* i, shared_ptr<Environment> env) {
+  HashKey* hash = new HashKey(i->inspectType(), i->value);
+  env->gc.push_back(hash);
+  return hash;
+}
+
+HashKey* HashKey::hashKey(String* s, shared_ptr<Environment> env) {
+  hash<string> hasher;
+  size_t hash = hasher(s->value);
+
+  HashKey* hashkey = new HashKey(s->inspectType(), hash);
+  env->gc.push_back(hashkey);
+  return hashkey;
 }
 
 
