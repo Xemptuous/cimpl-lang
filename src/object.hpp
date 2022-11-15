@@ -23,6 +23,7 @@ enum ObjectEnum {
   ARRAY_OBJ,
   BOOLEAN_FALSE,
   BOOLEAN_TRUE,
+  BOOLEAN_OBJ,
   BUILTIN_OBJ,
   ERROR_OBJ,
   FLOAT_OBJ,
@@ -164,11 +165,6 @@ class HashKey: public Object {
 
     string obj_type;
     int value;
-
-    HashKey* hashKey(Integer*, shared_ptr<Environment>);
-    HashKey* hashKey(Boolean*, shared_ptr<Environment>);
-    HashKey* hashKey(String*, shared_ptr<Environment>);
-
 };
 
 

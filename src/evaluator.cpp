@@ -129,29 +129,6 @@ vector<Object*> evalCallExpressions(vector<Expression*> expr, shared_ptr<Environ
 
 Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr) {
   switch (expr->type) {
-    case integerLiteral: {
-      IntegerLiteral* i = static_cast<IntegerLiteral*>(expr);
-      Integer* newi = new Integer(i->value);
-      env->gc.push_back(newi);
-      return newi;
-    }   
-    case floatLiteral: {
-      FloatLiteral* f = static_cast<FloatLiteral*>(expr);
-      Float* newf = new Float(f->value);
-      env->gc.push_back(newf);
-      return newf;
-    }   
-    case booleanExpression: {
-      BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
-      Boolean* newb = nativeToBoolean(b->value);
-      return newb;
-    }   
-    case stringLiteral: {
-      StringLiteral* s = static_cast<StringLiteral*>(expr);
-      String* news = new String(s->value);
-      env->gc.push_back(news);
-      return news;
-    }   
     case arrayLiteral: {
       ArrayLiteral* a = static_cast<ArrayLiteral*>(expr);
       vector<Object*>elements = evalCallExpressions(a->elements, env);
@@ -160,6 +137,49 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
       Array* newa = new Array(elements);
       env->gc.push_back(newa);
       return newa;
+    }   
+    case booleanExpression: {
+      BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
+      Boolean* newb = nativeToBoolean(b->value);
+      return newb;
+    }   
+    case callExpression: {
+      CallExpression* ce = static_cast<CallExpression*>(expr);
+      Object* func = evalNode(ce->_function, env);
+      if (isError(func))
+        return func;
+      vector<Object*> args = evalCallExpressions(ce->arguments, env);
+      if (args.size() == 1 && isError(args[0]))
+        return args[0];
+      return applyFunction(func, args, env);
+    }   
+    case floatLiteral: {
+      FloatLiteral* f = static_cast<FloatLiteral*>(expr);
+      Float* newf = new Float(f->value);
+      env->gc.push_back(newf);
+      return newf;
+    }   
+    case functionLiteral: {
+      FunctionLiteral* fl = static_cast<FunctionLiteral*>(expr);
+      Function* newf = new Function(fl->parameters, fl->body, env);
+      // env->gc.push_back(newf);
+      env->set(fl->name->value, newf);
+      break;
+    }
+    case hashLiteral: {
+      HashLiteral* h = static_cast<HashLiteral*>(expr);
+      return evalHashLiteral(h, env);
+      break;
+    }
+    case identifier: {
+      IdentifierLiteral* i = static_cast<IdentifierLiteral*>(expr);
+      Object* newi = evalIdentifier(i, env);
+      return newi;
+    }   
+    case ifExpression: {
+      IfExpression* i = static_cast<IfExpression*>(expr);
+      Object* cond = evalIfExpression(i, env);
+      return cond;
     }   
     case indexExpression: {
       IndexExpression* ie = static_cast<IndexExpression*>(expr);
@@ -171,19 +191,6 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
         return index;
       return evalIndexExpression(left, index, env);
     }
-    case identifier: {
-      IdentifierLiteral* i = static_cast<IdentifierLiteral*>(expr);
-      Object* newi = evalIdentifier(i, env);
-      return newi;
-    }   
-    case prefixExpression: {
-      PrefixExpression* p = static_cast<PrefixExpression*>(expr);
-      Object* right = evalNode(p->_right, env);
-      if (isError(right))
-        return right;
-      Object* np = evalPrefixExpression(p->_operator, right, env);
-      return np;
-    }   
     case infixExpression: {
       InfixExpression* i = static_cast<InfixExpression*>(expr);
       Object* left = evalNode(i->_left, env);
@@ -195,30 +202,59 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
       Object* ni = evalInfixExpression(i->_operator, left, right, env);
       return ni;
     }   
-    case ifExpression: {
-      IfExpression* i = static_cast<IfExpression*>(expr);
-      Object* cond = evalIfExpression(i, env);
-      return cond;
+    case integerLiteral: {
+      IntegerLiteral* i = static_cast<IntegerLiteral*>(expr);
+      Integer* newi = new Integer(i->value);
+      env->gc.push_back(newi);
+      return newi;
     }   
-    case functionLiteral: {
-      FunctionLiteral* fl = static_cast<FunctionLiteral*>(expr);
-      Function* newf = new Function(fl->parameters, fl->body, env);
-      // env->gc.push_back(newf);
-      env->set(fl->name->value, newf);
-      break;
-    }
-    case callExpression: {
-      CallExpression* ce = static_cast<CallExpression*>(expr);
-      Object* func = evalNode(ce->_function, env);
-      if (isError(func))
-        return func;
-      vector<Object*> args = evalCallExpressions(ce->arguments, env);
-      if (args.size() == 1 && isError(args[0]))
-        return args[0];
-      return applyFunction(func, args, env);
+    case prefixExpression: {
+      PrefixExpression* p = static_cast<PrefixExpression*>(expr);
+      Object* right = evalNode(p->_right, env);
+      if (isError(right))
+        return right;
+      Object* np = evalPrefixExpression(p->_operator, right, env);
+      return np;
+    }   
+    case stringLiteral: {
+      StringLiteral* s = static_cast<StringLiteral*>(expr);
+      String* news = new String(s->value);
+      env->gc.push_back(news);
+      return news;
     }   
   }
   return nullptr;
+}
+
+
+Object* evalHashLiteral(HashLiteral* expr, shared_ptr<Environment> env) {
+  unordered_map<HashKey*, HashPair*> pairs;
+  HashKey* hashed = nullptr;
+  for (pair<Expression*, Expression*> el : expr->pairs) {
+    Object* key = evalNode(el.first, env);
+    if (isError(key))
+      return key;
+    // TODO: implement check for hashable key
+    Object* val = evalNode(el.second, env);
+    if (isError(val))
+      return val;
+
+    if (key->inspectType() == ObjectType.INTEGER_OBJ)
+      hashed = hashKey(static_cast<Integer*>(key), env);
+    else if (key->inspectType() == ObjectType.STRING_OBJ)
+      hashed = hashKey(static_cast<String*>(key), env);
+    else if (key->inspectType() == ObjectType.BOOLEAN_OBJ)
+      hashed = hashKey(static_cast<Boolean*>(key), env);
+    else
+      return newError("unusable as hash key: " + key->inspectType());
+
+    HashPair* newh = new HashPair(key, val);
+    pairs[hashed] = newh;
+    env->gc.push_back(newh);
+  }
+  Hash* hash = new Hash;
+  hash->pairs = pairs;
+  return hash;
 }
 
 
@@ -431,14 +467,39 @@ Object* evalStringIndexExpression(Object* str, Object* index, shared_ptr<Environ
 
 Object* evalStatements(Statement* stmt, shared_ptr<Environment> env = nullptr) {
   switch (stmt->type) {
-    case identifierStatement:{
+    case assignmentExpressionStatement: {
+      //FIXME: string += int returns only int
+      AssignmentExpressionStatement* ae = static_cast<AssignmentExpressionStatement*>(stmt);
+      Object* val = evalNode(ae->value, env);
+      if (isError(val))
+        return val;
+      Object* oldVal = env->get(ae->name->value);
+      if (val->type != oldVal->type)
+        return newError("Cannot assign " + oldVal->inspectType() + " and " + val->inspectType());
+      Object* newVal = evalAssignmentExpression(ae->_operator, oldVal, val, env);
+      env->set(ae->name->value, newVal);
       break;
+    }
+    case blockStatement: {
+      BlockStatement* bs = static_cast<BlockStatement*>(stmt);
+      for (auto stmt : bs->statements) {
+        Object* result = evalNode(stmt, env);
+        if (result != nullptr && result->type == RETURN_OBJ)
+          return result;
+      }
+    }
+    case expressionStatement: {
+      ExpressionStatement* es = static_cast<ExpressionStatement*>(stmt);
+      return evalNode(es->expression, env);
     }
     case functionStatement: {
       FunctionStatement* fs = static_cast<FunctionStatement*>(stmt);
       Function* newf = new Function(fs->parameters, fs->body, env);
       env->set(fs->name->value, newf);
       return newf;
+    }
+    case identifierStatement:{
+      break;
     }
     case letStatement: {
       LetStatement* ls = static_cast<LetStatement*>(stmt);
@@ -456,31 +517,6 @@ Object* evalStatements(Statement* stmt, shared_ptr<Environment> env = nullptr) {
       ReturnValue* newr = new ReturnValue(val);
       env->gc.push_back(newr);
       return newr;
-    }
-    case expressionStatement: {
-      ExpressionStatement* es = static_cast<ExpressionStatement*>(stmt);
-      return evalNode(es->expression, env);
-    }
-    case blockStatement: {
-      BlockStatement* bs = static_cast<BlockStatement*>(stmt);
-      for (auto stmt : bs->statements) {
-        Object* result = evalNode(stmt, env);
-        if (result != nullptr && result->type == RETURN_OBJ)
-          return result;
-      }
-    }
-    case assignmentExpressionStatement: {
-      //FIXME: string += int returns only int
-      AssignmentExpressionStatement* ae = static_cast<AssignmentExpressionStatement*>(stmt);
-      Object* val = evalNode(ae->value, env);
-      if (isError(val))
-        return val;
-      Object* oldVal = env->get(ae->name->value);
-      if (val->type != oldVal->type)
-        return newError("Cannot assign " + oldVal->inspectType() + " and " + val->inspectType());
-      Object* newVal = evalAssignmentExpression(ae->_operator, oldVal, val, env);
-      env->set(ae->name->value, newVal);
-      break;
     }
   }
   return nullptr;
@@ -504,6 +540,34 @@ shared_ptr<Environment> extendFunction(Function* fn, vector<Object*> args) {
     env->set(fn->parameters[i]->value, args[i]);
   }
   return env;
+}
+
+
+HashKey* hashKey(Boolean* b, shared_ptr<Environment> env) {
+  int val{};
+  if (b->value)
+    val = 1;
+  else
+    val = 0;
+  HashKey* hash = new HashKey(b->inspectType(), b->value);
+  env->gc.push_back(hash);
+  return hash;
+}
+
+
+HashKey* hashKey(Integer* i, shared_ptr<Environment> env) {
+  HashKey* hash = new HashKey(i->inspectType(), i->value);
+  env->gc.push_back(hash);
+  return hash;
+}
+
+HashKey* hashKey(String* s, shared_ptr<Environment> env) {
+  hash<string> hasher;
+  size_t hash = hasher(s->value);
+
+  HashKey* hashkey = new HashKey(s->inspectType(), hash);
+  env->gc.push_back(hashkey);
+  return hashkey;
 }
 
 

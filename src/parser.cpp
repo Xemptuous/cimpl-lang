@@ -15,6 +15,71 @@ Parser::~Parser() {
 }
 
 
+void Parser::checkFunctionReturn(FunctionStatement* stmt) {
+  ReturnStatement* returnStmt;
+  int found{0};
+  for (auto st : stmt->body->statements) {
+    if (st->type == returnStatement) {
+      returnStmt = static_cast<ReturnStatement*>(st);
+      found ++;
+      if (stmt->datatype != returnStmt->datatype) {
+        std::ostringstream ss;
+        ss << "Function return value DataType mismatch.\n";
+        this->errors.push_back(ss.str());
+      }
+    }
+  } 
+  if (!found) {
+    std::ostringstream ss;
+    ss << "No return statement for fn: " << stmt->token.literal << '\n';
+    this->errors.push_back(ss.str());
+  }
+}
+
+
+void Parser::checkIdentifierDataType(IdentifierStatement* stmt) {
+  switch (stmt->datatype) {
+    case INT:
+      if (DatatypeMap.at(stmt->value->type) != "int") {
+        std::ostringstream ss;
+        ss << "Mismatched DataType: " << DatatypeMap.at(stmt->value->type)
+          << " is not equal to: " << "Integer Literal\n";
+        this->errors.push_back(ss.str());
+      }
+      break;
+    case FLOAT:
+      if (DatatypeMap.at(stmt->value->type) != "float") {
+        std::ostringstream ss;
+        ss << "Mismatched DataType: " << DatatypeMap.at(stmt->value->type)
+          << " is not equal to: " << "Float \n";
+        this->errors.push_back(ss.str());
+      }
+      break;
+    case BOOLEAN:
+      if (DatatypeMap.at(stmt->value->type) != "boolean") {
+        std::ostringstream ss;
+        ss << "Mismatched DataType: " << DatatypeMap.at(stmt->value->type)
+          << " is not equal to: " << "Boolean\n";
+        this->errors.push_back(ss.str());
+      }
+      break;
+    case _STRING:
+      if (DatatypeMap.at(stmt->value->type) != "string") {
+        std::ostringstream ss;
+        ss << "Mismatched DataType: " << DatatypeMap.at(stmt->value->type)
+          << " is not equal to: " << "String \n";
+        this->errors.push_back(ss.str());
+      }
+      break;
+    case VOID:
+      std::ostringstream ss;
+      ss << "Cannot use void datatype with identifier initializations.\n";
+      this->errors.push_back(ss.str());
+      break;
+  }
+}
+
+
 int Parser::currentPrecedence() {
   int p;
   try {

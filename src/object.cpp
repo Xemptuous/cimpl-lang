@@ -186,41 +186,16 @@ string Hash::inspectObject() {
   ostringstream ss;
   vector<string> pairs{};
 
-  for (pair<Object*, Object*> pair : this->pairs)
-    pairs.push_back(pair.first->inspectObject() + " " + pair.second->inspectObject());
+  for (pair<HashKey*, HashPair*> pair : this->pairs)
+    pairs.push_back(
+      pair.second->key->inspectObject() + ": "+ 
+      pair.second->value->inspectObject()
+    );
   ss << "{";
   for (string p : pairs)
     ss << p + ", ";
   ss << "}";
   return ss.str();
-}
-
-
-HashKey* HashKey::hashKey(Boolean* b, shared_ptr<Environment> env) {
-  int val{};
-  if (b->value)
-    val = 1;
-  else
-    val = 0;
-  HashKey* hash = new HashKey(b->inspectType(), b->value);
-  env->gc.push_back(hash);
-  return hash;
-}
-
-
-HashKey* HashKey::hashKey(Integer* i, shared_ptr<Environment> env) {
-  HashKey* hash = new HashKey(i->inspectType(), i->value);
-  env->gc.push_back(hash);
-  return hash;
-}
-
-HashKey* HashKey::hashKey(String* s, shared_ptr<Environment> env) {
-  hash<string> hasher;
-  size_t hash = hasher(s->value);
-
-  HashKey* hashkey = new HashKey(s->inspectType(), hash);
-  env->gc.push_back(hashkey);
-  return hashkey;
 }
 
 
