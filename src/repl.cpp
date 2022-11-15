@@ -33,9 +33,8 @@ void start(string input, shared_ptr<Environment> env) {
         cout << result->message << '\n';
         continue;
       }
-      else {
+      else
         cout << evaluated->inspectObject() << '\n';
-      }
     }
   }
   delete ast;
@@ -44,9 +43,8 @@ void start(string input, shared_ptr<Environment> env) {
 
 void printParserErrors(vector<string> errs) {
   cout << "parser error:\n";
-  for (auto err : errs) {
+  for (auto err : errs)
     cout << '\t' << err << '\n';
-  }
 }
 
 // Tokenizer Print
