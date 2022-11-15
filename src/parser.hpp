@@ -4,96 +4,80 @@
 
 
 // Forward Declarations
-struct Expression;
-struct PrefixExpression;
-struct InfixExpression;
-struct IfExpression;
-struct FunctionLiteral;
-struct CallExpression;
-struct IntegerLiteral;
-struct FloatLiteral;
-struct StringLiteral;
-struct BooleanLiteral;
-struct IdentifierLiteral;
 struct ArrayLiteral;
-struct IndexExpression;
+struct BooleanLiteral;
+struct CallExpression;
+struct Expression;
+struct FloatLiteral;
+struct FunctionLiteral;
 struct HashLiteral;
+struct IdentifierLiteral;
+struct IfExpression;
+struct IndexExpression;
+struct InfixExpression;
+struct IntegerLiteral;
+struct PrefixExpression;
+struct StringLiteral;
 
-struct Statement;
-struct LetStatement;
-struct IdentifierStatement;
-struct FunctionStatement;
-struct ReturnStatement;
-struct ExpressionStatement;
-struct BlockStatement;
 struct AssignmentExpressionStatement;
+struct BlockStatement;
+struct ExpressionStatement;
+struct FunctionStatement;
+struct IdentifierStatement;
+struct LetStatement;
+struct ReturnStatement;
+struct Statement;
 
 
 class Parser {
   public:
-    // Attributes
+    Parser(std::string);
+    ~Parser();
+
     Token currentToken;
     Token peekToken;
     int linenumber{1};
     std::vector<std::string> errors;
 
-    // Constructors
-    Parser(std::string input) {
-      this->lexer = new Lexer(input);
-
-      // reading two tokens so currentToken and peekToken both get set
-      this->nextToken();
-      this->nextToken();
-    }
-
-    ~Parser() {
-      delete this->lexer;
-    }
-
-    // Methods
-    void nextToken();
     bool expectPeek(std::string);
-    void peekErrors(std::string);
+    void nextToken();
     Statement* parseStatement();
+    void peekErrors(std::string);
   private:
-    // Attributes
     Lexer* lexer;
 
-    // Methods
-    int currentPrecedence();
-    int peekPrecedence();
     void checkIdentifierDataType(IdentifierStatement*);
     void checkFunctionReturn(FunctionStatement*);
     void checkFunctionReturnDataType(ReturnStatement*);
+    int currentPrecedence();
+    int peekPrecedence();
 
-    // Expression Methods
-    Expression* parseExpression(int);
-    Expression* parseLeftPrefix(int);
-    Expression* parseGroupedExpression();
-    std::vector<Expression*> parseExpressionList(std::string);
-    Expression* parseIndexExpression(Expression*);
+    ArrayLiteral* parseArrayLiteral();
     AssignmentExpressionStatement* parseAssignmentExpression();
-    IfExpression* parseIfExpression();
+    BooleanLiteral* parseBooleanLiteral();
+    CallExpression* parseCallExpression(Expression*);
+    Expression* parseExpression(int);
+    std::vector<Expression*> parseExpressionList(std::string);
+    FloatLiteral* parseFloatLiteral();
     FunctionLiteral* parseFunctionLiteral();
     std::vector<IdentifierLiteral*> parseFunctionParameters();
-    CallExpression* parseCallExpression(Expression*);
-    PrefixExpression* parsePrefixExpression();
-    InfixExpression* parseInfixExpression(Expression*);
-    IdentifierLiteral* parseIdentifier();
-    IntegerLiteral* parseIntegerLiteral();
-    FloatLiteral* parseFloatLiteral();
-    StringLiteral* parseStringLiteral();
-    BooleanLiteral* parseBooleanLiteral();
-    ArrayLiteral* parseArrayLiteral();
+    Expression* parseGroupedExpression();
     HashLiteral* parseHashLiteral();
+    IdentifierLiteral* parseIdentifier();
+    IfExpression* parseIfExpression();
+    Expression* parseIndexExpression(Expression*);
+    InfixExpression* parseInfixExpression(Expression*);
+    IntegerLiteral* parseIntegerLiteral();
+    Expression* parseLeftPrefix(int);
+    PrefixExpression* parsePrefixExpression();
+    StringLiteral* parseStringLiteral();
 
-    // Statement Methods
-    LetStatement* parseLetStatement();
     BlockStatement* parseBlockStatement();
-    ReturnStatement* parseReturnStatement();
-    IdentifierStatement* parseIdentifierStatement();
-    FunctionStatement* parseFunctionStatement();
     ExpressionStatement* parseExpressionStatement();
+    FunctionStatement* parseFunctionStatement();
+    IdentifierStatement* parseIdentifierStatement();
+    LetStatement* parseLetStatement();
+    ReturnStatement* parseReturnStatement();
 };
 
 

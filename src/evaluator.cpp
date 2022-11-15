@@ -10,76 +10,120 @@ Boolean _FALSE_BOOL = Boolean(false);
 Null _nullptr = Null{};
 shared_ptr<Environment> err_gc = nullptr;
 
-void setErrorGarbageCollector(shared_ptr<Environment> env) { err_gc = env; };
 
-
-Object* evalNode(Node* node, shared_ptr<Environment> env = nullptr) {
-  if (node->nodetype == statement) {
-    Statement* stmt = static_cast<Statement*>(node);
-    return evalStatements(stmt, env);
+Object* applyFunction(Object* fn, vector<Object*> args, shared_ptr<Environment> env) {
+  if(fn->type == FUNCTION_OBJ) {
+    Function* func;
+    try {
+      func = static_cast<Function*>(fn);
+    }
+    catch (...) {
+      ostringstream ss;
+      ss << "not a function: " << fn->inspectType();
+      return newError(ss.str());
+    }
+    shared_ptr<Environment> newEnv = extendFunction(func, args);
+    Object* evaluated = evalNode(func->body, newEnv);
+    return unwrapReturnValue(evaluated);
   }
-  else {
-    Expression* expr = static_cast<Expression*>(node);
-    return evalExpressions(expr, env);
+  else if (fn->type == BUILTIN_OBJ)
+    return evalBuiltinFunction(fn, args, env);
+  return newError("not a function: " + fn->inspectType());
+}
+
+
+Object* evalArrayIndexExpression(Object* arr, Object* index, shared_ptr<Environment> env) {
+  Array* arrayObject = static_cast<Array*>(arr);
+  Integer* intObject = static_cast<Integer*>(index);
+  int idx = intObject->value;
+  int max = arrayObject->elements.size();
+  // evaluate negative (reverse) index
+  if (idx < 0) {
+    if (idx + max < 0) {
+      ostringstream ss;
+      ss << "index out of range.";
+      return newError(ss.str());
+    }
+    return arrayObject->elements[idx + max];
+  }
+  if (idx > max - 1) {
+    ostringstream ss;
+    ss << "index out of range.";
+    return newError(ss.str());
+  }
+  return arrayObject->elements[idx];
+}
+
+
+Object* evalAssignmentExpression(
+    string op, Object* oldVal, Object* val, shared_ptr<Environment> env
+  ) {
+  if (val->type == INTEGER_OBJ) {
+    Integer* oldv = static_cast<Integer*>(oldVal);
+    Integer* v = static_cast<Integer*>(val);
+    if (op == "+=") {
+      Integer* newi = new Integer(oldv->value + v->value);
+      env->gc.push_back(newi);
+      return newi;
+    }
+    else if (op == "-=") {
+      Integer* newi = new Integer(oldv->value - v->value);
+      env->gc.push_back(newi);
+      return newi;
+    }
+    else if (op == "*=") {
+      Integer* newi = new Integer(oldv->value * v->value);
+      env->gc.push_back(newi);
+      return newi;
+    }
+    else if (op == "/=") {
+      Integer* newi = new Integer(oldv->value / v->value);
+      env->gc.push_back(newi);
+      return newi;
+    }
+  }
+  else if (val->type == STRING_OBJ) {
+    String* olds = static_cast<String*>(oldVal);
+    String* s = static_cast<String*>(val);
+    if (op == "+=") {
+      String* news = new String(olds->value + s->value);
+      env->gc.push_back(news);
+      return news;
+    }
+    else {
+      return newError("incompatible assignment operator: " + val->inspectType() + " " + op);
+    }
+  }
+  return nullptr;
+}
+
+
+Object* evalBangOperatorExpression(Object* _right) {
+  switch (_right->type) {
+    case BOOLEAN_TRUE:
+      return &_FALSE_BOOL;
+    case BOOLEAN_FALSE:
+      return &_TRUE_BOOL;
+    case NULL_OBJ:
+      return &_TRUE_BOOL;
+    default:
+      return &_FALSE_BOOL;
   }
 }
 
 
-Object* evalStatements(Statement* stmt, shared_ptr<Environment> env = nullptr) {
-  switch (stmt->type) {
-    case identifierStatement:{
-      break;
+vector<Object*> evalCallExpressions(vector<Expression*> expr, shared_ptr<Environment> env) {
+  vector<Object*> result{};
+
+  for (auto e : expr) {
+    Object* evaluated = evalNode(e, env);
+    if (isError(evaluated)) {
+      result.push_back(evaluated);
+      return result;
     }
-    case functionStatement: {
-      FunctionStatement* fs = static_cast<FunctionStatement*>(stmt);
-      Function* newf = new Function(fs->parameters, fs->body, env);
-      env->set(fs->name->value, newf);
-      return newf;
-    }
-    case letStatement: {
-      LetStatement* ls = static_cast<LetStatement*>(stmt);
-      Object* val = evalNode(ls->value, env);
-      if (isError(val))
-        return val;
-      env->set(ls->name->value, val);
-      break;
-    }
-    case returnStatement: {
-      ReturnStatement* rs = static_cast<ReturnStatement*>(stmt);
-      Object* val = evalNode(rs->returnValue, env);
-      if (isError(val))
-        return val;
-      ReturnValue* newr = new ReturnValue(val);
-      env->gc.push_back(newr);
-      return newr;
-    }
-    case expressionStatement: {
-      ExpressionStatement* es = static_cast<ExpressionStatement*>(stmt);
-      return evalNode(es->expression, env);
-    }
-    case blockStatement: {
-      BlockStatement* bs = static_cast<BlockStatement*>(stmt);
-      for (auto stmt : bs->statements) {
-        Object* result = evalNode(stmt, env);
-        if (result != nullptr && result->type == RETURN_OBJ)
-          return result;
-      }
-    }
-    case assignmentExpressionStatement: {
-      //FIXME: string += int returns only int
-      AssignmentExpressionStatement* ae = static_cast<AssignmentExpressionStatement*>(stmt);
-      Object* val = evalNode(ae->value, env);
-      if (isError(val))
-        return val;
-      Object* oldVal = env->get(ae->name->value);
-      if (val->type != oldVal->type)
-        return newError("Cannot assign " + oldVal->inspectType() + " and " + val->inspectType());
-      Object* newVal = evalAssignmentExpression(ae->_operator, oldVal, val, env);
-      env->set(ae->name->value, newVal);
-      break;
-    }
+    result.push_back(evaluated);
   }
-  return nullptr;
+  return result;
 }
 
 
@@ -178,6 +222,24 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
 }
 
 
+Object* evalIdentifier(IdentifierLiteral* node, shared_ptr<Environment> env) {
+  auto builtin_find = builtins.find(node->value);
+  if(builtin_find != builtins.end()) {
+    Builtin* bi = new Builtin();
+    bi->builtin_type = builtin_find->second;
+    env->gc.push_back(bi);
+    return bi;
+  }
+  
+  Object* val = env->get(node->value);
+  if (val != nullptr)
+    return val;
+
+  return newError("identifier not found: " + node->value);
+  
+}
+
+
 Object* evalIfExpression(IfExpression* expr, shared_ptr<Environment> env) {
   Object* initCondition = evalNode(expr->condition, env);
   if (isError(initCondition))
@@ -204,17 +266,15 @@ Object* evalIfExpression(IfExpression* expr, shared_ptr<Environment> env) {
 }
 
 
-Object* evalPrefixExpression(string op, Object* r, shared_ptr<Environment> env) {
-  switch(op[0]) {
-    case '!':
-      return evalBangOperatorExpression(r);
-    case '-':
-      return evalMinusOperatorExpression(r, env);
-    default:
-      ostringstream ss;
-      ss << "Unknown operator: " << op << r->inspectType();
-      return newError(ss.str());
-  }
+Object* evalIndexExpression(Object* left, Object* index, shared_ptr<Environment> env) {
+  if (left->inspectType() == ObjectType.ARRAY_OBJ && 
+        index->inspectType() == ObjectType.INTEGER_OBJ)
+    return evalArrayIndexExpression(left, index, env);
+  if (left->inspectType() == ObjectType.STRING_OBJ && 
+        index->inspectType() == ObjectType.INTEGER_OBJ)
+    return evalStringIndexExpression(left, index, env);
+  else
+    return newError("index operator not supported: " + left->inspectType());
 }
 
 
@@ -300,164 +360,44 @@ Object* evalIntegerInfixExpression(
   }
 }
 
-Object* evalAssignmentExpression(
-    string op, Object* oldVal, Object* val, shared_ptr<Environment> env
-  ) {
-  if (val->type == INTEGER_OBJ) {
-    Integer* oldv = static_cast<Integer*>(oldVal);
-    Integer* v = static_cast<Integer*>(val);
-    if (op == "+=") {
-      Integer* newi = new Integer(oldv->value + v->value);
-      env->gc.push_back(newi);
-      return newi;
-    }
-    else if (op == "-=") {
-      Integer* newi = new Integer(oldv->value - v->value);
-      env->gc.push_back(newi);
-      return newi;
-    }
-    else if (op == "*=") {
-      Integer* newi = new Integer(oldv->value * v->value);
-      env->gc.push_back(newi);
-      return newi;
-    }
-    else if (op == "/=") {
-      Integer* newi = new Integer(oldv->value / v->value);
-      env->gc.push_back(newi);
-      return newi;
-    }
-  }
-  else if (val->type == STRING_OBJ) {
-    String* olds = static_cast<String*>(oldVal);
-    String* s = static_cast<String*>(val);
-    if (op == "+=") {
-      String* news = new String(olds->value + s->value);
-      env->gc.push_back(news);
-      return news;
-    }
-    else {
-      return newError("incompatible assignment operator: " + val->inspectType() + " " + op);
-    }
-  }
-  return nullptr;
-}
 
-
-Object* evalStringInfixExpression(string op, Object* l, Object* r, shared_ptr<Environment> env) {
-  if (op[0] != '+')
-    return newError("unknown operator: " + l->inspectType() + " " + op + " " + r->inspectType());
-  String* nl = static_cast<String*>(l);
-  String* nr = static_cast<String*>(r);
-  String* news = new String(nl->value + nr->value);
-  env->gc.push_back(news);
-  return news;
-}
-
-
-vector<Object*> evalCallExpressions(vector<Expression*> expr, shared_ptr<Environment> env) {
-  vector<Object*> result{};
-
-  for (auto e : expr) {
-    Object* evaluated = evalNode(e, env);
-    if (isError(evaluated)) {
-      result.push_back(evaluated);
-      return result;
-    }
-    result.push_back(evaluated);
-  }
-  return result;
-}
-
-
-Object* evalIdentifier(IdentifierLiteral* node, shared_ptr<Environment> env) {
-  auto builtin_find = builtins.find(node->value);
-  if(builtin_find != builtins.end()) {
-    Builtin* bi = new Builtin();
-    bi->builtin_type = builtin_find->second;
-    env->gc.push_back(bi);
-    return bi;
-  }
-  
-  Object* val = env->get(node->value);
-  if (val != nullptr)
-    return val;
-
-  return newError("identifier not found: " + node->value);
-  
-}
-
-
-Object* applyFunction(Object* fn, vector<Object*> args, shared_ptr<Environment> env) {
-  if(fn->type == FUNCTION_OBJ) {
-    Function* func;
-    try {
-      func = static_cast<Function*>(fn);
-    }
-    catch (...) {
-      ostringstream ss;
-      ss << "not a function: " << fn->inspectType();
-      return newError(ss.str());
-    }
-    shared_ptr<Environment> newEnv = extendFunction(func, args);
-    Object* evaluated = evalNode(func->body, newEnv);
-    return unwrapReturnValue(evaluated);
-  }
-  else if (fn->type == BUILTIN_OBJ)
-    return evalBuiltinFunction(fn, args, env);
-  return newError("not a function: " + fn->inspectType());
-}
-
-
-shared_ptr<Environment> extendFunction(Function* fn, vector<Object*> args) {
-  shared_ptr<Environment> env (new Environment(fn->env));
-  for (int i = 0; i < fn->parameters.size(); i++) {
-    env->set(fn->parameters[i]->value, args[i]);
-  }
-  return env;
-}
-
-
-Object* unwrapReturnValue(Object* evaluated) {
-  if (evaluated->inspectType() == ObjectType.RETURN_OBJ) {
-    ReturnValue* obj =  dynamic_cast<ReturnValue*>(evaluated);
-    return obj->value;
-  }
-  return evaluated;
-}
-
-
-Object* evalIndexExpression(Object* left, Object* index, shared_ptr<Environment> env) {
-  if (left->inspectType() == ObjectType.ARRAY_OBJ && 
-        index->inspectType() == ObjectType.INTEGER_OBJ)
-    return evalArrayIndexExpression(left, index, env);
-  if (left->inspectType() == ObjectType.STRING_OBJ && 
-        index->inspectType() == ObjectType.INTEGER_OBJ)
-    return evalStringIndexExpression(left, index, env);
-  else
-    return newError("index operator not supported: " + left->inspectType());
-}
-
-
-Object* evalArrayIndexExpression(Object* arr, Object* index, shared_ptr<Environment> env) {
-  Array* arrayObject = static_cast<Array*>(arr);
-  Integer* intObject = static_cast<Integer*>(index);
-  int idx = intObject->value;
-  int max = arrayObject->elements.size();
-  // evaluate negative (reverse) index
-  if (idx < 0) {
-    if (idx + max < 0) {
-      ostringstream ss;
-      ss << "index out of range.";
-      return newError(ss.str());
-    }
-    return arrayObject->elements[idx + max];
-  }
-  if (idx > max - 1) {
+Object* evalMinusOperatorExpression(Object* _right, shared_ptr<Environment> env) {
+  if (_right->type != INTEGER_OBJ) {
     ostringstream ss;
-    ss << "index out of range.";
+    ss << "Unknown operator: -" << _right->inspectType();
     return newError(ss.str());
   }
-  return arrayObject->elements[idx];
+  Integer* i = static_cast<Integer*>(_right);
+  Integer* newi = new Integer(-i->value);
+  env->gc.push_back(newi);
+  Object* newInt = static_cast<Integer*>(newi);
+  return newInt;
+}
+
+
+Object* evalNode(Node* node, shared_ptr<Environment> env = nullptr) {
+  if (node->nodetype == statement) {
+    Statement* stmt = static_cast<Statement*>(node);
+    return evalStatements(stmt, env);
+  }
+  else {
+    Expression* expr = static_cast<Expression*>(node);
+    return evalExpressions(expr, env);
+  }
+}
+
+
+Object* evalPrefixExpression(string op, Object* r, shared_ptr<Environment> env) {
+  switch(op[0]) {
+    case '!':
+      return evalBangOperatorExpression(r);
+    case '-':
+      return evalMinusOperatorExpression(r, env);
+    default:
+      ostringstream ss;
+      ss << "Unknown operator: " << op << r->inspectType();
+      return newError(ss.str());
+  }
 }
 
 
@@ -489,41 +429,89 @@ Object* evalStringIndexExpression(Object* str, Object* index, shared_ptr<Environ
 }
 
 
-Object* evalBangOperatorExpression(Object* _right) {
-  switch (_right->type) {
-    case BOOLEAN_TRUE:
-      return &_FALSE_BOOL;
-    case BOOLEAN_FALSE:
-      return &_TRUE_BOOL;
-    case NULL_OBJ:
-      return &_TRUE_BOOL;
-    default:
-      return &_FALSE_BOOL;
+Object* evalStatements(Statement* stmt, shared_ptr<Environment> env = nullptr) {
+  switch (stmt->type) {
+    case identifierStatement:{
+      break;
+    }
+    case functionStatement: {
+      FunctionStatement* fs = static_cast<FunctionStatement*>(stmt);
+      Function* newf = new Function(fs->parameters, fs->body, env);
+      env->set(fs->name->value, newf);
+      return newf;
+    }
+    case letStatement: {
+      LetStatement* ls = static_cast<LetStatement*>(stmt);
+      Object* val = evalNode(ls->value, env);
+      if (isError(val))
+        return val;
+      env->set(ls->name->value, val);
+      break;
+    }
+    case returnStatement: {
+      ReturnStatement* rs = static_cast<ReturnStatement*>(stmt);
+      Object* val = evalNode(rs->returnValue, env);
+      if (isError(val))
+        return val;
+      ReturnValue* newr = new ReturnValue(val);
+      env->gc.push_back(newr);
+      return newr;
+    }
+    case expressionStatement: {
+      ExpressionStatement* es = static_cast<ExpressionStatement*>(stmt);
+      return evalNode(es->expression, env);
+    }
+    case blockStatement: {
+      BlockStatement* bs = static_cast<BlockStatement*>(stmt);
+      for (auto stmt : bs->statements) {
+        Object* result = evalNode(stmt, env);
+        if (result != nullptr && result->type == RETURN_OBJ)
+          return result;
+      }
+    }
+    case assignmentExpressionStatement: {
+      //FIXME: string += int returns only int
+      AssignmentExpressionStatement* ae = static_cast<AssignmentExpressionStatement*>(stmt);
+      Object* val = evalNode(ae->value, env);
+      if (isError(val))
+        return val;
+      Object* oldVal = env->get(ae->name->value);
+      if (val->type != oldVal->type)
+        return newError("Cannot assign " + oldVal->inspectType() + " and " + val->inspectType());
+      Object* newVal = evalAssignmentExpression(ae->_operator, oldVal, val, env);
+      env->set(ae->name->value, newVal);
+      break;
+    }
   }
+  return nullptr;
 }
 
 
-Object* evalMinusOperatorExpression(Object* _right, shared_ptr<Environment> env) {
-  if (_right->type != INTEGER_OBJ) {
-    ostringstream ss;
-    ss << "Unknown operator: -" << _right->inspectType();
-    return newError(ss.str());
-  }
-  Integer* i = static_cast<Integer*>(_right);
-  Integer* newi = new Integer(-i->value);
-  env->gc.push_back(newi);
-  Object* newInt = static_cast<Integer*>(newi);
-  return newInt;
+Object* evalStringInfixExpression(string op, Object* l, Object* r, shared_ptr<Environment> env) {
+  if (op[0] != '+')
+    return newError("unknown operator: " + l->inspectType() + " " + op + " " + r->inspectType());
+  String* nl = static_cast<String*>(l);
+  String* nr = static_cast<String*>(r);
+  String* news = new String(nl->value + nr->value);
+  env->gc.push_back(news);
+  return news;
 }
 
 
-Boolean* nativeToBoolean(bool input) {
-  if (input) {
-    Boolean* b = &_TRUE_BOOL;
-    return b;
+shared_ptr<Environment> extendFunction(Function* fn, vector<Object*> args) {
+  shared_ptr<Environment> env (new Environment(fn->env));
+  for (int i = 0; i < fn->parameters.size(); i++) {
+    env->set(fn->parameters[i]->value, args[i]);
   }
-  Boolean* b = &_FALSE_BOOL;
-  return b;
+  return env;
+}
+
+
+bool isError(Object* obj) {
+  if (obj != nullptr) {
+    return obj->type == ERROR_OBJ;
+  }
+  return false;
 }
 
 
@@ -541,6 +529,16 @@ bool isTruthy(Object* obj) {
 }
 
 
+Boolean* nativeToBoolean(bool input) {
+  if (input) {
+    Boolean* b = &_TRUE_BOOL;
+    return b;
+  }
+  Boolean* b = &_FALSE_BOOL;
+  return b;
+}
+
+
 Object* newError(string msg) {
   Object* err = new Error(msg);
   err_gc->gc.push_back(err);
@@ -548,9 +546,13 @@ Object* newError(string msg) {
 }
 
 
-bool isError(Object* obj) {
-  if (obj != nullptr) {
-    return obj->type == ERROR_OBJ;
+void setErrorGarbageCollector(shared_ptr<Environment> env) { err_gc = env; };
+
+
+Object* unwrapReturnValue(Object* evaluated) {
+  if (evaluated->inspectType() == ObjectType.RETURN_OBJ) {
+    ReturnValue* obj =  dynamic_cast<ReturnValue*>(evaluated);
+    return obj->value;
   }
-  return false;
+  return evaluated;
 }

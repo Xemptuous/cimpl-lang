@@ -2,6 +2,17 @@
 #include <sstream>
 #include <iostream>
 
+Parser::Parser(std::string input) {
+  this->lexer = new Lexer(input);
+
+  // reading two tokens so currentToken and peekToken both get set
+  this->nextToken();
+  this->nextToken();
+}
+
+Parser::~Parser() {
+  delete this->lexer;
+}
 
 void Parser::nextToken() {
   if (this->peekToken.type == TokenType.NEWLINE) { 

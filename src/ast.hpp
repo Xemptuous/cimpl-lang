@@ -36,22 +36,33 @@ enum ExpressionType {
 };
 
 
+typedef struct AST {
+  Parser* parser;
+  std::vector<Statement*> Statements;
+
+  AST(std::string);
+  ~AST();
+
+  void checkParserErrors();
+  void parseProgram();
+  std::string printString();
+} AST;
+
+
 typedef struct Node {
+  ~Node() = default;
   int nodetype;
   int datatype;
   std::string literal;
-  ~Node() = default;
 } Node;
 
 
 typedef struct Statement : Node {
+  Statement();
+  virtual ~Statement() = default; 
+
   Token token;
   StatementType type;
-
-  Statement() {
-    this->nodetype = statement;
-  };
-  virtual ~Statement() = default; 
 
   virtual void setStatementNode(Token);
   virtual std::string printString();
@@ -60,13 +71,11 @@ typedef struct Statement : Node {
 
 
 typedef struct Expression : Node {
+  Expression();
+  virtual ~Expression() = default; 
+
   Token token;
   ExpressionType type;
-
-  Expression() {
-    this->nodetype = expression;
-  }
-  virtual ~Expression() = default; 
 
   virtual void setExpressionNode(Token);
   virtual std::string printString();
@@ -74,232 +83,128 @@ typedef struct Expression : Node {
 } Expression;
 
 
-typedef struct IdentifierLiteral : Expression {
+typedef struct ArrayLiteral : Expression {
+  ArrayLiteral();
+  ~ArrayLiteral();
+
   Token token;
-  std::string value;
-
-  IdentifierLiteral() {
-    this->nodetype = expression;
-    this->type = identifier;
-  }
-
-  void setExpressionNode(Token);
-  inline std::string printString() { return this->value; };
-} IdentifierLiteral;
+  std::vector<Expression*> elements;
 
 
-typedef struct IdentifierStatement : Statement {
-  Token token;
-  IdentifierLiteral* name;
-  Expression* value;
-
-  IdentifierStatement() {
-    this->name = nullptr;
-    this->value = nullptr;
-    this->type = identifierStatement;
-    this->nodetype = statement;
-  }
-
-  ~IdentifierStatement() {
-    delete this->name;
-    delete this->value;
-  }
   std::string printString();
-} IdentifierStatement;
-
-
-typedef struct LetStatement : Statement {
-  Token token;
-  IdentifierLiteral* name;
-  Expression* value;
-
-  LetStatement() {
-    this->name = nullptr;
-    this->value = nullptr;
-    this->type = letStatement;
-    this->nodetype = statement;
-  }
-
-  ~LetStatement() {
-    delete this->name;
-    delete this->value;
-  }
-  std::string printString();
-} LetStatement;
+} ArrayLiteral;
 
 
 typedef struct AssignmentExpressionStatement : Statement {
+  AssignmentExpressionStatement();
+  ~AssignmentExpressionStatement();
+
   Token token;
   IdentifierLiteral* name;
   std::string _operator;
   Expression* value;
 
-  AssignmentExpressionStatement() {
-    this->name = nullptr;
-    this->value = nullptr;
-    this->type = assignmentExpressionStatement;
-    this->nodetype = statement;
-  }
-
-  ~AssignmentExpressionStatement() {
-    delete this->name;
-    delete this->value;
-  }
-  // std::string printString();
 } AssignmentExpressionStatement;
 
 
-typedef struct ReturnStatement : Statement {
+typedef struct BlockStatement : Statement {
+  BlockStatement();
+  ~BlockStatement();
+
   Token token;
-  Expression* returnValue;
+  std::vector<Statement*> statements;
 
-  ReturnStatement() {
-    this->returnValue = nullptr;
-    this->type = returnStatement;
-    this->nodetype = statement;
-  }
-
-  ~ReturnStatement() {
-    delete this->returnValue;
-  }
   std::string printString();
-} ReturnStatement;
-
-
-typedef struct ExpressionStatement : Statement {
-  Token token;
-  Expression* expression;
-
-  ExpressionStatement() {
-    this->expression = nullptr;
-    this->type = expressionStatement;
-    this->nodetype = statement;
-  }
-
-  ~ExpressionStatement() {
-    delete this->expression;
-  }
-  std::string printString();
-} ExpressionStatement;
-
-
-typedef struct PrefixExpression : Expression {
-  Token token;
-  std::string _operator;
-  Expression* _right;
-
-  PrefixExpression() {
-    this->_right = nullptr;
-    this->type = prefixExpression;
-    this->nodetype = expression;
-  }
-
-  ~PrefixExpression() {
-    delete this->_right;
-  }
-
-  void setExpressionNode(Token);
-  std::string printString();
-} PrefixExpression;
-
-
-typedef struct InfixExpression : Expression {
-  Token token;
-  std::string _operator;
-  Expression* _left;
-  Expression* _right;
-
-  InfixExpression() {
-    this->_left = nullptr;
-    this->_right = nullptr;
-    this->type = infixExpression;
-    this->nodetype = expression;
-  }
-
-  ~InfixExpression() {
-    delete this->_left;
-    delete this->_right;
-  }
-
-  void setExpressionNode(Token);
-  std::string printString();
-} InfixExpression;
-
-
-typedef struct IntegerLiteral : Expression {
-  Token token;
-  int value;
-
-  IntegerLiteral() {
-    this->type = integerLiteral;
-    this->nodetype = expression;
-  }
-
-  void setExpressionNode(Token);
-  inline std::string printString() { return std::to_string(this->value); };
-} IntegerLiteral;
-
-
-typedef struct FloatLiteral : Expression {
-  Token token;
-  float value;
-
-  FloatLiteral() {
-    this->type = floatLiteral;
-    this->nodetype = expression;
-  }
-
-  void setExpressionNode(Token);
-  inline std::string printString() { return std::to_string(this->value); };
-} FloatLiteral;
-
-
-typedef struct StringLiteral : Expression {
-  Token token;
-  std::string value;
-  StringLiteral() {
-    this->type = stringLiteral;
-    this->nodetype = expression;
-  }
-
-  void setExpressionNode(Token);
-  inline std::string printString() { return this->value; };
-} StringLiteral;
+} BlockStatement;
 
 
 typedef struct BooleanLiteral : Expression {
+  BooleanLiteral();
+
   Token token;
   bool value;
-
-  BooleanLiteral() {
-    this->type = booleanExpression;
-    this->nodetype = expression;
-  }
 
   void setExpressionNode(Token);
   std::string printString();
 } BooleanLiteral;
 
 
-typedef struct BlockStatement : Statement {
-  Token token;
-  std::vector<Statement*> statements;
+typedef struct CallExpression : Expression { 
+  CallExpression();
+  ~CallExpression();
 
-  BlockStatement() {
-    this->type = blockStatement;
-    this->nodetype = statement;
-  }
-  ~BlockStatement() {
-    for (auto stmt : this->statements) {
-      delete stmt;
-    }
-  }
+  Token token;
+  Expression* _function;
+  std::vector<Expression*> arguments;
 
   std::string printString();
-} BlockStatement;
+} CallExpression;
+
+
+typedef struct ExpressionStatement : Statement {
+  ExpressionStatement();
+  ~ExpressionStatement();
+
+  Token token;
+  Expression* expression;
+
+  std::string printString();
+} ExpressionStatement;
+
+
+typedef struct FloatLiteral : Expression {
+  FloatLiteral();
+
+  Token token;
+  float value;
+
+  void setExpressionNode(Token);
+  inline std::string printString() { return std::to_string(this->value); };
+} FloatLiteral;
+
+
+typedef struct FunctionLiteral : Expression {
+  FunctionLiteral();
+  ~FunctionLiteral();
+
+  Token token;
+  IdentifierLiteral* name;
+  std::vector<IdentifierLiteral*> parameters;
+  BlockStatement* body;
+
+  std::string printString();
+  void setExpressionNode(Token);
+} FunctionLiteral;
+
+
+typedef struct FunctionStatement : Statement {
+  FunctionStatement();
+  ~FunctionStatement();
+
+  Token token;
+  IdentifierLiteral* name;
+  std::vector<IdentifierLiteral*> parameters;
+  BlockStatement* body;
+
+  std::string printString();
+} FunctionStatement;
+
+
+typedef struct HashLiteral : Expression {
+  HashLiteral();
+  ~HashLiteral();
+
+  Token token;
+  std::unordered_map<Expression*, Expression*> pairs;
+
+  std::string printString();
+} HashLiteral;
 
 
 typedef struct IfExpression : Expression {
+  IfExpression();
+  ~IfExpression();
+
   Token token;
   Expression* condition;
   BlockStatement* consequence;
@@ -307,150 +212,115 @@ typedef struct IfExpression : Expression {
   std::vector<Expression*> conditions;
   std::vector<BlockStatement*> alternatives;
 
-  IfExpression() {
-    this->type = ifExpression;
-    this->nodetype = expression;
-    this->condition = nullptr;
-    this->consequence = nullptr;
-    this->alternative = nullptr;
-  }
-  ~IfExpression() {
-    delete this->condition;
-    delete this->consequence;
-    delete this->alternative;
-    for (auto stmt : alternatives) {
-      delete stmt;
-    }
-    for (auto stmt : conditions) {
-      delete stmt;
-    }
-  }
-
   std::string printString();
-
 } IfExpression;
 
 
-typedef struct FunctionStatement : Statement {
+typedef struct IdentifierLiteral : Expression {
+  IdentifierLiteral();
+
   Token token;
-  IdentifierLiteral* name;
-  std::vector<IdentifierLiteral*> parameters;
-  BlockStatement* body;
+  std::string value;
 
-  FunctionStatement() {
-    this->type = functionStatement;
-    this->nodetype = statement;
-    this->body = nullptr;
-    this->name = nullptr;
-  }
-  ~FunctionStatement() {
-    delete this->body;
-    delete this->name;
-    for (int i = 0; i < this->parameters.size() - 1; i++)
-      delete[] this->parameters[i];
-    // for (auto param : parameters) {
-    //   delete param;
-    // }
-  }
-
-  std::string printString();
-} FunctionStatement;
-
-
-typedef struct FunctionLiteral : Expression {
-  Token token;
-  IdentifierLiteral* name;
-  std::vector<IdentifierLiteral*> parameters;
-  BlockStatement* body;
-
-  FunctionLiteral() {
-    this->type = functionLiteral;
-    this->nodetype = expression;
-    this->name = nullptr;
-    this->body = nullptr;
-  }
-  ~FunctionLiteral() {
-    delete this->body;
-    delete this->name;
-    for (int i = 0; i < this->parameters.size() - 1; i++)
-      delete[] this->parameters[i];
-    // for (auto param : parameters) {
-    //   delete param;
-    // }
-  }
-
-  std::string printString();
   void setExpressionNode(Token);
-} FunctionLiteral;
+  inline std::string printString() { return this->value; };
+} IdentifierLiteral;
 
 
-typedef struct CallExpression : Expression { 
+typedef struct IdentifierStatement : Statement {
+  IdentifierStatement();
+  ~IdentifierStatement();
+
   Token token;
-  Expression* _function;
-  std::vector<Expression*> arguments;
-
-  CallExpression() {
-    this->nodetype = expression;
-    this->type = callExpression;
-    this->_function = nullptr;
-  }
-  ~CallExpression() {
-    delete this->_function;
-    for (int i = 0; i < this->arguments.size() - 1; i++)
-      delete[] this->arguments[i];
-  }
+  IdentifierLiteral* name;
+  Expression* value;
 
   std::string printString();
-} CallExpression;
-
-
-typedef struct ArrayLiteral : Expression {
-  Token token;
-  std::vector<Expression*> elements;
-
-  ArrayLiteral() {
-    this->nodetype = expression;
-    this->type = arrayLiteral;
-  }
-
-  ~ArrayLiteral() {
-    for (auto el : this->elements)
-      delete el;
-  }
-
-  std::string printString();
-} ArrayLiteral;
+} IdentifierStatement;
 
 
 typedef struct IndexExpression : Expression {
+  IndexExpression();
+  ~IndexExpression();
+
   Token token;
   Expression* _left;
   Expression* index;
 
-  IndexExpression() {
-    this->nodetype = expression;
-    this->type = indexExpression;
-    this->_left = nullptr;
-    this->index = nullptr;
-  }
-  ~IndexExpression() {
-    delete this->_left;
-    delete this->index;
-  }
   std::string printString();
 } IndexExpression;
 
 
-typedef struct HashLiteral : Expression {
-  Token token;
-  std::unordered_map<Expression*, Expression*> pairs;
+typedef struct InfixExpression : Expression {
+  InfixExpression();
+  ~InfixExpression();
 
-  HashLiteral() {
-    this->nodetype = expression;
-    this->type = hashLiteral;
-  }
+  Token token;
+  std::string _operator;
+  Expression* _left;
+  Expression* _right;
+
+  void setExpressionNode(Token);
   std::string printString();
-} HashLiteral;
+} InfixExpression;
+
+
+typedef struct IntegerLiteral : Expression {
+  IntegerLiteral();
+
+  Token token;
+  int value;
+
+  void setExpressionNode(Token);
+  inline std::string printString() { return std::to_string(this->value); };
+} IntegerLiteral;
+
+
+typedef struct LetStatement : Statement {
+  LetStatement();
+  ~LetStatement();
+
+  Token token;
+  IdentifierLiteral* name;
+  Expression* value;
+
+  std::string printString();
+} LetStatement;
+
+
+typedef struct PrefixExpression : Expression {
+  PrefixExpression();
+  ~PrefixExpression();
+
+  Token token;
+  std::string _operator;
+  Expression* _right;
+
+  void setExpressionNode(Token);
+  std::string printString();
+} PrefixExpression;
+
+
+typedef struct ReturnStatement : Statement {
+  ReturnStatement();
+  ~ReturnStatement();
+
+  Token token;
+  Expression* returnValue;
+
+  std::string printString();
+} ReturnStatement;
+
+
+typedef struct StringLiteral : Expression {
+  StringLiteral();
+
+  Token token;
+  std::string value;
+
+  void setExpressionNode(Token);
+  inline std::string printString() { return this->value; };
+} StringLiteral;
 
 
 const std::unordered_map<int, std::string> StatementMap = {
@@ -487,28 +357,6 @@ const std::unordered_map<int, std::string> DatatypeMap = {
   {3, "string"},
   {4, "void"},
 };
-
-
-typedef struct AST {
-  Parser* parser;
-  std::vector<Statement*> Statements;
-
-  AST(std::string input) {
-    this->parser = new Parser(input);
-  }
-
-  ~AST() {
-    delete this->parser;
-    for (int i = 0; i < this->Statements.size() - 1; i++) {
-      delete[] this->Statements[i];
-    }
-  }
-
-  void parseProgram();
-  void convertTypes();
-  void checkParserErrors();
-  std::string printString();
-} AST;
 
 
 const struct Precedences {

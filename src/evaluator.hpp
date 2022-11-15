@@ -1,28 +1,28 @@
 #pragma once
 #include "object.hpp"
 
+using namespace std;
 
-std::vector<Object*> evalCallExpressions(
-    std::vector<Expression*> expr, 
-    std::shared_ptr<Environment>);
-Object* evalStatements(Statement*, std::shared_ptr<Environment>);
-Object* evalExpressions(Expression*, std::shared_ptr<Environment>);
-Boolean* nativeToBoolean(bool);
-Object* evalPrefixExpression(std::string, Object*, std::shared_ptr<Environment>);
+Object* applyFunction(Object*, vector<Object*>, shared_ptr<Environment>);
+Object* evalArrayIndexExpression(Object*, Object*, shared_ptr<Environment>);
+Object* evalAssignmentExpression(string, Object*, Object*, shared_ptr<Environment>);
 Object* evalBangOperatorExpression(Object*);
-Object* evalMinusOperatorExpression(Object*, std::shared_ptr<Environment>);
-Object* evalInfixExpression(std::string, Object*, Object*, std::shared_ptr<Environment>);
-Object* evalIndexExpression(Object*, Object*, std::shared_ptr<Environment>);
-Object* evalArrayIndexExpression(Object*, Object*, std::shared_ptr<Environment>);
-Object* evalStringIndexExpression(Object*, Object*, std::shared_ptr<Environment>);
-Object* evalIntegerInfixExpression(std::string, Object*, Object*, std::shared_ptr<Environment>);
-Object* evalStringInfixExpression(std::string, Object*, Object*, std::shared_ptr<Environment>);
-Object* evalIfExpression(IfExpression*, std::shared_ptr<Environment>);
-Object* evalIdentifier(IdentifierLiteral*, std::shared_ptr<Environment>);
-Object* evalAssignmentExpression(std::string, Object*, Object*, std::shared_ptr<Environment>);
-Object* newError(std::string);
+vector<Object*> evalCallExpressions(vector<Expression*> expr, shared_ptr<Environment>);
+Object* evalExpressions(Expression*, shared_ptr<Environment>);
+Object* evalIdentifier(IdentifierLiteral*, shared_ptr<Environment>);
+Object* evalIfExpression(IfExpression*, shared_ptr<Environment>);
+Object* evalIndexExpression(Object*, Object*, shared_ptr<Environment>);
+Object* evalInfixExpression(string, Object*, Object*, shared_ptr<Environment>);
+Object* evalIntegerInfixExpression(string, Object*, Object*, shared_ptr<Environment>);
+Object* evalMinusOperatorExpression(Object*, shared_ptr<Environment>);
+Object* evalNode(Node*, shared_ptr<Environment>);
+Object* evalPrefixExpression(string, Object*, shared_ptr<Environment>);
+Object* evalStatements(Statement*, shared_ptr<Environment>);
+Object* evalStringIndexExpression(Object*, Object*, shared_ptr<Environment>);
+Object* evalStringInfixExpression(string, Object*, Object*, shared_ptr<Environment>);
+shared_ptr<Environment> extendFunction(Function*, vector<Object*>);
 bool isError(Object*);
 bool isTruthy(Object*);
-Object* applyFunction(Object*, std::vector<Object*>, std::shared_ptr<Environment>);
-std::shared_ptr<Environment> extendFunction(Function*, std::vector<Object*>);
+Boolean* nativeToBoolean(bool);
+Object* newError(string);
 Object* unwrapReturnValue(Object*);

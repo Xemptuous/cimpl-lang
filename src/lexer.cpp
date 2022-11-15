@@ -4,6 +4,10 @@
 
 using namespace std;
 
+Lexer::Lexer(std::string input) {
+  this->input = input;
+  this->readChar();
+}
 
 Token Lexer::nextToken() {
   Token tok;
