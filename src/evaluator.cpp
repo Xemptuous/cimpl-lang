@@ -12,13 +12,7 @@ shared_ptr<Environment> err_gc = nullptr;
 
 
 Object* applyFunction(Object* fn, vector<Object*> args, shared_ptr<Environment> env) {
-  cout << " inside applyFunction\n";
-  cout << fn->inspectType() << '\n';
-  cout << fn->inspectObject() << '\n';
-  cout << args.size() << '\n';
-  cout << "printed applyFunction\n";
   if(fn-> type == FUNCTION_OBJ) {
-    cout << " casting fn\n";
     Function* func;
     try {
       func = dynamic_cast<Function*>(fn);
@@ -29,18 +23,12 @@ Object* applyFunction(Object* fn, vector<Object*> args, shared_ptr<Environment> 
       return newError(ss.str());
     }
     shared_ptr<Environment> newEnv = extendFunction(func, args);
-    cout << " entering evalNode\n";
     Object* evaluated = evalNode(func->body, newEnv);
     if (evaluated == nullptr)
       return nullptr;
-    cout << " printing evaluated...\n";
-    cout << evaluated->inspectType() << '\n';
-    cout << evaluated->inspectObject() << '\n';
-    cout << " entering unwrapReturnValue\n";
     return unwrapReturnValue(evaluated);
   }
   else if (fn->type == BUILTIN_OBJ)
-    cout << "  returning evalBuiltInFunction\n";
     return evalBuiltinFunction(fn, args, env);
   return newError("not a function: " + fn->inspectType());
 }
@@ -127,7 +115,6 @@ Object* evalBangOperatorExpression(Object* _right) {
 
 
 vector<Object*> evalCallExpressions(vector<Expression*> expr, shared_ptr<Environment> env) {
-  cout << " inside evalCallExpressions\n";
   vector<Object*> result{};
 
   for (auto e : expr) {
@@ -138,7 +125,6 @@ vector<Object*> evalCallExpressions(vector<Expression*> expr, shared_ptr<Environ
     }
     result.push_back(evaluated);
   }
-  cout << " returning evalCallExpressions\n";
   return result;
 }
 
@@ -160,7 +146,6 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
       return newb;
     }   
     case callExpression: {
-      cout << "inside functionLiteral\n";
       CallExpression* ce = static_cast<CallExpression*>(expr);
       Object* func = evalNode(ce->_function, env);
       if (isError(func))
@@ -168,7 +153,6 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
       vector<Object*> args = evalCallExpressions(ce->arguments, env);
       if (args.size() == 1 && isError(args[0]))
         return args[0];
-      cout << "returning applyFunction\n";
       return applyFunction(func, args, env);
     }   
     case floatLiteral: {
@@ -178,13 +162,10 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
       return newf;
     }   
     case functionLiteral: {
-      cout << "inside functionLiteral\n";
       FunctionLiteral* fl = static_cast<FunctionLiteral*>(expr);
       Function* newf = new Function(fl->parameters, fl->body, env);
       env->gc.push_back(newf);
-      cout << " setting env w/ function\n";
       env->set(fl->name->value, newf);
-      cout << " breaking functionLiteral\n";
       break;
     }
     case hashLiteral: {
@@ -197,10 +178,8 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
       return newi;
     }   
     case ifExpression: {
-      cout << "inside ifExpression\n";
       IfExpression* i = static_cast<IfExpression*>(expr);
       Object* cond = evalIfExpression(i, env);
-      cout << " returning ifExpression\n";
       return cond;
     }   
     case indexExpression: {
@@ -324,7 +303,6 @@ Object* evalIdentifier(IdentifierLiteral* node, shared_ptr<Environment> env) {
 
 
 Object* evalIfExpression(IfExpression* expr, shared_ptr<Environment> env) {
-  cout << " -inside evalIfExpression\n";
   Object* initCondition = evalNode(expr->condition, env);
   if (isError(initCondition))
     return initCondition;
@@ -652,10 +630,8 @@ void setErrorGarbageCollector(shared_ptr<Environment> env) { err_gc = env; };
 
 Object* unwrapReturnValue(Object* evaluated) {
   if (evaluated->inspectType() == ObjectType.RETURN_OBJ) {
-    cout << "unwrapping return\n";
     ReturnValue* obj =  dynamic_cast<ReturnValue*>(evaluated);
     return obj->value;
   }
-  cout << "returning regular return\n";
   return evaluated;
 }
