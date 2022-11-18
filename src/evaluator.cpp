@@ -1,5 +1,6 @@
 #include "evaluator.hpp"
 #include "builtins.hpp"
+#include <iostream>
 
 using namespace std;
 
@@ -11,18 +12,20 @@ shared_ptr<Environment> err_gc = nullptr;
 
 
 Object* applyFunction(Object* fn, vector<Object*> args, shared_ptr<Environment> env) {
-  if(fn->type == FUNCTION_OBJ) {
+  if(fn-> type == FUNCTION_OBJ) {
     Function* func;
     try {
-      func = static_cast<Function*>(fn);
+      func = dynamic_cast<Function*>(fn);
     }
     catch (...) {
       ostringstream ss;
-      ss << "not a function: " << fn->inspectType();
+      ss << " not a function: " << fn->inspectType();
       return newError(ss.str());
     }
     shared_ptr<Environment> newEnv = extendFunction(func, args);
     Object* evaluated = evalNode(func->body, newEnv);
+    if (evaluated == nullptr)
+      return nullptr;
     return unwrapReturnValue(evaluated);
   }
   else if (fn->type == BUILTIN_OBJ)
@@ -161,7 +164,7 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
     case functionLiteral: {
       FunctionLiteral* fl = static_cast<FunctionLiteral*>(expr);
       Function* newf = new Function(fl->parameters, fl->body, env);
-      // env->gc.push_back(newf);
+      env->gc.push_back(newf);
       env->set(fl->name->value, newf);
       break;
     }
@@ -512,6 +515,7 @@ Object* evalStatements(Statement* stmt, shared_ptr<Environment> env = nullptr) {
         if (result != nullptr && result->type == RETURN_OBJ)
           return result;
       }
+      break;
     }
     case expressionStatement: {
       ExpressionStatement* es = static_cast<ExpressionStatement*>(stmt);
