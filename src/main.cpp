@@ -29,6 +29,9 @@ int main() {
   setscrreg(h, w);
 
   int ch;
+  char str[100];
+  // wgetstr(pad, str) ;
+  wprintw(pad, str);
   while ((ch = mvgetch(cursor_y, cursor_x)) != KEY_EXIT) {
     prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
     switch (ch) {
