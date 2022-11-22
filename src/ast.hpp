@@ -33,6 +33,9 @@ enum ExpressionType {
   arrayLiteral,
   indexExpression,
   hashLiteral,
+  doExpression,
+  whileExpression,
+  forExpression,
 };
 
 
@@ -141,6 +144,17 @@ typedef struct CallExpression : Expression {
 } CallExpression;
 
 
+typedef struct DoExpression : Expression {
+  DoExpression();
+  ~DoExpression();
+
+  Token token;
+  BlockStatement* body;
+  Expression* condition;
+
+} DoExpression;
+
+
 typedef struct ExpressionStatement : Statement {
   ExpressionStatement();
   ~ExpressionStatement();
@@ -161,6 +175,18 @@ typedef struct FloatLiteral : Expression {
   void setExpressionNode(Token);
   inline std::string printString() { return std::to_string(this->value); };
 } FloatLiteral;
+
+
+typedef struct ForExpression : Expression {
+  ForExpression();
+  ~ForExpression();
+
+  Token token;
+  std::vector<Statement*> statements;
+  std::vector<Expression*> expressions;
+  BlockStatement* body;
+
+} ForExpression;
 
 
 typedef struct FunctionLiteral : Expression {
@@ -321,6 +347,17 @@ typedef struct StringLiteral : Expression {
   void setExpressionNode(Token);
   inline std::string printString() { return this->value; };
 } StringLiteral;
+
+
+typedef struct WhileExpression : Expression {
+  WhileExpression();
+  ~WhileExpression();
+
+  Token token;
+  Expression* condition;
+  BlockStatement* body;
+
+} WhileExpression;
 
 
 const std::unordered_map<int, std::string> StatementMap = {

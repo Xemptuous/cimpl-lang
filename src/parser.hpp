@@ -7,8 +7,10 @@
 struct ArrayLiteral;
 struct BooleanLiteral;
 struct CallExpression;
+struct DoExpression;
 struct Expression;
 struct FloatLiteral;
+struct ForExpression;
 struct FunctionLiteral;
 struct HashLiteral;
 struct IdentifierLiteral;
@@ -18,6 +20,7 @@ struct InfixExpression;
 struct IntegerLiteral;
 struct PrefixExpression;
 struct StringLiteral;
+struct WhileExpression;
 
 struct AssignmentExpressionStatement;
 struct BlockStatement;
@@ -56,9 +59,11 @@ class Parser {
     AssignmentExpressionStatement* parseAssignmentExpression();
     BooleanLiteral* parseBooleanLiteral();
     CallExpression* parseCallExpression(Expression*);
+    DoExpression* parseDoExpression();
     Expression* parseExpression(int);
     std::vector<Expression*> parseExpressionList(std::string);
     FloatLiteral* parseFloatLiteral();
+    ForExpression* parseForExpression();
     FunctionLiteral* parseFunctionLiteral();
     std::vector<IdentifierLiteral*> parseFunctionParameters();
     Expression* parseGroupedExpression();
@@ -71,6 +76,7 @@ class Parser {
     Expression* parseLeftPrefix(int);
     PrefixExpression* parsePrefixExpression();
     StringLiteral* parseStringLiteral();
+    WhileExpression* parseWhileExpression();
 
     BlockStatement* parseBlockStatement();
     ExpressionStatement* parseExpressionStatement();
