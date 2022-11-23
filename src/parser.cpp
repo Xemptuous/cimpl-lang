@@ -315,13 +315,17 @@ ForExpression* Parser::parseForExpression() {
   
   int precedence;
   while (this->peekToken.type != TokenType.RPAREN) {
-    if (this->currentToken.type == TokenType.LET)
+    if (
+        this->currentToken.type == TokenType.LET || 
+        this->currentToken.type == TokenType.IDENT
+      )
       loop->statements.push_back(this->parseLetStatement());
     else {
       precedence = currentPrecedence();
-      loop->conditions.push_back(parseExpression(precedence));
+      loop->expressions.push_back(parseExpression(precedence));
     }
   }
+  this->nextToken();
 
   if (!expectPeek(TokenType.LBRACE))
     return nullptr;
