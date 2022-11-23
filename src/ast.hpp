@@ -4,38 +4,38 @@
 
 
 enum NodeType{
-  statement,
   expression,
+  statement,
 };
 
 enum StatementType {
-  identifierStatement,
+  assignmentExpressionStatement,
+  blockStatement,
+  expressionStatement,
   functionStatement,
+  identifierStatement,
   letStatement,
   returnStatement,
-  expressionStatement,
-  blockStatement,
-  assignmentExpressionStatement,
 };
 
 
 enum ExpressionType {
-  integerLiteral,
-  floatLiteral,
-  booleanExpression,
-  stringLiteral,
-  identifier,
-  prefixExpression,
-  infixExpression,
-  ifExpression,
-  functionLiteral,
-  callExpression,
   arrayLiteral,
-  indexExpression,
-  hashLiteral,
+  booleanExpression,
+  callExpression,
   doExpression,
-  whileExpression,
+  floatLiteral,
   forExpression,
+  functionLiteral,
+  hashLiteral,
+  identifier,
+  ifExpression,
+  indexExpression,
+  infixExpression,
+  integerLiteral,
+  prefixExpression,
+  stringLiteral,
+  whileExpression,
 };
 
 
