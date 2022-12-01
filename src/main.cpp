@@ -19,7 +19,6 @@ int main() {
   unsigned int cursor_x{4}, cursor_y{3};
   getmaxyx(stdscr, h, w);
 
-
   WINDOW* pad = newpad(LINES, COLS);
   cbreak();
   keypad(stdscr, true);
@@ -55,6 +54,7 @@ int main() {
         cursor_x >= w - 2 ? cursor_x = w - 2 : cursor_x++;
         wmove(pad, cursor_y, cursor_x);
         break;
+      // enter key
       case 10:
         wmove(pad, cursor_y, cursor_x);
         cursor_y >= h - 1 ? cursor_y = h - 1 : cursor_y++;
