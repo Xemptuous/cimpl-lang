@@ -8,6 +8,8 @@
 using namespace std;
 // void start(string, shared_ptr<Environment>);
 // void setEnvironment(shared_ptr<Environment> env);
+string getstring();
+
 stack<string> CLI_STACK;
 
 int main() {
@@ -16,7 +18,7 @@ int main() {
   int h{}, w{};
   int padheight = 10000;
   int padpos{0};
-  unsigned int cursor_x{4}, cursor_y{3};
+  unsigned int cursor_x{4}, cursor_y{0};
   getmaxyx(stdscr, h, w);
 
   WINDOW* pad = newpad(LINES, COLS);
@@ -28,9 +30,7 @@ int main() {
   setscrreg(h, w);
 
   int ch;
-  char str[100];
-  // wgetstr(pad, str) ;
-  wprintw(pad, str);
+  wprintw(pad, ">>> ");
   while ((ch = mvgetch(cursor_y, cursor_x)) != KEY_EXIT) {
     prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
     switch (ch) {
@@ -54,6 +54,13 @@ int main() {
         cursor_x >= w - 2 ? cursor_x = w - 2 : cursor_x++;
         wmove(pad, cursor_y, cursor_x);
         break;
+      case KEY_BACKSPACE:
+      case 127:
+      case '\b':
+        cursor_x <= 4 ? cursor_x = 4 : cursor_x--;
+        delch();
+        wdelch(pad);
+        break;
       // enter key
       case 10:
         wmove(pad, cursor_y, cursor_x);
@@ -64,6 +71,7 @@ int main() {
         prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
         break;
       default:
+        mvwinsch(pad, cursor_y, cursor_x, ch);
         pechochar(pad, ch);
         cursor_x++;
         break;
@@ -74,7 +82,21 @@ int main() {
   clear();
   refresh();
   return 0;
+}
 
+
+string getstring() {
+  string input;
+  nocbreak();
+  echo();
+  int ch = getch();
+
+  while (ch != '\n') {
+    input += ch;
+    ch = getch();
+  }
+  return input;
+}
 //   system("clear");
 //   string input;
 //   shared_ptr<Environment> env (new Environment);
@@ -95,4 +117,4 @@ int main() {
 //     }
 //     start(input, env);
 //   }
-}
+
