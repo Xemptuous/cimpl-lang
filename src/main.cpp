@@ -19,6 +19,7 @@ int main() {
   int padheight = 10000;
   int padpos{0};
   unsigned int cursor_x{4}, cursor_y{0};
+  unsigned int maxline_x{0};
   getmaxyx(stdscr, h, w);
 
   WINDOW* pad = newpad(LINES, COLS);
@@ -58,12 +59,14 @@ int main() {
       case 127:
       case '\b':
         cursor_x <= 4 ? cursor_x = 4 : cursor_x--;
-        delch();
-        wdelch(pad);
+        mvwdelch(pad, cursor_y, cursor_x);
+        prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
+        maxline_x--;
         break;
       // enter key
       case 10:
-        wmove(pad, cursor_y, cursor_x);
+        for(int i = 0; i < maxline_x; i++)
+          wmove(pad, cursor_y, ++cursor_x);
         cursor_y >= h - 1 ? cursor_y = h - 1 : cursor_y++;
         cursor_x = 4;
         wprintw(pad, "\n");
@@ -71,8 +74,11 @@ int main() {
         prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
         break;
       default:
+        // winsch(pad, ch);
         mvwinsch(pad, cursor_y, cursor_x, ch);
-        pechochar(pad, ch);
+        prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
+        // pechochar(pad, ch);
+        maxline_x++;
         cursor_x++;
         break;
     }
