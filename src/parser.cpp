@@ -24,14 +24,14 @@ void Parser::checkFunctionReturn(FunctionStatement* stmt) {
       found ++;
       if (stmt->datatype != returnStmt->datatype) {
         std::ostringstream ss;
-        ss << "Function return value DataType mismatch.\n";
+        ss << "Function return value DataType mismatch.";
         this->errors.push_back(ss.str());
       }
     }
   } 
   if (!found) {
     std::ostringstream ss;
-    ss << "No return statement for fn: " << stmt->token.literal << '\n';
+    ss << "No return statement for fn: " << stmt->token.literal;
     this->errors.push_back(ss.str());
   }
 }
@@ -43,7 +43,7 @@ void Parser::checkIdentifierDataType(IdentifierStatement* stmt) {
       if (DatatypeMap.at(stmt->value->type) != "int") {
         std::ostringstream ss;
         ss << "Mismatched DataType: " << DatatypeMap.at(stmt->value->type)
-          << " is not equal to: " << "Integer Literal\n";
+          << " is not equal to: " << "Integer Literal";
         this->errors.push_back(ss.str());
       }
       break;
@@ -51,7 +51,7 @@ void Parser::checkIdentifierDataType(IdentifierStatement* stmt) {
       if (DatatypeMap.at(stmt->value->type) != "float") {
         std::ostringstream ss;
         ss << "Mismatched DataType: " << DatatypeMap.at(stmt->value->type)
-          << " is not equal to: " << "Float \n";
+          << " is not equal to: " << "Float";
         this->errors.push_back(ss.str());
       }
       break;
@@ -59,7 +59,7 @@ void Parser::checkIdentifierDataType(IdentifierStatement* stmt) {
       if (DatatypeMap.at(stmt->value->type) != "boolean") {
         std::ostringstream ss;
         ss << "Mismatched DataType: " << DatatypeMap.at(stmt->value->type)
-          << " is not equal to: " << "Boolean\n";
+          << " is not equal to: " << "Boolean";
         this->errors.push_back(ss.str());
       }
       break;
@@ -67,13 +67,13 @@ void Parser::checkIdentifierDataType(IdentifierStatement* stmt) {
       if (DatatypeMap.at(stmt->value->type) != "string") {
         std::ostringstream ss;
         ss << "Mismatched DataType: " << DatatypeMap.at(stmt->value->type)
-          << " is not equal to: " << "String \n";
+          << " is not equal to: " << "String";
         this->errors.push_back(ss.str());
       }
       break;
     case VOID:
       std::ostringstream ss;
-      ss << "Cannot use void datatype with identifier initializations.\n";
+      ss << "Cannot use void datatype with identifier initializations.";
       this->errors.push_back(ss.str());
       break;
   }
@@ -185,7 +185,7 @@ Expression* Parser::parseExpression(int precedence) {
   auto prefix = prefixFunctions.find(this->currentToken.type);
   if (prefix == prefixFunctions.end()) {
     std::ostringstream ss;
-    ss << "No prefix parse function found for " << this->currentToken.literal << '\n';
+    ss << "No prefix parse function found for " << this->currentToken.literal;
     this->errors.push_back(ss.str());
     return nullptr;
   }
@@ -239,7 +239,7 @@ std::vector<Expression*> Parser::parseExpressionList(std::string end) {
 
   if (!(expectPeek(end))) {
     std::ostringstream ss;
-    ss << "Parenthesis/Bracket never closed\n";
+    ss << "Parenthesis/Bracket never closed";
     this->errors.push_back(ss.str());
   }
 
@@ -248,6 +248,12 @@ std::vector<Expression*> Parser::parseExpressionList(std::string end) {
 
 
 ExpressionStatement* Parser::parseExpressionStatement() {
+  if (this->peekToken.type == TokenType._EOF || this->peekToken.type == TokenType.ILLEGAL) {
+    std::ostringstream ss;
+    ss << "Invalid Expression Statement";
+    this->errors.push_back(ss.str());
+    return nullptr;
+  }
   ExpressionStatement* stmt = new ExpressionStatement;
   stmt->setStatementNode(this->currentToken);
   stmt->expression = this->parseExpression(Precedences.LOWEST);
@@ -347,7 +353,7 @@ std::vector<IdentifierLiteral*> Parser::parseFunctionParameters() {
 
   if (!(expectPeek(TokenType.RPAREN))) {
     std::ostringstream ss;
-    ss << "Parenthesis never closed for function\n";
+    ss << "Parenthesis never closed for function";
     this->errors.push_back(ss.str());
   }
 
@@ -362,7 +368,7 @@ HashLiteral* Parser::parseHashLiteral() {
   while (this->peekToken.type != TokenType.RBRACE) {
     if (this->currentToken.type == TokenType._EOF) {
       std::ostringstream ss;
-      ss << "Brace never closed\n";
+      ss << "Brace never closed";
       this->errors.push_back(ss.str());
     }
     this->nextToken();
@@ -498,7 +504,7 @@ Expression* Parser::parseIndexExpression(Expression* _left) {
 
   if (!(expectPeek(TokenType.RBRACKET))) {
     std::ostringstream ss;
-    ss << "Index Bracket never closed\n";
+    ss << "Index Bracket never closed";
     this->errors.push_back(ss.str());
   }
   
@@ -687,7 +693,7 @@ StringLiteral* Parser::parseStringLiteral() {
 void Parser::peekErrors(std::string t){
   std::ostringstream ss;
   ss << "Expected next token to be " << t << ", but got " 
-    << this->peekToken.type << " instead" << '\n'; 
+    << this->peekToken.type << " instead"; 
   this->errors.push_back(ss.str());
 }
 
