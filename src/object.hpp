@@ -18,6 +18,7 @@ class HashPair;
 class Integer;
 class Null;
 class Print;
+class Quit;
 class ReturnValue;
 class String;
 
@@ -37,6 +38,7 @@ enum ObjectEnum {
   NULL_OBJ,
   OBJECT_OBJ,
   PRINT_OBJ,
+  QUIT_OBJ,
   RETURN_OBJ,
   STRING_OBJ,
 };
@@ -61,6 +63,7 @@ const struct Objecttype {
   string NULL_OBJ = {"NULL"};
   string OBJECT_OBJ = {"OBJECT"};
   string PRINT_OBJ = {"PRINT"};
+  string QUIT_OBJ = {"QUIT"};
   string RETURN_OBJ = {"RETURN"};
   string STRING_OBJ = {"STRING"};
 } ObjectType;
@@ -200,6 +203,12 @@ class Print : public Object {
   public:
     Print();
     string value;
+};
+
+
+class Quit : public Object {
+  public:
+    Quit();
 };
 
 

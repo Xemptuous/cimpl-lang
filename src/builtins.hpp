@@ -8,6 +8,7 @@ Object* built_in_max(std::vector<Object*>, std::shared_ptr<Environment>);
 Object* built_in_min(std::vector<Object*>, std::shared_ptr<Environment>);
 Object* built_in_pop(std::vector<Object*>, std::shared_ptr<Environment>);
 Object* built_in_push(std::vector<Object*>, std::shared_ptr<Environment>);
+Object* built_in_quit(std::shared_ptr<Environment>);
 Object* newError(std::string);
 
 
@@ -31,6 +32,7 @@ enum BuiltinFunctions {
   builtin_min,
   builtin_pop,
   builtin_push,
+  builtin_quit
 };
 
 
@@ -40,6 +42,7 @@ const std::unordered_map<std::string, int> builtins {
   {"max", builtin_max},
   {"min", builtin_min},
   {"pop", builtin_pop},
-  {"push", builtin_push}
+  {"push", builtin_push},
+  {"quit", builtin_quit}
 };
 

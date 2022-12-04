@@ -21,6 +21,8 @@ Object* evalBuiltinFunction(Object* fn, vector<Object*> args, shared_ptr<Environ
       return built_in_push(args, env);
     case builtin_pop:
       return built_in_pop(args, env);
+    case builtin_quit:
+      return built_in_quit(env);
     default:
       return newError("not a valid function");
   }
@@ -125,4 +127,10 @@ Object* built_in_pop(vector<Object*> args, shared_ptr<Environment> env) {
   Array* arr = new Array(arg);
   env->gc.push_back(arr);
   return arr;
+}
+
+Object* built_in_quit(shared_ptr<Environment> env) {
+  Quit* newq = new Quit();
+  env->gc.push_back(newq);
+  return newq;
 }

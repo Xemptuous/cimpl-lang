@@ -5,26 +5,47 @@
 
 using namespace std;
 
-void repl(string, shared_ptr<Environment>);
+int repl(string, shared_ptr<Environment>);
 void printParserErrors(vector<string>);
 Object* evalNode(Node*, shared_ptr<Environment>);
 void setErrorGarbageCollector(shared_ptr<Environment>);
+void mainLoop();
+void deallocate();
+// string readLine(string&);
 
 stack<string> CLI_STACK;
+stack<string> CLI_MEM;
 WINDOW* PAD = nullptr;
 unsigned int* CURSOR_X = nullptr;
 unsigned int* CURSOR_Y = nullptr;
+unsigned int* MIN_X = nullptr;
+unsigned int* MAXLINE_X = nullptr;
+string INPUT;
 
 int main() {
   initscr();
 
+  mainLoop();
+
+  deallocate();
+  clear();
+  refresh();
+  delwin(PAD);
+  endwin();
+  return 0;
+}
+
+
+void mainLoop() {
   int h{}, w{};
   int padheight = 10000;
   int padpos{0};
   WINDOW* pad = newpad(LINES, COLS);
   PAD = pad;
 
-  unsigned int minx{4}, maxline_x{1};
+  unsigned int min_x{4}, maxline_x{1};
+  MIN_X = &min_x;
+  MAXLINE_X = &maxline_x;
   unsigned int cursor_x{4}, cursor_y{0};
   CURSOR_X = &cursor_x;
   CURSOR_Y = &cursor_y;
@@ -38,27 +59,43 @@ int main() {
   setscrreg(h, w);
 
   int ch;
+  string input;
   shared_ptr<Environment> env (new Environment);
   wprintw(pad, ">>> ");
-
   while (true) {
     ch = mvgetch(cursor_y, cursor_x);
-    // prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
     switch (ch) {
-      case KEY_UP:
-        if (cursor_y <= 1) {
-          cursor_y = 0;
-          padpos <= 1 ? padpos = 0 : padpos--;
+      case KEY_UP: {
+        if (CLI_STACK.empty())
+          break;
+        chtype p[150];
+        string input;
+        wmove(PAD, *CURSOR_Y, *MIN_X);
+        winchnstr(PAD, p, *MAXLINE_X);
+        int len = sizeof(p) / sizeof(p[0]);
+        for (int i = 0; i < len; i++) {
+          char ch = p[i] & A_CHARTEXT;
+          input += ch;
         }
-        else cursor_y--;
-        wmove(pad, cursor_y, cursor_x);
+        // input = readLine(input);
+        CLI_MEM.push(INPUT);
+        wmove(pad, cursor_y, min_x);
+        clrtoeol();
+        wclrtoeol(pad);
+        string prev = CLI_STACK.top();
+        CLI_MEM.push(prev);
+        CLI_STACK.pop();
+        wmove(pad, cursor_y, min_x);
+        mvwprintw(pad, cursor_y, min_x, "%s", prev.c_str());
+        break;
+      }
         break;
       case KEY_DOWN:
         cursor_y >= h - 1 ? padpos++ : cursor_y++;
         wmove(pad, cursor_y, cursor_x);
         break;
       case KEY_LEFT:
-        cursor_x <= minx ? cursor_x = minx : cursor_x--;
+        cursor_x <= min_x ? cursor_x = min_x : cursor_x--;
         wmove(pad, cursor_y, cursor_x);
         break;
       case KEY_RIGHT:
@@ -68,7 +105,7 @@ int main() {
       case KEY_BACKSPACE:
       case 127:
       case '\b':
-        cursor_x <= minx ? cursor_x = minx : cursor_x--;
+        cursor_x <= min_x ? cursor_x = min_x : cursor_x--;
         maxline_x <= 0 ? maxline_x = 0 : maxline_x--;
         mvwdelch(pad, cursor_y, cursor_x);
         prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
@@ -77,8 +114,8 @@ int main() {
       case 10: {
         chtype p[150];
         string input;
-        wmove(pad, cursor_y, minx);
-        winchnstr(pad, p, maxline_x);
+        wmove(PAD, *CURSOR_Y, *MIN_X);
+        winchnstr(PAD, p, *MAXLINE_X);
         int len = sizeof(p) / sizeof(p[0]);
         for (int i = 0; i < len; i++) {
           char ch = p[i] & A_CHARTEXT;
@@ -86,11 +123,12 @@ int main() {
         }
         CLI_STACK.push(input);
         wprintw(pad, "%s", input.c_str());
-        repl(input, env);
-
+        int resp = repl(input, env);
+        if (resp == 1)
+          return;
         maxline_x = 1;
         cursor_y >= h - 1 ? cursor_y = h - 1 : cursor_y++;
-        cursor_x = minx;
+        cursor_x = min_x;
         wprintw(pad, "\n>>> ");
         prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
         break;
@@ -103,21 +141,17 @@ int main() {
         break;
     }
   }
-  endwin();
-  delwin(pad);
-  clear();
-  refresh();
-  return 0;
+
 }
 
 
-void repl(string input, shared_ptr<Environment> env) {
+int repl(string input, shared_ptr<Environment> env) {
   AST* ast = new AST(input);
   ast->parseProgram();
 
   if (ast->parser->errors.size() != 0) {
     printParserErrors(ast->parser->errors);
-    return;
+    return 0;
   }
 
   shared_ptr<Environment> err_gc ( new Environment() );
@@ -126,6 +160,8 @@ void repl(string input, shared_ptr<Environment> env) {
   for (Statement* stmt : ast->Statements) {
     Object* evaluated = evalNode(stmt, env);
     if (evaluated != nullptr) {
+      if (evaluated->type == QUIT_OBJ)
+        return 1;
       if (evaluated->type == PRINT_OBJ) {
         Print* result = static_cast<Print*>(evaluated);
         wprintw(PAD, "\n%s", result->value.c_str());
@@ -140,15 +176,23 @@ void repl(string input, shared_ptr<Environment> env) {
     }
   }
   delete ast;
+  return 0;
 }
 
 
 void printParserErrors(vector<string> errs) {
   wprintw(PAD, "\nparser error:\n");
-  *CURSOR_Y += 1;
+  *CURSOR_Y += 2;
   for (auto err : errs) {
-    wprintw(PAD, "\t%s", err.c_str());
+    wprintw(PAD, "\t%s\n", err.c_str());
     *CURSOR_Y += 1;
   }
 }
 
+void deallocate() {
+  WINDOW* PAD = nullptr;
+  unsigned int* CURSOR_X = nullptr;
+  unsigned int* CURSOR_Y = nullptr;
+  unsigned int* MIN_X = nullptr;
+  unsigned int* MAXLINE_X = nullptr;
+}
