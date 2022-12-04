@@ -1,14 +1,19 @@
 #include "object.hpp"
-#include <ncurses.h>
 #include <string>
 #include <vector>
 #include <stack>
 // #include <iostream>
 
 using namespace std;
-// void start(string, shared_ptr<Environment>);
+void repl(string, shared_ptr<Environment>);
+void printParserErrors(vector<string>);
+Object* evalNode(Node*, shared_ptr<Environment>);
+void setErrorGarbageCollector(shared_ptr<Environment>);
 // void setEnvironment(shared_ptr<Environment> env);
 stack<string> CLI_STACK;
+WINDOW* PAD = nullptr;
+unsigned int* CURSOR_X = nullptr;
+unsigned int* CURSOR_Y = nullptr;
 
 int main() {
   initscr();
@@ -17,10 +22,13 @@ int main() {
   int padheight = 10000;
   int padpos{0};
   unsigned int cursor_x{4}, cursor_y{0};
-  unsigned int minx{4}, maxline_x{0};
+  CURSOR_X = &cursor_x;
+  CURSOR_Y = &cursor_y;
+  unsigned int minx{4}, maxline_x{1};
   getmaxyx(stdscr, h, w);
-
   WINDOW* pad = newpad(LINES, COLS);
+  PAD = pad;
+
   cbreak();
   keypad(stdscr, true);
   clearok(pad, true);
@@ -29,8 +37,9 @@ int main() {
   setscrreg(h, w);
 
   int ch;
-  // shared_ptr<Environment> env (new Environment);
+  shared_ptr<Environment> env (new Environment);
   wprintw(pad, ">>> ");
+  prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
   while ((ch = mvgetch(cursor_y, cursor_x)) != KEY_EXIT) {
     prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
     switch (ch) {
@@ -62,25 +71,23 @@ int main() {
         prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
         maxline_x--;
         break;
-      // enter key
+      case KEY_ENTER:
       case 10: {
         chtype p[150];
         string input;
         wmove(pad, cursor_y, minx);
         winchnstr(pad, p, maxline_x);
         for (int i = 0; i < sizeof(p) / sizeof(p[0]); i++) {
-          char y = p[i] & A_CHARTEXT;
-          input += y;
+          char ch = p[i] & A_CHARTEXT;
+          input += ch;
         }
-        // moving to end of input before carriage return
-        for(int i = 0; i < maxline_x; i++) {
-          wmove(pad, cursor_y, ++cursor_x);
-        }
-        // start(input, env);
+        wprintw(pad, "%s", input.c_str());
+        repl(input, env);
+
+        maxline_x = 1;
         cursor_y >= h - 1 ? cursor_y = h - 1 : cursor_y++;
         cursor_x = minx;
-        wprintw(pad, "\n");
-        wprintw(pad, ">>> ");
+        wprintw(pad, "\n>>> ");
         prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
         break;
       }
@@ -99,6 +106,50 @@ int main() {
   return 0;
 }
 
+
+void repl(string input, shared_ptr<Environment> env) {
+  AST* ast = new AST(input);
+  ast->parseProgram();
+
+  if (ast->parser->errors.size() != 0) {
+    printParserErrors(ast->parser->errors);
+    return;
+  }
+
+  shared_ptr<Environment> err_gc ( new Environment() );
+  setErrorGarbageCollector(err_gc);
+
+  for (Statement* stmt : ast->Statements) {
+    Object* evaluated = evalNode(stmt, env);
+    if (evaluated != nullptr) {
+      if (evaluated->type == PRINT_OBJ) {
+        Print* result = static_cast<Print*>(evaluated);
+        wprintw(PAD, "\n%s", result->value.c_str());
+        *CURSOR_Y += 1;
+      }
+      if (evaluated->type == ERROR_OBJ) {
+        Error* result = static_cast<Error*>(evaluated);
+        wprintw(PAD, "%s\n", result->message.c_str());
+        *CURSOR_Y += 1;
+        continue;
+      }
+    }
+  }
+  delete ast;
+}
+
+
+void printParserErrors(vector<string> errs) {
+  wprintw(PAD, "\nparser error:\n");
+  *CURSOR_Y += 1;
+  for (auto err : errs) {
+    wprintw(PAD, "\t%s", err.c_str());
+    *CURSOR_Y += 1;
+  }
+  // cout << "parser error:\n";
+  // for (auto err : errs)
+  //   cout << '\t' << err << '\n';
+}
 
 //   system("clear");
 //   string input;
