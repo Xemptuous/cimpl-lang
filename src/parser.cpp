@@ -592,6 +592,12 @@ LetStatement* Parser::parseLetStatement() {
   }
 
   // Setting expression value
+  if (this->peekToken.type == TokenType.ILLEGAL || this->peekToken.type == TokenType._EOF) {
+    std::ostringstream ss;
+    ss << "Could not parse let statement; invalid assignment after '='";
+    this->errors.push_back(ss.str());
+    return nullptr;
+  }
   this->nextToken();
   stmt->value = this->parseExpression(Precedences.LOWEST);
 
