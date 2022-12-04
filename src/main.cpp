@@ -2,14 +2,14 @@
 #include <string>
 #include <vector>
 #include <stack>
-// #include <iostream>
 
 using namespace std;
+
 void repl(string, shared_ptr<Environment>);
 void printParserErrors(vector<string>);
 Object* evalNode(Node*, shared_ptr<Environment>);
 void setErrorGarbageCollector(shared_ptr<Environment>);
-// void setEnvironment(shared_ptr<Environment> env);
+
 stack<string> CLI_STACK;
 WINDOW* PAD = nullptr;
 unsigned int* CURSOR_X = nullptr;
@@ -21,14 +21,15 @@ int main() {
   int h{}, w{};
   int padheight = 10000;
   int padpos{0};
-  unsigned int cursor_x{4}, cursor_y{0};
-  CURSOR_X = &cursor_x;
-  CURSOR_Y = &cursor_y;
-  unsigned int minx{4}, maxline_x{1};
-  getmaxyx(stdscr, h, w);
   WINDOW* pad = newpad(LINES, COLS);
   PAD = pad;
 
+  unsigned int minx{4}, maxline_x{1};
+  unsigned int cursor_x{4}, cursor_y{0};
+  CURSOR_X = &cursor_x;
+  CURSOR_Y = &cursor_y;
+
+  getmaxyx(stdscr, h, w);
   cbreak();
   keypad(stdscr, true);
   clearok(pad, true);
@@ -39,9 +40,10 @@ int main() {
   int ch;
   shared_ptr<Environment> env (new Environment);
   wprintw(pad, ">>> ");
-  prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
-  while ((ch = mvgetch(cursor_y, cursor_x)) != KEY_EXIT) {
-    prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
+
+  while (true) {
+    ch = mvgetch(cursor_y, cursor_x);
+    // prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
     switch (ch) {
       case KEY_UP:
         if (cursor_y <= 1) {
@@ -67,9 +69,9 @@ int main() {
       case 127:
       case '\b':
         cursor_x <= minx ? cursor_x = minx : cursor_x--;
+        maxline_x <= 0 ? maxline_x = 0 : maxline_x--;
         mvwdelch(pad, cursor_y, cursor_x);
         prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
-        maxline_x--;
         break;
       case KEY_ENTER:
       case 10: {
@@ -77,10 +79,12 @@ int main() {
         string input;
         wmove(pad, cursor_y, minx);
         winchnstr(pad, p, maxline_x);
-        for (int i = 0; i < sizeof(p) / sizeof(p[0]); i++) {
+        int len = sizeof(p) / sizeof(p[0]);
+        for (int i = 0; i < len; i++) {
           char ch = p[i] & A_CHARTEXT;
           input += ch;
         }
+        CLI_STACK.push(input);
         wprintw(pad, "%s", input.c_str());
         repl(input, env);
 
@@ -146,29 +150,5 @@ void printParserErrors(vector<string> errs) {
     wprintw(PAD, "\t%s", err.c_str());
     *CURSOR_Y += 1;
   }
-  // cout << "parser error:\n";
-  // for (auto err : errs)
-  //   cout << '\t' << err << '\n';
 }
-
-//   system("clear");
-//   string input;
-//   shared_ptr<Environment> env (new Environment);
-//
-//   while (true) {
-// start:
-//     std::cout << ">> ";
-//     std::getline(cin, input);
-//     if (input == "quit") {
-//       system("clear");
-//       for (int i = 0; i < env->gc.size() - 1; i++) 
-//         delete[] env->gc[i];
-//       return 0;
-//     }
-//     if (input == "clear") {
-//       system("clear");
-//       goto start;
-//     }
-//     start(input, env);
-//   }
 
