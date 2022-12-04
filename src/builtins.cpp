@@ -1,6 +1,7 @@
 #include "object.hpp"
 #include "builtins.hpp"
-#include <iostream>
+// #include <iostream>
+#include <sstream>
 
 using namespace std;
 
@@ -50,9 +51,14 @@ Object* built_in_len(vector<Object*> args, shared_ptr<Environment> env) {
 
 
 Object* built_in_print(vector<Object*> args, shared_ptr<Environment> env) {
+  stringstream ss;
   for (auto arg : args)
-    cout << arg->inspectObject() << '\n';
-  return nullptr;
+    ss << arg->inspectObject();
+    // cout << arg->inspectObject() << '\n';
+  Print* newp = new Print();
+  env->gc.push_back(newp);
+  newp->value = ss.str();
+  return newp;
 }
 
 

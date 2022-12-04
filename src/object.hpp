@@ -1,6 +1,7 @@
 #pragma once
 #include "ast.hpp"
 #include <sstream>
+#include <ncurses.h>
 #include <functional>
 
 using namespace std;
@@ -16,6 +17,7 @@ class HashKey;
 class HashPair;
 class Integer;
 class Null;
+class Print;
 class ReturnValue;
 class String;
 
@@ -34,6 +36,7 @@ enum ObjectEnum {
   INTEGER_OBJ,
   NULL_OBJ,
   OBJECT_OBJ,
+  PRINT_OBJ,
   RETURN_OBJ,
   STRING_OBJ,
 };
@@ -57,6 +60,7 @@ const struct Objecttype {
   string INTEGER_OBJ = {"INTEGER"};
   string NULL_OBJ = {"NULL"};
   string OBJECT_OBJ = {"OBJECT"};
+  string PRINT_OBJ = {"PRINT"};
   string RETURN_OBJ = {"RETURN"};
   string STRING_OBJ = {"STRING"};
 } ObjectType;
@@ -189,6 +193,13 @@ class Null : public Object {
 
     string inspectType();
     string inspectObject();
+};
+
+
+class Print : public Object {
+  public:
+    Print();
+    string value;
 };
 
 

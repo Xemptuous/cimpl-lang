@@ -71,6 +71,8 @@ Integer::Integer(int val) {
 
 Null::Null() { this->type = NULL_OBJ; }
 
+Print::Print() { this->type = PRINT_OBJ; }
+
 ReturnValue::ReturnValue(Object* obj) {
   this->value = obj;
   this->type = RETURN_OBJ;
