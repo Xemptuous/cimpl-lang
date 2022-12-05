@@ -13,14 +13,11 @@ void mainLoop();
 void deallocate();
 // string readLine(string&);
 
-stack<string> CLI_STACK;
-stack<string> CLI_MEM;
+stack<pair<string, int>> HISTORY;
+stack<pair<string, int>> MEMORY;
 WINDOW* PAD = nullptr;
 unsigned int* CURSOR_X = nullptr;
 unsigned int* CURSOR_Y = nullptr;
-unsigned int* MIN_X = nullptr;
-unsigned int* MAXLINE_X = nullptr;
-string INPUT;
 
 int main() {
   initscr();
@@ -44,8 +41,6 @@ void mainLoop() {
   PAD = pad;
 
   unsigned int min_x{4}, maxline_x{1};
-  MIN_X = &min_x;
-  MAXLINE_X = &maxline_x;
   unsigned int cursor_x{4}, cursor_y{0};
   CURSOR_X = &cursor_x;
   CURSOR_Y = &cursor_y;
@@ -64,36 +59,42 @@ void mainLoop() {
   wprintw(pad, ">>> ");
   while (true) {
     ch = mvgetch(cursor_y, cursor_x);
+    prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
     switch (ch) {
       case KEY_UP: {
-        if (CLI_STACK.empty())
+        if (HISTORY.empty())
           break;
-        chtype p[150];
-        string input;
-        wmove(PAD, *CURSOR_Y, *MIN_X);
-        winchnstr(PAD, p, *MAXLINE_X);
-        int len = sizeof(p) / sizeof(p[0]);
-        for (int i = 0; i < len; i++) {
-          char ch = p[i] & A_CHARTEXT;
-          input += ch;
-        }
-        // input = readLine(input);
-        CLI_MEM.push(INPUT);
         wmove(pad, cursor_y, min_x);
-        clrtoeol();
         wclrtoeol(pad);
-        string prev = CLI_STACK.top();
-        CLI_MEM.push(prev);
-        CLI_STACK.pop();
+        MEMORY.push(HISTORY.top());
+        HISTORY.pop();
+        string prev = MEMORY.top().first;
+        maxline_x = MEMORY.top().second;
         wmove(pad, cursor_y, min_x);
-        mvwprintw(pad, cursor_y, min_x, "%s", prev.c_str());
+        cursor_x = min_x;
+        for (int i = 0; i < maxline_x - 1; i++) {
+          mvwaddch(pad, cursor_y, cursor_x++, prev[i]);
+        }
+        prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
         break;
       }
+      case KEY_DOWN: {
+        if (MEMORY.empty())
+          break;
+        wmove(pad, cursor_y, min_x);
+        wclrtoeol(pad);
+        HISTORY.push(MEMORY.top());
+        MEMORY.pop();
+        string next = HISTORY.top().first;
+        maxline_x = HISTORY.top().second;
+        wmove(pad, cursor_y, min_x);
+        cursor_x = min_x;
+        for (int i = 0; i < maxline_x - 1; i++) {
+          mvwaddch(pad, cursor_y, cursor_x++, next[i]);
+        }
+        prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
         break;
-      case KEY_DOWN:
-        cursor_y >= h - 1 ? padpos++ : cursor_y++;
-        wmove(pad, cursor_y, cursor_x);
-        break;
+      }
       case KEY_LEFT:
         cursor_x <= min_x ? cursor_x = min_x : cursor_x--;
         wmove(pad, cursor_y, cursor_x);
@@ -105,7 +106,11 @@ void mainLoop() {
       case KEY_BACKSPACE:
       case 127:
       case '\b':
-        cursor_x <= min_x ? cursor_x = min_x : cursor_x--;
+        if (cursor_x <= min_x) {
+          cursor_x = min_x;
+          break;
+        }
+        cursor_x--;
         maxline_x <= 0 ? maxline_x = 0 : maxline_x--;
         mvwdelch(pad, cursor_y, cursor_x);
         prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
@@ -114,14 +119,15 @@ void mainLoop() {
       case 10: {
         chtype p[150];
         string input;
-        wmove(PAD, *CURSOR_Y, *MIN_X);
-        winchnstr(PAD, p, *MAXLINE_X);
+        wmove(pad, cursor_y, min_x);
+        winchnstr(pad, p, maxline_x);
         int len = sizeof(p) / sizeof(p[0]);
         for (int i = 0; i < len; i++) {
           char ch = p[i] & A_CHARTEXT;
           input += ch;
         }
-        CLI_STACK.push(input);
+        pair<string, int> pairs(input, maxline_x);
+        HISTORY.push(pairs);
         wprintw(pad, "%s", input.c_str());
         int resp = repl(input, env);
         if (resp == 1)
@@ -141,7 +147,6 @@ void mainLoop() {
         break;
     }
   }
-
 }
 
 
@@ -190,7 +195,6 @@ void printParserErrors(vector<string> errs) {
 }
 
 void deallocate() {
-  WINDOW* PAD = nullptr;
   unsigned int* CURSOR_X = nullptr;
   unsigned int* CURSOR_Y = nullptr;
   unsigned int* MIN_X = nullptr;
