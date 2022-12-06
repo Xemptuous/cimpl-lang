@@ -57,6 +57,10 @@ void mainLoop() {
   string input;
   shared_ptr<Environment> env (new Environment);
   wprintw(pad, ">>> ");
+  prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
+  refresh();
+  wrefresh(pad);
+  doupdate();
   while (true) {
     ch = mvgetch(cursor_y, cursor_x);
     prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
