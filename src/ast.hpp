@@ -33,6 +33,7 @@ enum ExpressionType {
   indexExpression,
   infixExpression,
   integerLiteral,
+  postfixExpression,
   prefixExpression,
   stringLiteral,
   whileExpression,
@@ -312,6 +313,19 @@ typedef struct LetStatement : Statement {
 
   std::string printString();
 } LetStatement;
+
+
+typedef struct PostfixExpression : Expression {
+  PostfixExpression();
+  ~PostfixExpression();
+
+  Token token;
+  std::string _operator;
+  Expression* _left;
+
+  void setExpressionNode(Token);
+  std::string printString();
+} PostfixExpression;
 
 
 typedef struct PrefixExpression : Expression {

@@ -227,7 +227,11 @@ Expression* Parser::parseExpression(int precedence) {
   {
     auto infix = infixFunctions.find(this->peekToken.type);
     if (infix == infixFunctions.end()) {
-      return leftExp;
+      auto postfix = postfixFunctions.find(this->peekToken.type);
+      if (postfix == postfixFunctions.end()) {
+        leftExp = this->parsePostfixExpression(leftExp);
+      }
+      else return leftExp;
     }
     this->nextToken();
 
@@ -315,10 +319,7 @@ ForExpression* Parser::parseForExpression() {
   
   int precedence;
   while (this->peekToken.type != TokenType.RPAREN) {
-    if (
-        this->currentToken.type == TokenType.LET || 
-        this->currentToken.type == TokenType.IDENT
-      )
+    if (this->currentToken.type == TokenType.LET)
       loop->statements.push_back(this->parseLetStatement());
     else {
       precedence = currentPrecedence();
@@ -667,6 +668,14 @@ LetStatement* Parser::parseLetStatement() {
   }
 
   return stmt;
+}
+
+
+PostfixExpression* Parser::parsePostfixExpression(Expression* leftExpr) {
+  PostfixExpression* expr = new PostfixExpression;
+  expr->setExpressionNode(this->currentToken);
+  expr->_left = leftExpr;
+  return expr;
 }
 
 

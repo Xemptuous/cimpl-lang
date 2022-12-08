@@ -18,6 +18,7 @@ Object* evalInfixExpression(string, Object*, Object*, shared_ptr<Environment>);
 Object* evalIntegerInfixExpression(string, Object*, Object*, shared_ptr<Environment>);
 Object* evalMinusOperatorExpression(Object*, shared_ptr<Environment>);
 Object* evalNode(Node*, shared_ptr<Environment>);
+Object* evalPostfixExpression(string, Object*, shared_ptr<Environment>);
 Object* evalPrefixExpression(string, Object*, shared_ptr<Environment>);
 Object* evalStatements(Statement*, shared_ptr<Environment>);
 Object* evalStringIndexExpression(Object*, Object*, shared_ptr<Environment>);

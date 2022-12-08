@@ -18,6 +18,7 @@ struct IfExpression;
 struct IndexExpression;
 struct InfixExpression;
 struct IntegerLiteral;
+struct PostfixExpression;
 struct PrefixExpression;
 struct StringLiteral;
 struct WhileExpression;
@@ -74,6 +75,7 @@ class Parser {
     InfixExpression* parseInfixExpression(Expression*);
     IntegerLiteral* parseIntegerLiteral();
     Expression* parseLeftPrefix(int);
+    PostfixExpression* parsePostfixExpression(Expression*);
     PrefixExpression* parsePrefixExpression();
     StringLiteral* parseStringLiteral();
     WhileExpression* parseWhileExpression();
@@ -150,3 +152,12 @@ const std::unordered_map<std::string, int> infixFunctions = {
   {TokenType.LBRACKET, INFIX_INDEX},
 };
 
+
+enum postfix {
+  POSTFIX
+};
+
+const std::unordered_map<std::string, int> postfixFunctions = {
+  {TokenType.INCREMENT, POSTFIX},
+  {TokenType.DECREMENT, POSTFIX},
+};

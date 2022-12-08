@@ -218,6 +218,17 @@ LetStatement::~LetStatement() {
 }
 
 
+PostfixExpression::PostfixExpression() {
+  this->_left = nullptr;
+  this->type = postfixExpression;
+  this->nodetype = expression;
+}
+
+PostfixExpression::~PostfixExpression() {
+  delete this->_left;
+}
+
+
 PrefixExpression::PrefixExpression() {
   this->_right = nullptr;
   this->type = prefixExpression;
@@ -334,6 +345,13 @@ void IntegerLiteral::setExpressionNode(Token tok) {
 }
 
 
+void PostfixExpression::setExpressionNode(Token tok) {
+  this->token = tok;
+  this->setDataType(tok.literal);
+  this->_operator = tok.literal;
+}
+
+
 void StringLiteral::setExpressionNode(Token tok) {
   this->token = tok;
   this->value = tok.literal;
@@ -423,6 +441,15 @@ string ExpressionStatement::printString() {
 
   if (this->expression != nullptr)
     ss << this->expression->printString();
+
+  return ss.str();
+}
+
+
+string PostfixExpression::printString() {
+  ostringstream ss;
+
+  ss << "(" << this->_operator << this->_left->printString() << ")";
 
   return ss.str();
 }

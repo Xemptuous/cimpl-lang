@@ -206,6 +206,17 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
       env->gc.push_back(newi);
       return newi;
     }   
+    case postfixExpression: {
+      PostfixExpression* p = static_cast<PostfixExpression*>(expr);
+      Object* left = evalNode(p->_left, env);
+      if (isError(left))
+        return left;
+      string name = p->_left->literal;
+      Object* val = env->get(name);
+      Object* np = evalPostfixExpression(p->_operator, val, env);
+      env->set(name, np);
+      return np;
+    }
     case prefixExpression: {
       PrefixExpression* p = static_cast<PrefixExpression*>(expr);
       Object* right = evalNode(p->_right, env);
@@ -422,13 +433,13 @@ Object* evalIntegerInfixExpression(
 }
 
 
-Object* evalMinusOperatorExpression(Object* _right, shared_ptr<Environment> env) {
-  if (_right->type != INTEGER_OBJ) {
+Object* evalMinusOperatorExpression(Object* right, shared_ptr<Environment> env) {
+  if (right->type != INTEGER_OBJ) {
     ostringstream ss;
-    ss << "Unknown operator: -" << _right->inspectType();
+    ss << "Unknown operator: -" << right->inspectType();
     return newError(ss.str());
   }
-  Integer* i = static_cast<Integer*>(_right);
+  Integer* i = static_cast<Integer*>(right);
   Integer* newi = new Integer(-i->value);
   env->gc.push_back(newi);
   Object* newInt = static_cast<Integer*>(newi);
@@ -445,6 +456,24 @@ Object* evalNode(Node* node, shared_ptr<Environment> env = nullptr) {
     Expression* expr = static_cast<Expression*>(node);
     return evalExpressions(expr, env);
   }
+}
+
+
+Object* evalPostfixExpression(string op, Object* left, shared_ptr<Environment> env) {
+  if (left->type != INTEGER_OBJ)
+    return newError("Increment operation on non-integer object.");
+
+  Integer* i = static_cast<Integer*>(left);
+  Integer* newi = nullptr;
+
+  if (op == "++")
+    Integer* newi = new Integer(i->value + 1);
+  else if (op == "--")
+    Integer* newi = new Integer(i->value - 1);
+  else return newError("not a valid postfix operation.");
+
+  env->gc.push_back(newi);
+  return i;
 }
 
 
