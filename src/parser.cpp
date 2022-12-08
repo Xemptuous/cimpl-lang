@@ -618,6 +618,12 @@ Expression* Parser::parseLeftPrefix(int prefix) {
       return this->parseGroupedExpression();
     case PREFIX_FUNCTION:
       return this->parseFunctionLiteral();
+    case PREFIX_WHILE:
+      return this->parseWhileExpression();
+    case PREFIX_DO:
+      return this->parseDoExpression();
+    case PREFIX_FOR:
+      return this->parseForExpression();
     case PREFIX_ARRAY:
       return this->parseArrayLiteral();
     case PREFIX_HASH:
