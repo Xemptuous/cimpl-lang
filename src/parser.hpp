@@ -120,8 +120,6 @@ const std::unordered_map<std::string, int> prefixFunctions = {
   {TokenType.MINUS, PREFIX_STD},
   {TokenType._TRUE, PREFIX_BOOL},
   {TokenType._FALSE, PREFIX_BOOL},
-  {TokenType.INCREMENT, PREFIX_INCREMENT},
-  {TokenType.DECREMENT, PREFIX_DECREMENT},
   {TokenType.LPAREN, PREFIX_GROUPED_EXPR},
   {TokenType.IF, PREFIX_IF},
   {TokenType.FUNCTION, PREFIX_FUNCTION},

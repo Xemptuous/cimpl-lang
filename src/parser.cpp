@@ -228,10 +228,12 @@ Expression* Parser::parseExpression(int precedence) {
     auto infix = infixFunctions.find(this->peekToken.type);
     if (infix == infixFunctions.end()) {
       auto postfix = postfixFunctions.find(this->peekToken.type);
-      if (postfix == postfixFunctions.end()) {
+      if (postfix != postfixFunctions.end()) {
+        this->nextToken();
         leftExp = this->parsePostfixExpression(leftExp);
+        this->nextToken();
+        return leftExp;
       }
-      else return leftExp;
     }
     this->nextToken();
 

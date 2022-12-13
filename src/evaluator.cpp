@@ -1,5 +1,6 @@
 #include "evaluator.hpp"
 #include "builtins.hpp"
+#include <iostream>
 
 using namespace std;
 
@@ -211,7 +212,10 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
       Object* left = evalNode(p->_left, env);
       if (isError(left))
         return left;
-      string name = p->_left->literal;
+      if (left->type != INTEGER_OBJ)
+        return newError(p->_left->literal + " is not an integer.");
+      IdentifierLiteral* id = static_cast<IdentifierLiteral*>(p->_left);
+      string name = id->value;
       Object* val = env->get(name);
       Object* np = evalPostfixExpression(p->_operator, val, env);
       env->set(name, np);
@@ -464,16 +468,18 @@ Object* evalPostfixExpression(string op, Object* left, shared_ptr<Environment> e
     return newError("Increment operation on non-integer object.");
 
   Integer* i = static_cast<Integer*>(left);
-  Integer* newi = nullptr;
 
-  if (op == "++")
+  if (op == "++") {
     Integer* newi = new Integer(i->value + 1);
-  else if (op == "--")
+    env->gc.push_back(newi);
+    return newi;
+  }
+  else if (op == "--") {
     Integer* newi = new Integer(i->value - 1);
+    env->gc.push_back(newi);
+    return newi;
+  }
   else return newError("not a valid postfix operation.");
-
-  env->gc.push_back(newi);
-  return i;
 }
 
 
