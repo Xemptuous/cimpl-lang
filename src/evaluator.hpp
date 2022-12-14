@@ -32,4 +32,5 @@ bool isError(Object*);
 bool isTruthy(Object*);
 Boolean* nativeToBoolean(bool);
 Object* newError(string);
+Object* unpackLoopBody(Loop*);
 Object* unwrapReturnValue(Object*);

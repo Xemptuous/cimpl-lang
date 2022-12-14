@@ -77,8 +77,11 @@ Loop::Loop(int loop, BlockStatement* body, shared_ptr<Environment> env) {
 
 Loop::~Loop() {
   delete this->body;
-  for (auto cnd : this->conditions)
-    delete cnd;
+  delete this->condition;
+  for (auto stmt : this->statements)
+    delete stmt;
+  for (auto expr : this->expressions)
+    delete expr;
 }
 
 Null::Null() { this->type = NULL_OBJ; }

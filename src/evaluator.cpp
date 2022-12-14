@@ -157,7 +157,7 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
       DoExpression* expr = static_cast<DoExpression*>(expr);
       Loop* loop = new Loop(doExpression, expr->body, env);
       env->gc.push_back(loop);
-      loop->conditions.push_back(expr->condition);
+      loop->condition = expr->condition;
       return evalLoop(loop);
       break;
     }
@@ -175,7 +175,7 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
         evalNode(stmt, loop->env);
       for (auto e : expr->expressions)
         loop->expressions.push_back(e);
-      loop->conditions.push_back(expr->condition);
+      loop->condition = expr->condition;
       return evalLoop(loop);
       break;
     }
@@ -259,7 +259,7 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
       WhileExpression* expr = static_cast<WhileExpression*>(expr);
       Loop* loop = new Loop(whileExpression, expr->body, env);
       env->gc.push_back(loop);
-      loop->conditions.push_back(expr->condition);
+      loop->condition = expr->condition;
       return evalLoop(loop);
       break;
     }
@@ -466,23 +466,30 @@ Object* evalIntegerInfixExpression(
 
 
 Object* evalLoop(Loop* loop) {
+  Object* cond = evalNode(loop->condition, loop->env);
+  Boolean* b = static_cast<Boolean*>(cond);
   switch (loop->loop_type) {
     case doExpression: {
-      Object* cond = evalNode(loop->condition, loop->env);
-      Boolean* b = static_cast<Boolean*>(cond);
       do {
-        for (auto stmt : loop->body->statements) {
-          Object* result = evalNode(stmt, loop->env);
-          if (result != nullptr && result->type == RETURN_OBJ)
-            return result;
-        }
+        unpackLoopBody(loop);
+        cond = evalNode(loop->condition, loop->env);
       } while (b->value);
       break;
     }
     case forExpression: {
+      while (cond) {
+        unpackLoopBody(loop);
+        for (auto expr : loop->expressions)
+          evalNode(expr, loop->env);
+        cond = evalNode(loop->condition, loop->env);
+      }
       break;
     }
     case whileExpression: {
+      while (cond) {
+        unpackLoopBody(loop);
+        cond = evalNode(loop->condition, loop->env);
+      }
       break;
     }
   }
@@ -709,6 +716,15 @@ Object* newError(string msg) {
 
 
 void setErrorGarbageCollector(shared_ptr<Environment> env) { err_gc = env; };
+
+
+Object* unpackLoopBody(Loop* loop) {
+  for (auto stmt : loop->body->statements) {
+    Object* result = evalNode(stmt, loop->env);
+    if (result != nullptr && result->type == RETURN_OBJ)
+      return result;
+  }
+}
 
 
 Object* unwrapReturnValue(Object* evaluated) {
