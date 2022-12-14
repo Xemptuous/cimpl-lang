@@ -69,15 +69,16 @@ Integer::Integer(int val) {
   this->type = INTEGER_OBJ;
 }
 
-Loop::Loop(int loop, ExpressionStatement* cond, BlockStatement* body) {
+Loop::Loop(int loop, BlockStatement* body, shared_ptr<Environment> env) {
   this->loop_type = loop;
-  this->condition = cond;
   this->body = body;
+  this->env = env;
 }
 
 Loop::~Loop() {
-  delete this->condition;
   delete this->body;
+  for (auto cnd : this->conditions)
+    delete cnd;
 }
 
 Null::Null() { this->type = NULL_OBJ; }

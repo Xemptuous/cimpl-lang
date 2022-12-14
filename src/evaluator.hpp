@@ -16,6 +16,7 @@ Object* evalIfExpression(IfExpression*, shared_ptr<Environment>);
 Object* evalIndexExpression(Object*, Object*, shared_ptr<Environment>);
 Object* evalInfixExpression(string, Object*, Object*, shared_ptr<Environment>);
 Object* evalIntegerInfixExpression(string, Object*, Object*, shared_ptr<Environment>);
+Object* evalLoop(Loop*);
 Object* evalMinusOperatorExpression(Object*, shared_ptr<Environment>);
 Object* evalNode(Node*, shared_ptr<Environment>);
 Object* evalPostfixExpression(string, Object*, shared_ptr<Environment>);

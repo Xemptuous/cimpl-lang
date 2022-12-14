@@ -321,11 +321,22 @@ ForExpression* Parser::parseForExpression() {
   
   int precedence;
   while (this->peekToken.type != TokenType.RPAREN) {
-    if (this->currentToken.type == TokenType.LET)
+    if (this->currentToken.type == TokenType.LET) {
       loop->statements.push_back(this->parseLetStatement());
+      continue;
+    }
+    precedence = currentPrecedence();
+    Expression* expr = parseExpression(precedence);
+    // loop->expressions.push_back(parseExpression(precedence));
+    if (expr->type == postfixExpression)
+      loop->expressions.push_back(expr);
+    else if (expr->type == booleanExpression)
+      loop->condition = expr;
     else {
-      precedence = currentPrecedence();
-      loop->expressions.push_back(parseExpression(precedence));
+      std::ostringstream ss;
+      ss << "Invalid for-loop construction\n";
+      this->errors.push_back(ss.str());
+      return nullptr;
     }
   }
   this->nextToken();

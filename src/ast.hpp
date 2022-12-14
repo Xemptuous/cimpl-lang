@@ -184,6 +184,7 @@ typedef struct ForExpression : Expression {
 
   Token token;
   std::vector<Statement*> statements;
+  Expression* condition;
   std::vector<Expression*> expressions;
   BlockStatement* body;
 

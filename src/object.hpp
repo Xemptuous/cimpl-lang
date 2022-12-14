@@ -194,10 +194,12 @@ class Integer : public Object {
 
 class Loop : public Object {
   public:
-    Loop(int, ExpressionStatement*, BlockStatement*);
+    Loop(int, BlockStatement*, shared_ptr<Environment>);
     ~Loop();
 
-    ExpressionStatement* condition;
+    Expression* condition;
+    vector<Expression*> expressions;
+    vector<Statement*> statements;
     BlockStatement* body;
     shared_ptr<Environment> env;
     int loop_type;

@@ -137,12 +137,12 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
       Array* newa = new Array(elements);
       env->gc.push_back(newa);
       return newa;
-    }   
+    }
     case booleanExpression: {
       BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
       Boolean* newb = nativeToBoolean(b->value);
       return newb;
-    }   
+    }
     case callExpression: {
       CallExpression* ce = static_cast<CallExpression*>(expr);
       Object* func = evalNode(ce->_function, env);
@@ -152,13 +152,33 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
       if (args.size() == 1 && isError(args[0]))
         return args[0];
       return applyFunction(func, args, env);
-    }   
+    }
+    case doExpression: {
+      DoExpression* expr = static_cast<DoExpression*>(expr);
+      Loop* loop = new Loop(doExpression, expr->body, env);
+      env->gc.push_back(loop);
+      loop->conditions.push_back(expr->condition);
+      return evalLoop(loop);
+      break;
+    }
     case floatLiteral: {
       FloatLiteral* f = static_cast<FloatLiteral*>(expr);
       Float* newf = new Float(f->value);
       env->gc.push_back(newf);
       return newf;
-    }   
+    }
+    case forExpression: {
+      ForExpression* expr = static_cast<ForExpression*>(expr);
+      Loop* loop = new Loop(forExpression, expr->body, env);
+      env->gc.push_back(loop);
+      for (auto stmt : expr->statements)
+        evalNode(stmt, loop->env);
+      for (auto e : expr->expressions)
+        loop->expressions.push_back(e);
+      loop->conditions.push_back(expr->condition);
+      return evalLoop(loop);
+      break;
+    }
     case functionLiteral: {
       FunctionLiteral* fl = static_cast<FunctionLiteral*>(expr);
       Function* newf = new Function(fl->parameters, fl->body, env);
@@ -174,12 +194,12 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
       IdentifierLiteral* i = static_cast<IdentifierLiteral*>(expr);
       Object* newi = evalIdentifier(i, env);
       return newi;
-    }   
+    }
     case ifExpression: {
       IfExpression* i = static_cast<IfExpression*>(expr);
       Object* cond = evalIfExpression(i, env);
       return cond;
-    }   
+    }
     case indexExpression: {
       IndexExpression* ie = static_cast<IndexExpression*>(expr);
       Object* left = evalNode(ie->_left, env);
@@ -200,13 +220,13 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
         return right;
       Object* ni = evalInfixExpression(i->_operator, left, right, env);
       return ni;
-    }   
+    }
     case integerLiteral: {
       IntegerLiteral* i = static_cast<IntegerLiteral*>(expr);
       Integer* newi = new Integer(i->value);
       env->gc.push_back(newi);
       return newi;
-    }   
+    }
     case postfixExpression: {
       PostfixExpression* p = static_cast<PostfixExpression*>(expr);
       Object* left = evalNode(p->_left, env);
@@ -228,13 +248,21 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
         return right;
       Object* np = evalPrefixExpression(p->_operator, right, env);
       return np;
-    }   
+    }
     case stringLiteral: {
       StringLiteral* s = static_cast<StringLiteral*>(expr);
       String* news = new String(s->value);
       env->gc.push_back(news);
       return news;
-    }   
+    }
+    case whileExpression: {
+      WhileExpression* expr = static_cast<WhileExpression*>(expr);
+      Loop* loop = new Loop(whileExpression, expr->body, env);
+      env->gc.push_back(loop);
+      loop->conditions.push_back(expr->condition);
+      return evalLoop(loop);
+      break;
+    }
   }
   return nullptr;
 }
@@ -433,6 +461,30 @@ Object* evalIntegerInfixExpression(
       ostringstream ss;
       ss << "Unknown operator: " << leftVal << op << rightVal;
       return newError(ss.str());
+  }
+}
+
+
+Object* evalLoop(Loop* loop) {
+  switch (loop->loop_type) {
+    case doExpression: {
+      Object* cond = evalNode(loop->condition, loop->env);
+      Boolean* b = static_cast<Boolean*>(cond);
+      do {
+        for (auto stmt : loop->body->statements) {
+          Object* result = evalNode(stmt, loop->env);
+          if (result != nullptr && result->type == RETURN_OBJ)
+            return result;
+        }
+      } while (b->value);
+      break;
+    }
+    case forExpression: {
+      break;
+    }
+    case whileExpression: {
+      break;
+    }
   }
 }
 
