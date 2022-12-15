@@ -468,31 +468,33 @@ Object* evalIntegerInfixExpression(
 Object* evalLoop(Loop* loop) {
   Object* cond = evalNode(loop->condition, loop->env);
   Boolean* b = static_cast<Boolean*>(cond);
+  Object* result = nullptr;
   switch (loop->loop_type) {
     case doExpression: {
       do {
-        unpackLoopBody(loop);
+        result = unpackLoopBody(loop);
         cond = evalNode(loop->condition, loop->env);
       } while (b->value);
-      break;
+      return result;
     }
     case forExpression: {
       while (cond) {
-        unpackLoopBody(loop);
+        result = unpackLoopBody(loop);
         for (auto expr : loop->expressions)
           evalNode(expr, loop->env);
         cond = evalNode(loop->condition, loop->env);
       }
-      break;
+      return result;
     }
     case whileExpression: {
       while (cond) {
-        unpackLoopBody(loop);
+        result = unpackLoopBody(loop);
         cond = evalNode(loop->condition, loop->env);
       }
-      break;
+      return result;
     }
   }
+  return newError("Not a valid loop type.");
 }
 
 
@@ -724,6 +726,7 @@ Object* unpackLoopBody(Loop* loop) {
     if (result != nullptr && result->type == RETURN_OBJ)
       return result;
   }
+  return nullptr;
 }
 
 
