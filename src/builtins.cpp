@@ -48,7 +48,8 @@ Object* built_in_len(vector<Object*> args, shared_ptr<Environment> env) {
   return nullptr;
 }
 
-
+// TODO: change print method to account for loops and blocks
+// compared to feature/ncurses branch version
 Object* built_in_print(vector<Object*> args, shared_ptr<Environment> env) {
   for (auto arg : args)
     cout << arg->inspectObject() << '\n';
