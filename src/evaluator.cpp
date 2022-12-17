@@ -256,10 +256,10 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
       return news;
     }
     case whileExpression: {
-      WhileExpression* expr = static_cast<WhileExpression*>(expr);
-      Loop* loop = new Loop(whileExpression, expr->body, env);
+      WhileExpression* wexpr = dynamic_cast<WhileExpression*>(expr);
+      Loop* loop = new Loop(whileExpression, wexpr->body, env);
+      loop->condition = wexpr->condition;
       env->gc.push_back(loop);
-      loop->condition = expr->condition;
       return evalLoop(loop);
       break;
     }
@@ -467,6 +467,9 @@ Object* evalIntegerInfixExpression(
 
 Object* evalLoop(Loop* loop) {
   Object* cond = evalNode(loop->condition, loop->env);
+  if (isError(cond))
+    return cond;
+
   Boolean* b = static_cast<Boolean*>(cond);
   Object* result = nullptr;
   switch (loop->loop_type) {
@@ -478,18 +481,20 @@ Object* evalLoop(Loop* loop) {
       return result;
     }
     case forExpression: {
-      while (cond) {
+      while (b->value) {
         result = unpackLoopBody(loop);
         for (auto expr : loop->expressions)
           evalNode(expr, loop->env);
         cond = evalNode(loop->condition, loop->env);
+        b = static_cast<Boolean*>(cond);
       }
       return result;
     }
     case whileExpression: {
-      while (cond) {
+      while (b->value) {
         result = unpackLoopBody(loop);
         cond = evalNode(loop->condition, loop->env);
+        b = static_cast<Boolean*>(cond);
       }
       return result;
     }
@@ -608,6 +613,7 @@ Object* evalStatements(Statement* stmt, shared_ptr<Environment> env = nullptr) {
         if (result != nullptr && result->type == RETURN_OBJ)
           return result;
       }
+      return nullptr;
     }
     case expressionStatement: {
       ExpressionStatement* es = static_cast<ExpressionStatement*>(stmt);

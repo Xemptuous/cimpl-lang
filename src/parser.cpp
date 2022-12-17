@@ -219,6 +219,9 @@ Expression* Parser::parseExpression(int precedence) {
 
   Expression* leftExp = this->parseLeftPrefix(prefix->second);
   if (leftExp == nullptr) {
+    std::ostringstream ss;
+    ss << "Left expression is invalid.\n";
+    this->errors.push_back(ss.str());
     return nullptr;
   }
   leftExp->setDataType(leftExp->token.literal);
