@@ -168,6 +168,7 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
       return newf;
     }
     case forExpression: {
+      cout << "in forExpression\n";
       ForExpression* expr = static_cast<ForExpression*>(expr);
       Loop* loop = new Loop(forExpression, expr->body, env);
       env->gc.push_back(loop);
@@ -176,6 +177,7 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
       for (auto e : expr->expressions)
         loop->expressions.push_back(e);
       loop->condition = expr->condition;
+      cout << "entering evalLoop\n";
       return evalLoop(loop);
       break;
     }

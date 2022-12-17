@@ -65,6 +65,7 @@ class Parser {
     std::vector<Expression*> parseExpressionList(std::string);
     FloatLiteral* parseFloatLiteral();
     ForExpression* parseForExpression();
+    LetStatement* parseForLetStatement();
     FunctionLiteral* parseFunctionLiteral();
     std::vector<IdentifierLiteral*> parseFunctionParameters();
     Expression* parseGroupedExpression();

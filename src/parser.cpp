@@ -313,7 +313,9 @@ FloatLiteral* Parser::parseFloatLiteral() {
 
   return expr;
 }
-
+// for (i in 0..10) {}
+// for (i in 0..10..1) {}
+// for (i,j in 0..10)
 
 ForExpression* Parser::parseForExpression() {
   ForExpression* loop = new ForExpression;
@@ -321,35 +323,68 @@ ForExpression* Parser::parseForExpression() {
 
   if (!expectPeek(TokenType.LPAREN))
     return nullptr;
-  
-  int precedence;
-  while (this->peekToken.type != TokenType.RPAREN) {
-    if (this->currentToken.type == TokenType.LET) {
-      loop->statements.push_back(this->parseLetStatement());
-      continue;
-    }
-    precedence = currentPrecedence();
-    Expression* expr = parseExpression(precedence);
-    // loop->expressions.push_back(parseExpression(precedence));
-    if (expr->type == postfixExpression)
-      loop->expressions.push_back(expr);
-    else if (expr->type == booleanExpression)
-      loop->condition = expr;
-    else {
-      std::ostringstream ss;
-      ss << "Invalid for-loop construction\n";
-      this->errors.push_back(ss.str());
-      return nullptr;
-    }
-  }
+
   this->nextToken();
 
-  if (!expectPeek(TokenType.LBRACE))
-    return nullptr;
-  loop->body = parseBlockStatement();
+  std::vector<LetStatement*> statements{};
 
-  if (!expectPeek(TokenType.RBRACE))
+  while (this->currentToken.type != TokenType.IN) {
+    LetStatement* stmt = new LetStatement;
+    stmt->setStatementNode(this->currentToken);
+    stmt->name = this->parseIdentifier();
+    statements.push_back(stmt);
+    this->nextToken();
+  }
+
+  if (!(expectPeek(TokenType.INT)))
     return nullptr;
+
+  Expression* start = this->parseIntegerLiteral();
+  loop->start = start;
+  for (auto stmt : statements) {
+    stmt->value = start;
+  }
+  if (!(expectPeek(TokenType.COMMA)))
+    return nullptr;
+  if (!(expectPeek(TokenType.COMMA)))
+    return nullptr;
+  if (this->currentToken.type != TokenType.INT)
+    return nullptr;
+
+  Expression* end = this->parseIntegerLiteral();
+  Expression* increment = nullptr;
+  loop->end = end;
+
+  if (this->peekToken.type == TokenType.RPAREN) {
+    IntegerLiteral* inc = new IntegerLiteral;
+    inc->token.type = TokenType.INT;
+    inc->token.literal = "1";
+    inc->value = 1;
+    increment = inc;
+  }
+  else if (this->peekToken.type == TokenType.COMMA) {
+    this->nextToken();
+    if (!(expectPeek(TokenType.COMMA)))
+      return nullptr;
+    if (this->currentToken.type != TokenType.INT)
+      return nullptr;
+    increment = this->parseIntegerLiteral();
+    if (this->peekToken.type != TokenType.RPAREN)
+      return nullptr;
+  }
+  else {
+    std::ostringstream ss;
+    ss << "Could not parse for-loop";
+    this->errors.push_back(ss.str());
+    return nullptr;
+  }
+  loop->increment = increment;
+
+  this->nextToken();
+  if (!(expectPeek(TokenType.LBRACE)))
+    return nullptr;
+
+  loop->body = this->parseBlockStatement();
 
   return loop;
 }
