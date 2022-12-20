@@ -341,9 +341,8 @@ ForExpression* Parser::parseForExpression() {
 
   Expression* start = this->parseIntegerLiteral();
   loop->start = start;
-  for (auto stmt : statements) {
-    stmt->value = start;
-  }
+
+
   if (!(expectPeek(TokenType.COMMA)))
     return nullptr;
   if (!(expectPeek(TokenType.COMMA)))
@@ -354,6 +353,18 @@ ForExpression* Parser::parseForExpression() {
   Expression* end = this->parseIntegerLiteral();
   Expression* increment = nullptr;
   loop->end = end;
+
+  std::vector<PostfixExpression*> exprs;
+  for (auto stmt : statements) {
+    stmt->value = start;
+    PostfixExpression* ps = parsePostfixExpression(stmt->name);
+    if (static_cast<IntegerLiteral*>(start)->value > static_cast<IntegerLiteral*>(end)->value)
+      ps->_operator = "--";
+    else ps->_operator = "++";
+    exprs.push_back(ps);
+  }
+  for (auto ex : exprs)
+    loop->expressions.push_back(ex);
 
   if (this->peekToken.type == TokenType.RPAREN) {
     IntegerLiteral* inc = new IntegerLiteral;

@@ -186,8 +186,8 @@ typedef struct ForExpression : Expression {
   Expression* start;
   Expression* end;
   Expression* increment;
-  std::vector<Statement*> statements;
   std::vector<Expression*> expressions;
+  std::vector<Statement*> statements;
   BlockStatement* body;
 
 } ForExpression;

@@ -172,11 +172,11 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
       ForExpression* expr = static_cast<ForExpression*>(expr);
       Loop* loop = new Loop(forExpression, expr->body, env);
       env->gc.push_back(loop);
+      loop->start = static_cast<Integer*>(evalNode(expr->start, env));
+      loop->end = static_cast<Integer*>(evalNode(expr->end, env));
+      loop->increment = static_cast<Integer*>(evalNode(expr->increment, env));
       for (auto stmt : expr->statements)
         evalNode(stmt, loop->env);
-      for (auto e : expr->expressions)
-        loop->expressions.push_back(e);
-      loop->condition = expr->condition;
       cout << "entering evalLoop\n";
       return evalLoop(loop);
       break;
@@ -483,7 +483,7 @@ Object* evalLoop(Loop* loop) {
       return result;
     }
     case forExpression: {
-      while (b->value) {
+      for (int i = loop->start->value; i < loop->end->value; i++) {
         result = unpackLoopBody(loop);
         for (auto expr : loop->expressions)
           evalNode(expr, loop->env);

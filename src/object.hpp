@@ -197,6 +197,9 @@ class Loop : public Object {
     Loop(int, BlockStatement*, shared_ptr<Environment>);
     ~Loop();
 
+    Integer* start;
+    Integer* end;
+    Integer* increment;
     Expression* condition;
     vector<Expression*> expressions;
     vector<Statement*> statements;
