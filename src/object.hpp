@@ -203,6 +203,9 @@ class Loop : public Object {
     BlockStatement* body;
     shared_ptr<Environment> env;
     int loop_type;
+    int start;
+    int end;
+    int increment;
 };
 
 

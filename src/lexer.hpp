@@ -20,6 +20,7 @@ class Lexer {
     void readChar();
     std::string readBlockComment();
     std::string readComment();
+    std::string readDecimal();
     std::string readIdentifier();
     std::string readNumber();
     std::string readString();

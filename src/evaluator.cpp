@@ -155,7 +155,7 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
     }
     case doExpression: {
       DoExpression* expr = static_cast<DoExpression*>(expr);
-      Loop* loop = new Loop(doExpression, expr->body, env);
+      Loop* loop = new Loop(doLoop, expr->body, env);
       env->gc.push_back(loop);
       loop->condition = expr->condition;
       return evalLoop(loop);
@@ -170,13 +170,15 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
     case forExpression: {
       cout << "in forExpression\n";
       ForExpression* expr = static_cast<ForExpression*>(expr);
-      Loop* loop = new Loop(forExpression, expr->body, env);
+      Loop* loop = new Loop(forLoop, expr->body, env);
       env->gc.push_back(loop);
+      loop->start = static_cast<IntegerLiteral*>(expr->start)->value;
+      loop->end = static_cast<IntegerLiteral*>(expr->end)->value;
+      loop->increment = static_cast<IntegerLiteral*>(expr->increment)->value;
       for (auto stmt : expr->statements)
         evalNode(stmt, loop->env);
       for (auto e : expr->expressions)
         loop->expressions.push_back(e);
-      loop->condition = expr->condition;
       cout << "entering evalLoop\n";
       return evalLoop(loop);
       break;
@@ -259,7 +261,7 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
     }
     case whileExpression: {
       WhileExpression* wexpr = dynamic_cast<WhileExpression*>(expr);
-      Loop* loop = new Loop(whileExpression, wexpr->body, env);
+      Loop* loop = new Loop(whileLoop, wexpr->body, env);
       loop->condition = wexpr->condition;
       env->gc.push_back(loop);
       return evalLoop(loop);
@@ -475,24 +477,19 @@ Object* evalLoop(Loop* loop) {
   Boolean* b = static_cast<Boolean*>(cond);
   Object* result = nullptr;
   switch (loop->loop_type) {
-    case doExpression: {
+    case doLoop: {
       do {
         result = unpackLoopBody(loop);
         cond = evalNode(loop->condition, loop->env);
       } while (b->value);
       return result;
     }
-    case forExpression: {
-      while (b->value) {
+    case forLoop: {
+      for (int i = loop->start; i < loop->end; i += loop->increment)
         result = unpackLoopBody(loop);
-        for (auto expr : loop->expressions)
-          evalNode(expr, loop->env);
-        cond = evalNode(loop->condition, loop->env);
-        b = static_cast<Boolean*>(cond);
-      }
       return result;
     }
-    case whileExpression: {
+    case whileLoop: {
       while (b->value) {
         result = unpackLoopBody(loop);
         cond = evalNode(loop->condition, loop->env);

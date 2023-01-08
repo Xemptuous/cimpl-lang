@@ -313,9 +313,10 @@ FloatLiteral* Parser::parseFloatLiteral() {
 
   return expr;
 }
-// for (i in 0..10) {}
-// for (i in 0..10..1) {}
-// for (i,j in 0..10)
+// for (i in 0:10) {}
+// for (i in 0:10:1) {}
+// for (i in 0:10:1) {}
+// for (i,j in 0:10)
 
 ForExpression* Parser::parseForExpression() {
   ForExpression* loop = new ForExpression;
@@ -344,9 +345,7 @@ ForExpression* Parser::parseForExpression() {
   for (auto stmt : statements) {
     stmt->value = start;
   }
-  if (!(expectPeek(TokenType.COMMA)))
-    return nullptr;
-  if (!(expectPeek(TokenType.COMMA)))
+  if (!(expectPeek(TokenType.COLON)))
     return nullptr;
   if (this->currentToken.type != TokenType.INT)
     return nullptr;
@@ -354,18 +353,17 @@ ForExpression* Parser::parseForExpression() {
   Expression* end = this->parseIntegerLiteral();
   Expression* increment = nullptr;
   loop->end = end;
+  this->nextToken();
 
-  if (this->peekToken.type == TokenType.RPAREN) {
+  if (this->currentToken.type == TokenType.RPAREN) {
     IntegerLiteral* inc = new IntegerLiteral;
     inc->token.type = TokenType.INT;
     inc->token.literal = "1";
     inc->value = 1;
     increment = inc;
   }
-  else if (this->peekToken.type == TokenType.COMMA) {
+  else if (this->currentToken.type == TokenType.COLON) {
     this->nextToken();
-    if (!(expectPeek(TokenType.COMMA)))
-      return nullptr;
     if (this->currentToken.type != TokenType.INT)
       return nullptr;
     increment = this->parseIntegerLiteral();

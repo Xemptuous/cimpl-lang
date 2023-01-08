@@ -3,7 +3,7 @@
 
 using namespace std;
 void start(string, shared_ptr<Environment>);
-// void setEnvironment(shared_ptr<Environment> env);
+void setEnvironment(shared_ptr<Environment> env);
 
 
 int main() {

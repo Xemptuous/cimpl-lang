@@ -173,7 +173,7 @@ Token Lexer::evaluateNumber() {
   Token tok;
   string result = this->readNumber();
   tok.literal = result;
-  // if number has decimal (is float)
+  // if number has decimal
   if (result.find('.') != string::npos) {
     int c = count(result.begin(), result.end(), '.');
     // if multiple decimals, illegal
