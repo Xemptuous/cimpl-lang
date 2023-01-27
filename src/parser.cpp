@@ -133,7 +133,9 @@ AssignmentExpressionStatement* Parser::parseAssignmentExpression() {
   expr->value = this->parseExpression(precedence);
 
   // Read to end of line/file
-  while (this->currentToken.type != TokenType.SEMICOLON) {
+  while (this->currentToken.type != TokenType.SEMICOLON || 
+         this->currentToken.type != TokenType.RBRACE
+    ) {
     if (this->currentToken.type == TokenType._EOF) {
       std::ostringstream ss;
       ss << "No Semicolon present at end of line for " << StatementMap.at(expr->type) << 
@@ -183,23 +185,27 @@ CallExpression* Parser::parseCallExpression(Expression* func) {
 
 DoExpression* Parser::parseDoExpression() {
   DoExpression* expr = new DoExpression;
+  expr->setExpressionNode(this->currentToken);
 
-  if (!expectPeek(TokenType.LBRACE))
+  if (!expectPeek(TokenType.LBRACE)) {
+    std::cout << "LBRACE EXPECT FAIL\n";
     return nullptr;
+  }
 
-  expr->body = parseBlockStatement();
+  expr->body = this->parseBlockStatement();
 
-  if (!expectPeek(TokenType.RBRACE))
+  if (!expectPeek(TokenType.WHILE)) {
+    std::cout << "WHILE EXPECT FAIL\n";
     return nullptr;
+  }
 
-  if (this->currentToken.literal != "while")
+  if (!expectPeek(TokenType.LPAREN)) {
+    std::cout << "LBRACE EXPECT FAIL\n";
     return nullptr;
+  }
   this->nextToken();
 
-  if (!expectPeek(TokenType.LPAREN))
-    return nullptr;
-
-  expr->condition = parseExpression(Precedences.LOWEST);
+  expr->condition = this->parseExpression(Precedences.LOWEST);
 
   if (!expectPeek(TokenType.RPAREN))
     return nullptr;
