@@ -481,6 +481,7 @@ Object* evalLoop(Loop* loop) {
       do {
         result = unpackLoopBody(loop);
         cond = evalNode(loop->condition, loop->env);
+        b = static_cast<Boolean*>(cond);
       } while (b->value);
       return result;
     }
