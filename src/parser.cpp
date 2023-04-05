@@ -335,7 +335,6 @@ ForExpression* Parser::parseForExpression() {
   this->nextToken();
 
   std::vector<LetStatement*> statements{};
-
   while (this->currentToken.type != TokenType.IN) {
     LetStatement* stmt = new LetStatement;
     stmt->setStatementNode(this->currentToken);
@@ -354,7 +353,7 @@ ForExpression* Parser::parseForExpression() {
   }
   if (!(expectPeek(TokenType.COLON)))
     return nullptr;
-  if (this->currentToken.type != TokenType.INT)
+  if (!(expectPeek(TokenType.INT)))
     return nullptr;
 
   Expression* end = this->parseIntegerLiteral();
@@ -385,7 +384,6 @@ ForExpression* Parser::parseForExpression() {
   }
   loop->increment = increment;
 
-  this->nextToken();
   if (!(expectPeek(TokenType.LBRACE)))
     return nullptr;
 
