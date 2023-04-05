@@ -17,7 +17,7 @@ start:
     getline(cin, input);
     if (input == "quit") {
       system("clear");
-      for (int i = 0; i < env->gc.size() - 1; i++) 
+      for (int i = env->gc.size() - 1; i >= 0; i--) 
         delete[] env->gc[i];
       return 0;
     }

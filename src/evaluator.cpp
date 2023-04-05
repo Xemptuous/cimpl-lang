@@ -168,7 +168,6 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
       return newf;
     }
     case forExpression: {
-      cout << "in forExpression\n";
       ForExpression* expr = static_cast<ForExpression*>(expr);
       Loop* loop = new Loop(forLoop, expr->body, env);
       env->gc.push_back(loop);
@@ -179,7 +178,6 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
         evalNode(stmt, loop->env);
       for (auto e : expr->expressions)
         loop->expressions.push_back(e);
-      cout << "entering evalLoop\n";
       return evalLoop(loop);
       break;
     }
@@ -470,9 +468,10 @@ Object* evalIntegerInfixExpression(
 
 
 Object* evalLoop(Loop* loop) {
-  Object* cond = evalNode(loop->condition, loop->env);
-  if (isError(cond))
-    return cond;
+  Object* cond = nullptr;
+  if (!(loop->loop_type == forLoop))
+    Object* cond = evalNode(loop->condition, loop->env);
+  if (isError(cond)) return cond;
 
   Boolean* b = static_cast<Boolean*>(cond);
   Object* result = nullptr;
@@ -486,6 +485,7 @@ Object* evalLoop(Loop* loop) {
       return result;
     }
     case forLoop: {
+      // FIXME: print() not working inside block; other statements are
       for (int i = loop->start; i < loop->end; i += loop->increment)
         result = unpackLoopBody(loop);
       return result;
