@@ -133,9 +133,10 @@ AssignmentExpressionStatement* Parser::parseAssignmentExpression() {
   expr->value = this->parseExpression(precedence);
 
   // Read to end of line/file
-  while (this->currentToken.type != TokenType.SEMICOLON || 
-         this->currentToken.type != TokenType.RBRACE
-    ) {
+  while (1) {
+    if (this->currentToken.type == TokenType.SEMICOLON || this->currentToken.type == TokenType.RBRACE) {
+      break;
+    }
     if (this->currentToken.type == TokenType._EOF) {
       std::ostringstream ss;
       ss << "No Semicolon present at end of line for " << StatementMap.at(expr->type) << 
