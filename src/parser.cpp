@@ -159,9 +159,9 @@ BlockStatement* Parser::parseBlockStatement() {
   while (this->currentToken.type != TokenType.RBRACE && this->currentToken.type != TokenType._EOF) {
     Statement* stmt = this->parseStatement();
 
-    if (stmt != nullptr) {
+    if (stmt != nullptr)
       block->statements.push_back(stmt);
-    }
+
     this->nextToken();
   }
   return block;
@@ -208,9 +208,12 @@ DoExpression* Parser::parseDoExpression() {
 
   expr->condition = this->parseExpression(Precedences.LOWEST);
 
-  if (!expectPeek(TokenType.RPAREN))
+  if (!expectPeek(TokenType.RPAREN)) {
+    std::cout << "RPAREN EXPECT FAIL\n";
     return nullptr;
+  }
 
+  std::cout << "PARSER RETURNING\n";
   return expr;
 }
 

@@ -154,10 +154,10 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
       return applyFunction(func, args, env);
     }
     case doExpression: {
-      DoExpression* expr = static_cast<DoExpression*>(expr);
-      Loop* loop = new Loop(doLoop, expr->body, env);
+      DoExpression* de = static_cast<DoExpression*>(expr);
+      Loop* loop = new Loop(doLoop, de->body, env);
       env->gc.push_back(loop);
-      loop->condition = expr->condition;
+      loop->condition = de->condition;
       return evalLoop(loop);
       break;
     }
