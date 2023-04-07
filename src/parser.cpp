@@ -189,19 +189,16 @@ DoExpression* Parser::parseDoExpression() {
   expr->setExpressionNode(this->currentToken);
 
   if (!expectPeek(TokenType.LBRACE)) {
-    std::cout << "LBRACE EXPECT FAIL\n";
     return nullptr;
   }
 
   expr->body = this->parseBlockStatement();
 
   if (!expectPeek(TokenType.WHILE)) {
-    std::cout << "WHILE EXPECT FAIL\n";
     return nullptr;
   }
 
   if (!expectPeek(TokenType.LPAREN)) {
-    std::cout << "LBRACE EXPECT FAIL\n";
     return nullptr;
   }
   this->nextToken();
@@ -209,11 +206,9 @@ DoExpression* Parser::parseDoExpression() {
   expr->condition = this->parseExpression(Precedences.LOWEST);
 
   if (!expectPeek(TokenType.RPAREN)) {
-    std::cout << "RPAREN EXPECT FAIL\n";
     return nullptr;
   }
 
-  std::cout << "PARSER RETURNING\n";
   return expr;
 }
 
@@ -353,6 +348,8 @@ ForExpression* Parser::parseForExpression() {
   loop->start = start;
   for (auto stmt : statements) {
     stmt->value = start;
+    // loop->statements.push_back(dynamic_cast<Statement*>(stmt));
+    loop->statements.push_back(stmt);
   }
   if (!(expectPeek(TokenType.COLON)))
     return nullptr;

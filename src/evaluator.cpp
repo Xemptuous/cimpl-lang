@@ -168,16 +168,16 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
       return newf;
     }
     case forExpression: {
-      ForExpression* expr = static_cast<ForExpression*>(expr);
-      Loop* loop = new Loop(forLoop, expr->body, env);
+      ForExpression* fe = dynamic_cast<ForExpression*>(expr);
+      Loop* loop = new Loop(forLoop, fe->body, env);
       env->gc.push_back(loop);
-      loop->start = static_cast<IntegerLiteral*>(expr->start)->value;
-      loop->end = static_cast<IntegerLiteral*>(expr->end)->value;
-      loop->increment = static_cast<IntegerLiteral*>(expr->increment)->value;
-      for (auto stmt : expr->statements)
+      loop->start = static_cast<IntegerLiteral*>(fe->start)->value;
+      loop->end = static_cast<IntegerLiteral*>(fe->end)->value;
+      loop->increment = static_cast<IntegerLiteral*>(fe->increment)->value;
+      for (auto stmt : fe->statements) {
         evalNode(stmt, loop->env);
-      for (auto e : expr->expressions)
-        loop->expressions.push_back(e);
+        loop->statements.push_back(stmt);
+      }
       return evalLoop(loop);
       break;
     }
@@ -470,7 +470,7 @@ Object* evalIntegerInfixExpression(
 Object* evalLoop(Loop* loop) {
   Object* cond = nullptr;
   if (!(loop->loop_type == forLoop))
-    Object* cond = evalNode(loop->condition, loop->env);
+    cond = evalNode(loop->condition, loop->env);
   if (isError(cond)) return cond;
 
   Boolean* b = static_cast<Boolean*>(cond);
@@ -485,9 +485,11 @@ Object* evalLoop(Loop* loop) {
       return result;
     }
     case forLoop: {
-      // FIXME: print() not working inside block; other statements are
-      for (int i = loop->start; i < loop->end; i += loop->increment)
+      for (int i = loop->start; i < loop->end; i += loop->increment) {
         result = unpackLoopBody(loop);
+        for (auto stmt : loop->statements)
+          dynamic_cast<Integer*>(loop->env->get(stmt->token.literal))->value += loop->increment;
+      }
       return result;
     }
     case whileLoop: {
@@ -517,7 +519,7 @@ Object* evalMinusOperatorExpression(Object* right, shared_ptr<Environment> env) 
 }
 
 
-Object* evalNode(Node* node, shared_ptr<Environment> env = nullptr) {
+Object* evalNode(Node* node, shared_ptr<Environment> env) {
   if (node->nodetype == statement) {
     Statement* stmt = static_cast<Statement*>(node);
     return evalStatements(stmt, env);

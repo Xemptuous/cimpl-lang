@@ -11,7 +11,7 @@ AST::AST(string input) {
 AST::~AST() {
   delete this->parser;
   for (int i = 0; i < this->Statements.size() - 1; i++) {
-    delete[] this->Statements[i];
+    delete this->Statements[i];
   }
 }
 
@@ -51,7 +51,8 @@ BlockStatement::BlockStatement() {
 
 BlockStatement::~BlockStatement() {
   for (auto stmt : this->statements)
-    delete stmt;
+  for (int i = this->statements.size() - 1; i >= 0; i--)
+    delete this->statements[i];
 }
 
 
@@ -70,7 +71,7 @@ CallExpression::CallExpression() {
 CallExpression::~CallExpression() {
   delete this->_function;
   for (int i = 0; i < this->arguments.size() - 1; i++)
-    delete[] this->arguments[i];
+    delete this->arguments[i];
 }
 
 DoExpression::DoExpression() {
@@ -127,7 +128,7 @@ FunctionLiteral::~FunctionLiteral() {
   delete this->body;
   delete this->name;
   for (int i = 0; i < this->parameters.size() - 1; i++)
-    delete[] this->parameters[i];
+    delete this->parameters[i];
 }
 
 
@@ -141,7 +142,7 @@ FunctionStatement::~FunctionStatement() {
   delete this->body;
   delete this->name;
   for (int i = 0; i < this->parameters.size() - 1; i++)
-    delete[] this->parameters[i];
+    delete this->parameters[i];
 }
 
 
