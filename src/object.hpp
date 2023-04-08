@@ -163,7 +163,6 @@ class Function : public Object {
 
 class Hash : public Object {
   public:
-    // unordered_map<HashKey*, HashPair*> pairs{};
     unordered_map<size_t, HashPair*> pairs{};
 
     inline string inspectType() { return ObjectType.HASH_OBJ; };

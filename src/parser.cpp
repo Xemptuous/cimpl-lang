@@ -1,6 +1,5 @@
 #include "ast.hpp"
 #include <sstream>
-#include <iostream>
 
 Parser::Parser(std::string input) {
   this->lexer = new Lexer(input);
@@ -318,10 +317,6 @@ FloatLiteral* Parser::parseFloatLiteral() {
 
   return expr;
 }
-// for (i in 0:10) {}
-// for (i in 0:10:1) {}
-// for (i in 0:10:1) {}
-// for (i,j in 0:10)
 
 ForExpression* Parser::parseForExpression() {
   ForExpression* loop = new ForExpression;
@@ -348,7 +343,6 @@ ForExpression* Parser::parseForExpression() {
   loop->start = start;
   for (auto stmt : statements) {
     stmt->value = start;
-    // loop->statements.push_back(dynamic_cast<Statement*>(stmt));
     loop->statements.push_back(stmt);
   }
   if (!(expectPeek(TokenType.COLON)))

@@ -23,11 +23,6 @@ void start(string input, shared_ptr<Environment> env) {
   for (Statement* stmt : ast->Statements) {
     Object* evaluated = evalNode(stmt, env);
     if (evaluated != nullptr) {
-      // if (evaluated->type == RETURN_OBJ) {
-      //   ReturnValue* result = static_cast<ReturnValue*>(evaluated);
-      //   cout << result->value->inspectObject() << '\n';
-      //   continue;
-      // }
       if (evaluated->type == ERROR_OBJ) {
         Error* result = static_cast<Error*>(evaluated);
         cout << result->message << '\n';

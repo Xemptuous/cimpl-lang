@@ -1,6 +1,5 @@
 #include "evaluator.hpp"
 #include "builtins.hpp"
-#include <iostream>
 
 using namespace std;
 
@@ -184,7 +183,7 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
     case functionLiteral: {
       FunctionLiteral* fl = static_cast<FunctionLiteral*>(expr);
       Function* newf = new Function(fl->parameters, fl->body, env);
-      // env->gc.push_back(newf);
+      env->gc.push_back(newf);
       env->set(fl->name->value, newf);
       break;
     }
@@ -293,9 +292,7 @@ Object* evalHashIndexExpression(Object* hash, Object* index) {
 
 
 Object* evalHashLiteral(HashLiteral* expr, shared_ptr<Environment> env) {
-  // unordered_map<HashKey*, HashPair*> pairs;
   unordered_map<size_t, HashPair*> pairs;
-  // HashKey* hashed = nullptr;
   size_t hashed;
   for (pair<Expression*, Expression*> el : expr->pairs) {
     Object* key = evalNode(el.first, env);
