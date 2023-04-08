@@ -69,6 +69,21 @@ Integer::Integer(int val) {
   this->type = INTEGER_OBJ;
 }
 
+Loop::Loop(int loop, BlockStatement* body, shared_ptr<Environment> env) {
+  this->loop_type = loop;
+  this->body = body;
+  this->env = env;
+}
+
+Loop::~Loop() {
+  delete this->body;
+  delete this->condition;
+  for (auto stmt : this->statements)
+    delete stmt;
+  for (auto expr : this->expressions)
+    delete expr;
+}
+
 Null::Null() { this->type = NULL_OBJ; }
 
 ReturnValue::ReturnValue(Object* obj) {

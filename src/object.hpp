@@ -32,6 +32,7 @@ enum ObjectEnum {
   HASH_OBJ,
   IDENT_OBJ,
   INTEGER_OBJ,
+  LOOP_OBJ,
   NULL_OBJ,
   OBJECT_OBJ,
   RETURN_OBJ,
@@ -45,6 +46,13 @@ enum FunctionEnum {
 };
 
 
+enum LoopEnum {
+  doLoop,
+  whileLoop,
+  forLoop
+};
+
+
 const struct Objecttype {
   string ARRAY_OBJ = {"ARRAY"};
   string BOOLEAN_OBJ = {"BOOLEAN"};
@@ -55,6 +63,7 @@ const struct Objecttype {
   string HASH_OBJ = {"HASH"};
   string IDENT_OBJ = {"IDENT"};
   string INTEGER_OBJ = {"INTEGER"};
+  string LOOP_OBJ = {"LOOP"};
   string NULL_OBJ = {"NULL"};
   string OBJECT_OBJ = {"OBJECT"};
   string RETURN_OBJ = {"RETURN"};
@@ -154,7 +163,6 @@ class Function : public Object {
 
 class Hash : public Object {
   public:
-    // unordered_map<HashKey*, HashPair*> pairs{};
     unordered_map<size_t, HashPair*> pairs{};
 
     inline string inspectType() { return ObjectType.HASH_OBJ; };
@@ -180,6 +188,23 @@ class Integer : public Object {
 
     string inspectType();
     string inspectObject();
+};
+
+
+class Loop : public Object {
+  public:
+    Loop(int, BlockStatement*, shared_ptr<Environment>);
+    ~Loop();
+
+    Expression* condition;
+    vector<Expression*> expressions;
+    vector<Statement*> statements;
+    BlockStatement* body;
+    shared_ptr<Environment> env;
+    int loop_type;
+    int start;
+    int end;
+    int increment;
 };
 
 

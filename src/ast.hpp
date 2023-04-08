@@ -4,35 +4,39 @@
 
 
 enum NodeType{
-  statement,
   expression,
+  statement,
 };
 
 enum StatementType {
-  identifierStatement,
+  assignmentExpressionStatement,
+  blockStatement,
+  expressionStatement,
   functionStatement,
+  identifierStatement,
   letStatement,
   returnStatement,
-  expressionStatement,
-  blockStatement,
-  assignmentExpressionStatement,
 };
 
 
 enum ExpressionType {
-  integerLiteral,
-  floatLiteral,
-  booleanExpression,
-  stringLiteral,
-  identifier,
-  prefixExpression,
-  infixExpression,
-  ifExpression,
-  functionLiteral,
-  callExpression,
   arrayLiteral,
-  indexExpression,
+  booleanExpression,
+  callExpression,
+  doExpression,
+  floatLiteral,
+  forExpression,
+  functionLiteral,
   hashLiteral,
+  identifier,
+  ifExpression,
+  indexExpression,
+  infixExpression,
+  integerLiteral,
+  postfixExpression,
+  prefixExpression,
+  stringLiteral,
+  whileExpression,
 };
 
 
@@ -141,6 +145,17 @@ typedef struct CallExpression : Expression {
 } CallExpression;
 
 
+typedef struct DoExpression : Expression {
+  DoExpression();
+  ~DoExpression();
+
+  Token token;
+  BlockStatement* body;
+  Expression* condition;
+
+} DoExpression;
+
+
 typedef struct ExpressionStatement : Statement {
   ExpressionStatement();
   ~ExpressionStatement();
@@ -161,6 +176,21 @@ typedef struct FloatLiteral : Expression {
   void setExpressionNode(Token);
   inline std::string printString() { return std::to_string(this->value); };
 } FloatLiteral;
+
+
+typedef struct ForExpression : Expression {
+  ForExpression();
+  ~ForExpression();
+
+  Token token;
+  Expression* start;
+  Expression* end;
+  Expression* increment;
+  std::vector<Expression*> expressions;
+  std::vector<Statement*> statements;
+  BlockStatement* body;
+
+} ForExpression;
 
 
 typedef struct FunctionLiteral : Expression {
@@ -288,6 +318,19 @@ typedef struct LetStatement : Statement {
 } LetStatement;
 
 
+typedef struct PostfixExpression : Expression {
+  PostfixExpression();
+  ~PostfixExpression();
+
+  Token token;
+  std::string _operator;
+  Expression* _left;
+
+  void setExpressionNode(Token);
+  std::string printString();
+} PostfixExpression;
+
+
 typedef struct PrefixExpression : Expression {
   PrefixExpression();
   ~PrefixExpression();
@@ -321,6 +364,17 @@ typedef struct StringLiteral : Expression {
   void setExpressionNode(Token);
   inline std::string printString() { return this->value; };
 } StringLiteral;
+
+
+typedef struct WhileExpression : Expression {
+  WhileExpression();
+  ~WhileExpression();
+
+  Token token;
+  Expression* condition;
+  BlockStatement* body;
+
+} WhileExpression;
 
 
 const std::unordered_map<int, std::string> StatementMap = {
@@ -377,8 +431,10 @@ const std::unordered_map<std::string, int> precedencesMap = {
   {TokenType.LT, Precedences.LESSGREATER},
   {TokenType.GT, Precedences.LESSGREATER},
   {TokenType.PLUS, Precedences.SUM},
+  {TokenType.INCREMENT, Precedences.SUM},
   {TokenType.PLUS_EQ, Precedences.SUM},
   {TokenType.MINUS, Precedences.SUM},
+  {TokenType.DECREMENT, Precedences.SUM},
   {TokenType.MINUS_EQ, Precedences.SUM},
   {TokenType.SLASH, Precedences.PRODUCT},
   {TokenType.DIV_EQ, Precedences.PRODUCT},

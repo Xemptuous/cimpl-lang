@@ -11,7 +11,7 @@ AST::AST(string input) {
 AST::~AST() {
   delete this->parser;
   for (int i = 0; i < this->Statements.size() - 1; i++) {
-    delete[] this->Statements[i];
+    delete this->Statements[i];
   }
 }
 
@@ -51,7 +51,8 @@ BlockStatement::BlockStatement() {
 
 BlockStatement::~BlockStatement() {
   for (auto stmt : this->statements)
-    delete stmt;
+  for (int i = this->statements.size() - 1; i >= 0; i--)
+    delete this->statements[i];
 }
 
 
@@ -70,18 +71,44 @@ CallExpression::CallExpression() {
 CallExpression::~CallExpression() {
   delete this->_function;
   for (int i = 0; i < this->arguments.size() - 1; i++)
-    delete[] this->arguments[i];
+    delete this->arguments[i];
+}
+
+DoExpression::DoExpression() {
+  this->nodetype = expression;
+  this->type = doExpression;
+  this->body = nullptr;
+  this->condition = nullptr;
+}
+
+DoExpression::~DoExpression() {
+  delete this->body;
+  delete this->condition;
 }
 
 
 ExpressionStatement::ExpressionStatement() {
-  this->expression = nullptr;
-  this->type = expressionStatement;
   this->nodetype = statement;
+  this->type = expressionStatement;
+  this->expression = nullptr;
 }
 
 ExpressionStatement::~ExpressionStatement() {
   delete this->expression;
+}
+
+ForExpression::ForExpression() {
+  this->nodetype = expression;
+  this->type = forExpression;
+  this->body = nullptr;
+}
+
+ForExpression::~ForExpression() {
+  delete this->body;
+  for (auto stmt : this->statements)
+    delete stmt;
+  for (auto expr : this->expressions)
+    delete expr;
 }
 
 
@@ -101,7 +128,7 @@ FunctionLiteral::~FunctionLiteral() {
   delete this->body;
   delete this->name;
   for (int i = 0; i < this->parameters.size() - 1; i++)
-    delete[] this->parameters[i];
+    delete this->parameters[i];
 }
 
 
@@ -115,7 +142,7 @@ FunctionStatement::~FunctionStatement() {
   delete this->body;
   delete this->name;
   for (int i = 0; i < this->parameters.size() - 1; i++)
-    delete[] this->parameters[i];
+    delete this->parameters[i];
 }
 
 
@@ -218,6 +245,17 @@ LetStatement::~LetStatement() {
 }
 
 
+PostfixExpression::PostfixExpression() {
+  this->_left = nullptr;
+  this->type = postfixExpression;
+  this->nodetype = expression;
+}
+
+PostfixExpression::~PostfixExpression() {
+  delete this->_left;
+}
+
+
 PrefixExpression::PrefixExpression() {
   this->_right = nullptr;
   this->type = prefixExpression;
@@ -244,6 +282,17 @@ StringLiteral::StringLiteral() {
   this->nodetype = expression;
 }
 
+WhileExpression::WhileExpression() {
+  this->nodetype = expression;
+  this->type = whileExpression;
+  this->condition = nullptr;
+  this->body = nullptr;
+}
+
+WhileExpression::~WhileExpression() {
+  delete this->condition;
+  delete this->body;
+}
 
 void AST::checkParserErrors() {
   int len = this->parser->errors.size();
@@ -331,6 +380,13 @@ void InfixExpression::setExpressionNode(Token tok) {
 void IntegerLiteral::setExpressionNode(Token tok) {
   this->token = tok;
   this->datatype = INT;
+}
+
+
+void PostfixExpression::setExpressionNode(Token tok) {
+  this->token = tok;
+  this->_operator = tok.literal;
+  this->setDataType(tok.literal);
 }
 
 
@@ -423,6 +479,15 @@ string ExpressionStatement::printString() {
 
   if (this->expression != nullptr)
     ss << this->expression->printString();
+
+  return ss.str();
+}
+
+
+string PostfixExpression::printString() {
+  ostringstream ss;
+
+  ss << "(" << this->_operator << this->_left->printString() << ")";
 
   return ss.str();
 }

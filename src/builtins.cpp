@@ -48,7 +48,6 @@ Object* built_in_len(vector<Object*> args, shared_ptr<Environment> env) {
   return nullptr;
 }
 
-
 Object* built_in_print(vector<Object*> args, shared_ptr<Environment> env) {
   for (auto arg : args)
     cout << arg->inspectObject() << '\n';

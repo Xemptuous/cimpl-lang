@@ -45,6 +45,10 @@ const struct Tokentype {
   std::string ELSE = {"ELSE"};
   std::string ELSEIF = {"ELSEIF"};
   std::string RETURN = {"RETURN"}; 
+  std::string DO = {"DO"};
+  std::string WHILE = {"WHILE"};
+  std::string FOR = {"FOR"};
+  std::string IN = {"IN"};
 
   // Operators
   std::string EQ = {"EQ"};
@@ -94,6 +98,10 @@ const std::unordered_map<std::string, std::string> keywords = {
   {"else", TokenType.ELSE},
   {"else if", TokenType.ELSEIF},
   {"return", TokenType.RETURN},
+  {"do", TokenType.DO},
+  {"while", TokenType.WHILE},
+  {"for", TokenType.FOR},
+  {"in", TokenType.IN},
   {"==", TokenType.EQ},
   {"!=", TokenType.NOT_EQ},
   {"//", TokenType.COMMENT},

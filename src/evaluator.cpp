@@ -139,12 +139,12 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
       Array* newa = new Array(elements);
       env->gc.push_back(newa);
       return newa;
-    }   
+    }
     case booleanExpression: {
       BooleanLiteral* b = static_cast<BooleanLiteral*>(expr);
       Boolean* newb = nativeToBoolean(b->value);
       return newb;
-    }   
+    }
     case callExpression: {
       CallExpression* ce = static_cast<CallExpression*>(expr);
       Object* func = evalNode(ce->_function, env);
@@ -154,13 +154,35 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
       if (args.size() == 1 && isError(args[0]))
         return args[0];
       return applyFunction(func, args, env);
-    }   
+    }
+    case doExpression: {
+      DoExpression* de = static_cast<DoExpression*>(expr);
+      Loop* loop = new Loop(doLoop, de->body, env);
+      env->gc.push_back(loop);
+      loop->condition = de->condition;
+      return evalLoop(loop);
+      break;
+    }
     case floatLiteral: {
       FloatLiteral* f = static_cast<FloatLiteral*>(expr);
       Float* newf = new Float(f->value);
       env->gc.push_back(newf);
       return newf;
-    }   
+    }
+    case forExpression: {
+      ForExpression* fe = dynamic_cast<ForExpression*>(expr);
+      Loop* loop = new Loop(forLoop, fe->body, env);
+      env->gc.push_back(loop);
+      loop->start = static_cast<IntegerLiteral*>(fe->start)->value;
+      loop->end = static_cast<IntegerLiteral*>(fe->end)->value;
+      loop->increment = static_cast<IntegerLiteral*>(fe->increment)->value;
+      for (auto stmt : fe->statements) {
+        evalNode(stmt, loop->env);
+        loop->statements.push_back(stmt);
+      }
+      return evalLoop(loop);
+      break;
+    }
     case functionLiteral: {
       FunctionLiteral* fl = static_cast<FunctionLiteral*>(expr);
       Function* newf = new Function(fl->parameters, fl->body, env);
@@ -176,12 +198,12 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
       IdentifierLiteral* i = static_cast<IdentifierLiteral*>(expr);
       Object* newi = evalIdentifier(i, env);
       return newi;
-    }   
+    }
     case ifExpression: {
       IfExpression* i = static_cast<IfExpression*>(expr);
       Object* cond = evalIfExpression(i, env);
       return cond;
-    }   
+    }
     case indexExpression: {
       IndexExpression* ie = static_cast<IndexExpression*>(expr);
       Object* left = evalNode(ie->_left, env);
@@ -202,13 +224,27 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
         return right;
       Object* ni = evalInfixExpression(i->_operator, left, right, env);
       return ni;
-    }   
+    }
     case integerLiteral: {
       IntegerLiteral* i = static_cast<IntegerLiteral*>(expr);
       Integer* newi = new Integer(i->value);
       env->gc.push_back(newi);
       return newi;
-    }   
+    }
+    case postfixExpression: {
+      PostfixExpression* p = static_cast<PostfixExpression*>(expr);
+      Object* left = evalNode(p->_left, env);
+      if (isError(left))
+        return left;
+      if (left->type != INTEGER_OBJ)
+        return newError(p->_left->literal + " is not an integer.");
+      IdentifierLiteral* id = static_cast<IdentifierLiteral*>(p->_left);
+      string name = id->value;
+      Object* val = env->get(name);
+      Object* np = evalPostfixExpression(p->_operator, val, env);
+      env->set(name, np);
+      return np;
+    }
     case prefixExpression: {
       PrefixExpression* p = static_cast<PrefixExpression*>(expr);
       Object* right = evalNode(p->_right, env);
@@ -216,13 +252,21 @@ Object* evalExpressions(Expression* expr, shared_ptr<Environment> env = nullptr)
         return right;
       Object* np = evalPrefixExpression(p->_operator, right, env);
       return np;
-    }   
+    }
     case stringLiteral: {
       StringLiteral* s = static_cast<StringLiteral*>(expr);
       String* news = new String(s->value);
       env->gc.push_back(news);
       return news;
-    }   
+    }
+    case whileExpression: {
+      WhileExpression* wexpr = dynamic_cast<WhileExpression*>(expr);
+      Loop* loop = new Loop(whileLoop, wexpr->body, env);
+      loop->condition = wexpr->condition;
+      env->gc.push_back(loop);
+      return evalLoop(loop);
+      break;
+    }
   }
   return nullptr;
 }
@@ -251,9 +295,7 @@ Object* evalHashIndexExpression(Object* hash, Object* index) {
 
 
 Object* evalHashLiteral(HashLiteral* expr, shared_ptr<Environment> env) {
-  // unordered_map<HashKey*, HashPair*> pairs;
   unordered_map<size_t, HashPair*> pairs;
-  // HashKey* hashed = nullptr;
   size_t hashed;
   for (pair<Expression*, Expression*> el : expr->pairs) {
     Object* key = evalNode(el.first, env);
@@ -425,13 +467,51 @@ Object* evalIntegerInfixExpression(
 }
 
 
-Object* evalMinusOperatorExpression(Object* _right, shared_ptr<Environment> env) {
-  if (_right->type != INTEGER_OBJ) {
+Object* evalLoop(Loop* loop) {
+  Object* cond = nullptr;
+  if (!(loop->loop_type == forLoop))
+    cond = evalNode(loop->condition, loop->env);
+  if (isError(cond)) return cond;
+
+  Boolean* b = static_cast<Boolean*>(cond);
+  Object* result = nullptr;
+  switch (loop->loop_type) {
+    case doLoop: {
+      do {
+        result = unpackLoopBody(loop);
+        cond = evalNode(loop->condition, loop->env);
+        b = static_cast<Boolean*>(cond);
+      } while (b->value);
+      return result;
+    }
+    case forLoop: {
+      for (int i = loop->start; i < loop->end; i += loop->increment) {
+        result = unpackLoopBody(loop);
+        for (auto stmt : loop->statements)
+          dynamic_cast<Integer*>(loop->env->get(stmt->token.literal))->value += loop->increment;
+      }
+      return result;
+    }
+    case whileLoop: {
+      while (b->value) {
+        result = unpackLoopBody(loop);
+        cond = evalNode(loop->condition, loop->env);
+        b = static_cast<Boolean*>(cond);
+      }
+      return result;
+    }
+  }
+  return newError("Not a valid loop type.");
+}
+
+
+Object* evalMinusOperatorExpression(Object* right, shared_ptr<Environment> env) {
+  if (right->type != INTEGER_OBJ) {
     ostringstream ss;
-    ss << "Unknown operator: -" << _right->inspectType();
+    ss << "Unknown operator: -" << right->inspectType();
     return newError(ss.str());
   }
-  Integer* i = static_cast<Integer*>(_right);
+  Integer* i = static_cast<Integer*>(right);
   Integer* newi = new Integer(-i->value);
   env->gc.push_back(newi);
   Object* newInt = static_cast<Integer*>(newi);
@@ -439,7 +519,7 @@ Object* evalMinusOperatorExpression(Object* _right, shared_ptr<Environment> env)
 }
 
 
-Object* evalNode(Node* node, shared_ptr<Environment> env = nullptr) {
+Object* evalNode(Node* node, shared_ptr<Environment> env) {
   if (node->nodetype == statement) {
     Statement* stmt = static_cast<Statement*>(node);
     return evalStatements(stmt, env);
@@ -448,6 +528,26 @@ Object* evalNode(Node* node, shared_ptr<Environment> env = nullptr) {
     Expression* expr = static_cast<Expression*>(node);
     return evalExpressions(expr, env);
   }
+}
+
+
+Object* evalPostfixExpression(string op, Object* left, shared_ptr<Environment> env) {
+  if (left->type != INTEGER_OBJ)
+    return newError("Increment operation on non-integer object.");
+
+  Integer* i = static_cast<Integer*>(left);
+
+  if (op == "++") {
+    Integer* newi = new Integer(i->value + 1);
+    env->gc.push_back(newi);
+    return newi;
+  }
+  else if (op == "--") {
+    Integer* newi = new Integer(i->value - 1);
+    env->gc.push_back(newi);
+    return newi;
+  }
+  else return newError("not a valid postfix operation.");
 }
 
 
@@ -515,7 +615,7 @@ Object* evalStatements(Statement* stmt, shared_ptr<Environment> env = nullptr) {
         if (result != nullptr && result->type == RETURN_OBJ)
           return result;
       }
-      break;
+      return nullptr;
     }
     case expressionStatement: {
       ExpressionStatement* es = static_cast<ExpressionStatement*>(stmt);
@@ -626,6 +726,16 @@ Object* newError(string msg) {
 
 
 void setErrorGarbageCollector(shared_ptr<Environment> env) { err_gc = env; };
+
+
+Object* unpackLoopBody(Loop* loop) {
+  for (auto stmt : loop->body->statements) {
+    Object* result = evalNode(stmt, loop->env);
+    if (result != nullptr && result->type == RETURN_OBJ)
+      return result;
+  }
+  return nullptr;
+}
 
 
 Object* unwrapReturnValue(Object* evaluated) {
