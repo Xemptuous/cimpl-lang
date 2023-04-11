@@ -36,7 +36,7 @@ struct Statement;
 class Parser {
   public:
     Parser(std::string);
-    ~Parser();
+    ~Parser() = default;
 
     Token currentToken;
     Token peekToken;
@@ -45,48 +45,48 @@ class Parser {
 
     bool expectPeek(std::string);
     void nextToken();
-    Statement* parseStatement();
+    std::shared_ptr<Statement> parseStatement();
     void peekErrors(std::string);
   private:
-    Lexer* lexer;
+    std::shared_ptr<Lexer> lexer;
 
-    void checkIdentifierDataType(IdentifierStatement*);
-    void checkFunctionReturn(FunctionStatement*);
-    void checkFunctionReturnDataType(ReturnStatement*);
+    void checkIdentifierDataType(std::shared_ptr<IdentifierStatement>);
+    void checkFunctionReturn(std::shared_ptr<FunctionStatement>);
+    void checkFunctionReturnDataType(std::shared_ptr<ReturnStatement>);
     int currentPrecedence();
     int peekPrecedence();
 
-    ArrayLiteral* parseArrayLiteral();
-    AssignmentExpressionStatement* parseAssignmentExpression();
-    BooleanLiteral* parseBooleanLiteral();
-    CallExpression* parseCallExpression(Expression*);
-    DoExpression* parseDoExpression();
-    Expression* parseExpression(int);
-    std::vector<Expression*> parseExpressionList(std::string);
-    FloatLiteral* parseFloatLiteral();
-    ForExpression* parseForExpression();
-    LetStatement* parseForLetStatement();
-    FunctionLiteral* parseFunctionLiteral();
-    std::vector<IdentifierLiteral*> parseFunctionParameters();
-    Expression* parseGroupedExpression();
-    HashLiteral* parseHashLiteral();
-    IdentifierLiteral* parseIdentifier();
-    IfExpression* parseIfExpression();
-    Expression* parseIndexExpression(Expression*);
-    InfixExpression* parseInfixExpression(Expression*);
-    IntegerLiteral* parseIntegerLiteral();
-    Expression* parseLeftPrefix(int);
-    PostfixExpression* parsePostfixExpression(Expression*);
-    PrefixExpression* parsePrefixExpression();
-    StringLiteral* parseStringLiteral();
-    WhileExpression* parseWhileExpression();
+    std::shared_ptr<ArrayLiteral> parseArrayLiteral();
+    std::shared_ptr<AssignmentExpressionStatement> parseAssignmentExpression();
+    std::shared_ptr<BooleanLiteral> parseBooleanLiteral();
+    std::shared_ptr<CallExpression> parseCallExpression(std::shared_ptr<Expression>);
+    std::shared_ptr<DoExpression> parseDoExpression();
+    std::shared_ptr<Expression> parseExpression(int);
+    std::vector<std::shared_ptr<Expression>> parseExpressionList(std::string);
+    std::shared_ptr<FloatLiteral> parseFloatLiteral();
+    std::shared_ptr<ForExpression> parseForExpression();
+    std::shared_ptr<LetStatement> parseForLetStatement();
+    std::shared_ptr<FunctionLiteral> parseFunctionLiteral();
+    std::vector<std::shared_ptr<IdentifierLiteral>> parseFunctionParameters();
+    std::shared_ptr<Expression> parseGroupedExpression();
+    std::shared_ptr<HashLiteral> parseHashLiteral();
+    std::shared_ptr<IdentifierLiteral> parseIdentifier();
+    std::shared_ptr<IfExpression> parseIfExpression();
+    std::shared_ptr<Expression> parseIndexExpression(std::shared_ptr<Expression>);
+    std::shared_ptr<InfixExpression> parseInfixExpression(std::shared_ptr<Expression>);
+    std::shared_ptr<IntegerLiteral> parseIntegerLiteral();
+    std::shared_ptr<Expression> parseLeftPrefix(int);
+    std::shared_ptr<PostfixExpression> parsePostfixExpression(std::shared_ptr<Expression>);
+    std::shared_ptr<PrefixExpression> parsePrefixExpression();
+    std::shared_ptr<StringLiteral> parseStringLiteral();
+    std::shared_ptr<WhileExpression> parseWhileExpression();
 
-    BlockStatement* parseBlockStatement();
-    ExpressionStatement* parseExpressionStatement();
-    FunctionStatement* parseFunctionStatement();
-    IdentifierStatement* parseIdentifierStatement();
-    LetStatement* parseLetStatement();
-    ReturnStatement* parseReturnStatement();
+    std::shared_ptr<BlockStatement> parseBlockStatement();
+    std::shared_ptr<ExpressionStatement> parseExpressionStatement();
+    std::shared_ptr<FunctionStatement> parseFunctionStatement();
+    std::shared_ptr<IdentifierStatement> parseIdentifierStatement();
+    std::shared_ptr<LetStatement> parseLetStatement();
+    std::shared_ptr<ReturnStatement> parseReturnStatement();
 };
 
 

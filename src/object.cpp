@@ -5,15 +5,11 @@ using namespace std;
 
 Object::Object() { this->type = OBJECT_OBJ; };
 
-Array::Array(vector<Object*> el) {
+Array::Array(vector<shared_ptr<Object>> el) {
   this->elements = el;
   this->type = ARRAY_OBJ;
 }
 
-Array::~Array() {
-  for (auto el : this->elements)
-    delete el;
-}
 
 Boolean::Boolean(bool b) {
   this->value = b;
@@ -37,8 +33,8 @@ Float::Float(float fl) {
 }
 
 Function::Function(
-    vector<IdentifierLiteral*> params, 
-    BlockStatement* body, 
+    vector<shared_ptr<IdentifierLiteral>> params, 
+    shared_ptr<BlockStatement> body, 
     shared_ptr<Environment> env
   ) {
   this->type = FUNCTION_OBJ;
@@ -48,45 +44,27 @@ Function::Function(
   this->function_type = standardFunction;
 }
 
-Function::~Function() {
-  for (auto param : this->parameters)
-    delete param;
-  delete this->body;
-}
 
-HashPair::HashPair(Object* key, Object* val) {
+HashPair::HashPair(shared_ptr<Object> key, shared_ptr<Object> val) {
   this->key = key;
   this->value = val;
 }
 
-HashPair::~HashPair() {
-  delete this->key;
-  delete this->value;
-}
 
 Integer::Integer(int val) {
   this->value = val;
   this->type = INTEGER_OBJ;
 }
 
-Loop::Loop(int loop, BlockStatement* body, shared_ptr<Environment> env) {
+Loop::Loop(int loop, shared_ptr<BlockStatement> body, shared_ptr<Environment> env) {
   this->loop_type = loop;
   this->body = body;
   this->env = env;
 }
 
-Loop::~Loop() {
-  delete this->body;
-  delete this->condition;
-  for (auto stmt : this->statements)
-    delete stmt;
-  for (auto expr : this->expressions)
-    delete expr;
-}
-
 Null::Null() { this->type = NULL_OBJ; }
 
-ReturnValue::ReturnValue(Object* obj) {
+ReturnValue::ReturnValue(shared_ptr<Object> obj) {
   this->value = obj;
   this->type = RETURN_OBJ;
 }
@@ -136,9 +114,9 @@ string Boolean::inspectObject() {
 }
 
 
-Object* Environment::get(string name) {
+shared_ptr<Object> Environment::get(string name) {
   try { 
-    Object* res = this->store[name]; 
+    shared_ptr<Object> res = this->store[name]; 
     return res;
   }
   catch (...) {
@@ -152,7 +130,7 @@ Object* Environment::get(string name) {
   }
 }
 
-Object* Environment::set(string name, Object* val) {
+shared_ptr<Object> Environment::set(string name, shared_ptr<Object> val) {
   this->store[name] = val;
   return val;
 }
@@ -199,7 +177,7 @@ string Hash::inspectObject() {
   ostringstream ss;
   vector<string> pairs{};
 
-  for (pair<size_t, HashPair*> pair : this->pairs)
+  for (pair<size_t, shared_ptr<HashPair>> pair : this->pairs)
     pairs.push_back(
       pair.second->key->inspectObject() + ": "+ 
       pair.second->value->inspectObject()

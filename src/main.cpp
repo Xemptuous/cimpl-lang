@@ -12,13 +12,13 @@ int main() {
   shared_ptr<Environment> env (new Environment);
 
   while (true) {
-start:
+  start:
     cout << ">> ";
     getline(cin, input);
     if (input == "quit") {
       system("clear");
-      for (int i = env->gc.size() - 1; i >= 0; i--) 
-        delete env->gc[i];
+      // for (int i = env->gc.size() - 1; i >= 0; i--) 
+      //   delete env->gc[i];
       return 0;
     }
     if (input == "clear") {

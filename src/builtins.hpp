@@ -1,14 +1,14 @@
 #pragma once
 #include "object.hpp"
 
-Object* evalBuiltinFunction(Object*, std::vector<Object*>, std::shared_ptr<Environment>);
-Object* built_in_len(std::vector<Object*>, std::shared_ptr<Environment>);
-Object* built_in_print(std::vector<Object*>, std::shared_ptr<Environment>);
-Object* built_in_max(std::vector<Object*>, std::shared_ptr<Environment>);
-Object* built_in_min(std::vector<Object*>, std::shared_ptr<Environment>);
-Object* built_in_pop(std::vector<Object*>, std::shared_ptr<Environment>);
-Object* built_in_push(std::vector<Object*>, std::shared_ptr<Environment>);
-Object* newError(std::string);
+std::shared_ptr<Object> evalBuiltinFunction(std::shared_ptr<Object>, std::vector<std::shared_ptr<Object>>, std::shared_ptr<Environment>);
+std::shared_ptr<Object> built_in_len(std::vector<std::shared_ptr<Object>>, std::shared_ptr<Environment>);
+std::shared_ptr<Object> built_in_print(std::vector<std::shared_ptr<Object>>, std::shared_ptr<Environment>);
+std::shared_ptr<Object> built_in_max(std::vector<std::shared_ptr<Object>>, std::shared_ptr<Environment>);
+std::shared_ptr<Object> built_in_min(std::vector<std::shared_ptr<Object>>, std::shared_ptr<Environment>);
+std::shared_ptr<Object> built_in_pop(std::vector<std::shared_ptr<Object>>, std::shared_ptr<Environment>);
+std::shared_ptr<Object> built_in_push(std::vector<std::shared_ptr<Object>>, std::shared_ptr<Environment>);
+std::shared_ptr<Object> newError(std::string);
 
 
 typedef struct Builtin : Object {

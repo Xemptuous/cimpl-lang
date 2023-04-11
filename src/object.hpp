@@ -85,10 +85,10 @@ class Object {
 
 class Array: public Object {
   public:
-    Array(vector<Object*>);
+    Array(vector<shared_ptr<Object>>);
     ~Array();
 
-    vector<Object*> elements;
+    vector<shared_ptr<Object>> elements;
 
     string inspectType();
     string inspectObject();
@@ -110,12 +110,12 @@ class Environment : public Object {
   public:
     Environment(shared_ptr<Environment> = nullptr);
 
-    unordered_map<string, Object*> store{};
-    vector<Object*> gc{};
+    unordered_map<string, shared_ptr<Object>> store{};
+    vector<shared_ptr<Object>> gc{};
     shared_ptr<Environment> outer;
 
-    Object* get(string);
-    Object* set(string, Object*);
+    shared_ptr<Object> get(string);
+    shared_ptr<Object> set(string, shared_ptr<Object>);
 };
 
 
@@ -144,14 +144,14 @@ class Float : public Object {
 class Function : public Object {
   public:
     Function(
-      vector<IdentifierLiteral*>, 
-      BlockStatement*, 
+      vector<shared_ptr<IdentifierLiteral>>, 
+      shared_ptr<BlockStatement>, 
       shared_ptr<Environment>
     );
     ~Function();
 
-    vector<IdentifierLiteral*> parameters;
-    BlockStatement* body;
+    vector<shared_ptr<IdentifierLiteral>> parameters;
+    shared_ptr<BlockStatement> body;
     shared_ptr<Environment> env;
     int function_type;
 
@@ -163,7 +163,7 @@ class Function : public Object {
 
 class Hash : public Object {
   public:
-    unordered_map<size_t, HashPair*> pairs{};
+    unordered_map<size_t, shared_ptr<HashPair>> pairs{};
 
     inline string inspectType() { return ObjectType.HASH_OBJ; };
     string inspectObject();
@@ -172,11 +172,11 @@ class Hash : public Object {
 
 class HashPair : public Object {
   public:
-    HashPair(Object*, Object*);
+    HashPair(shared_ptr<Object>, shared_ptr<Object>);
     ~HashPair();
 
-    Object* key;
-    Object* value;
+    shared_ptr<Object> key;
+    shared_ptr<Object> value;
 };
 
 
@@ -193,13 +193,13 @@ class Integer : public Object {
 
 class Loop : public Object {
   public:
-    Loop(int, BlockStatement*, shared_ptr<Environment>);
+    Loop(int, shared_ptr<BlockStatement>, shared_ptr<Environment>);
     ~Loop();
 
-    Expression* condition;
-    vector<Expression*> expressions;
-    vector<Statement*> statements;
-    BlockStatement* body;
+    shared_ptr<Expression> condition;
+    vector<shared_ptr<Expression>> expressions;
+    vector<shared_ptr<Statement>> statements;
+    shared_ptr<BlockStatement> body;
     shared_ptr<Environment> env;
     int loop_type;
     int start;
@@ -219,9 +219,9 @@ class Null : public Object {
 
 class ReturnValue : public Object {
   public:
-    ReturnValue(Object*);
+    ReturnValue(shared_ptr<Object>);
 
-    Object* value;
+    shared_ptr<Object> value;
 
     string inspectType();
     string inspectObject();

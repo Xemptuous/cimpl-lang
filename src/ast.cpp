@@ -4,30 +4,15 @@
 
 using namespace std;
 
-AST::AST(string input) {
-  this->parser = new Parser(input);
-}
-
-AST::~AST() {
-  delete this->parser;
-  for (int i = 0; i < this->Statements.size() - 1; i++) {
-    delete this->Statements[i];
-  }
-}
+AST::AST(string input) { this->parser = unique_ptr<Parser> (new Parser(input)); }
 
 Statement::Statement() { this->nodetype = statement; }
-
 Expression::Expression() { this->nodetype = expression; }
 
 
 ArrayLiteral::ArrayLiteral() {
   this->nodetype = expression;
   this->type = arrayLiteral;
-}
-
-ArrayLiteral::~ArrayLiteral() {
-  for (auto el : this->elements)
-    delete el;
 }
 
 
@@ -38,21 +23,10 @@ AssignmentExpressionStatement::AssignmentExpressionStatement() {
   this->nodetype = statement;
 }
 
-AssignmentExpressionStatement::~AssignmentExpressionStatement() {
-  delete this->name;
-  delete this->value;
-}
-
 
 BlockStatement::BlockStatement() {
   this->type = blockStatement;
   this->nodetype = statement;
-}
-
-BlockStatement::~BlockStatement() {
-  for (auto stmt : this->statements)
-  for (int i = this->statements.size() - 1; i >= 0; i--)
-    delete this->statements[i];
 }
 
 
@@ -68,22 +42,12 @@ CallExpression::CallExpression() {
   this->_function = nullptr;
 }
 
-CallExpression::~CallExpression() {
-  delete this->_function;
-  for (int i = 0; i < this->arguments.size() - 1; i++)
-    delete this->arguments[i];
-}
 
 DoExpression::DoExpression() {
   this->nodetype = expression;
   this->type = doExpression;
   this->body = nullptr;
   this->condition = nullptr;
-}
-
-DoExpression::~DoExpression() {
-  delete this->body;
-  delete this->condition;
 }
 
 
@@ -93,22 +57,11 @@ ExpressionStatement::ExpressionStatement() {
   this->expression = nullptr;
 }
 
-ExpressionStatement::~ExpressionStatement() {
-  delete this->expression;
-}
 
 ForExpression::ForExpression() {
   this->nodetype = expression;
   this->type = forExpression;
   this->body = nullptr;
-}
-
-ForExpression::~ForExpression() {
-  delete this->body;
-  for (auto stmt : this->statements)
-    delete stmt;
-  for (auto expr : this->expressions)
-    delete expr;
 }
 
 
@@ -124,12 +77,6 @@ FunctionLiteral::FunctionLiteral() {
   this->name = nullptr;
   this->body = nullptr;
 }
-FunctionLiteral::~FunctionLiteral() {
-  delete this->body;
-  delete this->name;
-  for (int i = 0; i < this->parameters.size() - 1; i++)
-    delete this->parameters[i];
-}
 
 
 FunctionStatement::FunctionStatement() {
@@ -138,26 +85,11 @@ FunctionStatement::FunctionStatement() {
   this->name = nullptr;
   this->body = nullptr;
 }
-FunctionStatement::~FunctionStatement() {
-  delete this->body;
-  delete this->name;
-  for (int i = 0; i < this->parameters.size() - 1; i++)
-    delete this->parameters[i];
-}
 
 
 HashLiteral::HashLiteral() {
   this->nodetype = expression;
   this->type = hashLiteral;
-}
-
-HashLiteral::~HashLiteral() {
-  for (unordered_map<Expression*,Expression*>::iterator iter = this->pairs.begin(); iter != this->pairs.end(); ++iter)
-  {
-    Expression* k = iter->first;
-    Expression* v = iter->second;
-    delete k, delete v;
-  }
 }
 
 
@@ -167,18 +99,6 @@ IfExpression::IfExpression() {
   this->condition = nullptr;
   this->consequence = nullptr;
   this->alternative = nullptr;
-}
-
-IfExpression::~IfExpression() {
-  delete this->condition;
-  delete this->consequence;
-  delete this->alternative;
-  for (auto stmt : alternatives) {
-    delete stmt;
-  }
-  for (auto stmt : conditions) {
-    delete stmt;
-  }
 }
 
 
@@ -195,11 +115,6 @@ IdentifierStatement::IdentifierStatement() {
   this->nodetype = statement;
 }
 
-IdentifierStatement::~IdentifierStatement() {
-  delete this->name;
-  delete this->value;
-}
-
 
 IndexExpression::IndexExpression() {
   this->nodetype = expression;
@@ -207,22 +122,12 @@ IndexExpression::IndexExpression() {
   this->_left = nullptr;
   this->index = nullptr;
 }
-IndexExpression::~IndexExpression() {
-  delete this->_left;
-  delete this->index;
-}
-
 
 InfixExpression::InfixExpression() {
   this->_left = nullptr;
   this->_right = nullptr;
   this->type = infixExpression;
   this->nodetype = expression;
-}
-
-InfixExpression::~InfixExpression() {
-  delete this->_left;
-  delete this->_right;
 }
 
 
@@ -239,11 +144,6 @@ LetStatement::LetStatement() {
   this->nodetype = statement;
 }
 
-LetStatement::~LetStatement() {
-  delete this->name;
-  delete this->value;
-}
-
 
 PostfixExpression::PostfixExpression() {
   this->_left = nullptr;
@@ -251,19 +151,10 @@ PostfixExpression::PostfixExpression() {
   this->nodetype = expression;
 }
 
-PostfixExpression::~PostfixExpression() {
-  delete this->_left;
-}
-
-
 PrefixExpression::PrefixExpression() {
   this->_right = nullptr;
   this->type = prefixExpression;
   this->nodetype = expression;
-}
-
-PrefixExpression::~PrefixExpression() {
-  delete this->_right;
 }
 
 
@@ -271,10 +162,6 @@ ReturnStatement::ReturnStatement() {
   this->returnValue = nullptr;
   this->type = returnStatement;
   this->nodetype = statement;
-}
-
-ReturnStatement::~ReturnStatement() {
-  delete this->returnValue;
 }
 
 StringLiteral::StringLiteral() {
@@ -289,10 +176,6 @@ WhileExpression::WhileExpression() {
   this->body = nullptr;
 }
 
-WhileExpression::~WhileExpression() {
-  delete this->condition;
-  delete this->body;
-}
 
 void AST::checkParserErrors() {
   int len = this->parser->errors.size();
@@ -303,7 +186,7 @@ void AST::checkParserErrors() {
 
 void AST::parseProgram() {
   while (this->parser->currentToken.type != TokenType._EOF) {
-    Statement* stmt = this->parser->parseStatement();
+    shared_ptr<Statement> stmt = this->parser->parseStatement();
 
     if (stmt != nullptr) {
       this->Statements.push_back(stmt);
@@ -638,7 +521,7 @@ string HashLiteral::printString() {
   vector<string> pairs{};
 
 
-  for (pair<Expression*, Expression*> pair : this->pairs) {
+  for (pair<shared_ptr<Expression>, shared_ptr<Expression>> pair : this->pairs) {
     ostringstream p;
     p << pair.first->printString() << ":" << pair.second->printString();
     pairs.push_back(p.str());

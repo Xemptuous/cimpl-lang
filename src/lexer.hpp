@@ -1,5 +1,6 @@
 #pragma once
 #include "token.hpp"
+#include "memory"
 
 
 class Lexer {

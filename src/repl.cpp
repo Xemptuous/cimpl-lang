@@ -9,7 +9,7 @@ void setErrorGarbageCollector(shared_ptr<Environment>);
 
 
 void start(string input, shared_ptr<Environment> env) {
-  AST* ast = new AST(input);
+  unique_ptr<AST> ast (new AST(input));
   ast->parseProgram();
 
   if (ast->parser->errors.size() != 0) {
@@ -30,7 +30,7 @@ void start(string input, shared_ptr<Environment> env) {
       }
     }
   }
-  delete ast;
+  // delete ast;
 }
 
 
