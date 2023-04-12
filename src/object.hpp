@@ -107,6 +107,7 @@ class Boolean : public Object {
 class Environment : public Object {
   public:
     Environment(shared_ptr<Environment> = nullptr);
+    ~Environment();
 
     unordered_map<string, shared_ptr<Object>> store{};
     vector<shared_ptr<Object>> gc{};

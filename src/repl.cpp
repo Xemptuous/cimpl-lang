@@ -8,7 +8,7 @@ shared_ptr<Object> evalNode(shared_ptr<Node>, shared_ptr<Environment>);
 void setErrorGarbageCollector(shared_ptr<Environment>*);
 
 
-void start(string input) {
+void start(string input, shared_ptr<Environment> env) {
   unique_ptr<AST> ast (new AST(input));
   ast->parseProgram();
 
@@ -17,7 +17,6 @@ void start(string input) {
     return;
   }
 
-  shared_ptr<Environment> env ( new Environment() );
   setErrorGarbageCollector(&env);
 
   for (auto stmt : ast->Statements) {
@@ -30,6 +29,7 @@ void start(string input) {
       }
     }
   }
+  ast->Statements.clear();
 }
 
 

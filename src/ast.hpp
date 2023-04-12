@@ -45,7 +45,7 @@ typedef struct AST {
   std::vector<std::shared_ptr<Statement>> Statements;
 
   AST(std::string);
-  ~AST() = default;
+  ~AST() {this->Statements.clear();};
 
   void checkParserErrors();
   void parseProgram();
@@ -89,7 +89,7 @@ typedef struct Expression : Node {
 
 typedef struct ArrayLiteral : Expression {
   ArrayLiteral();
-  ~ArrayLiteral() = default;
+  ~ArrayLiteral() {this->elements.clear();};
 
   Token token;
   std::vector<std::shared_ptr<Expression>> elements;
@@ -113,7 +113,7 @@ typedef struct AssignmentExpressionStatement : Statement {
 
 typedef struct BlockStatement : Statement {
   BlockStatement();
-  ~BlockStatement() = default;
+  ~BlockStatement() {this->statements.clear();};
 
   Token token;
   std::vector<std::shared_ptr<Statement>> statements;
@@ -135,7 +135,7 @@ typedef struct BooleanLiteral : Expression {
 
 typedef struct CallExpression : Expression { 
   CallExpression();
-  ~CallExpression() = default;
+  ~CallExpression() {this->arguments.clear();};
 
   Token token;
   std::shared_ptr<Expression> _function;
@@ -180,7 +180,7 @@ typedef struct FloatLiteral : Expression {
 
 typedef struct ForExpression : Expression {
   ForExpression();
-  ~ForExpression() = default;
+  ~ForExpression() {this->expressions.clear(); this->statements.clear();};
 
   Token token;
   std::shared_ptr<Expression> start;
@@ -195,7 +195,7 @@ typedef struct ForExpression : Expression {
 
 typedef struct FunctionLiteral : Expression {
   FunctionLiteral();
-  ~FunctionLiteral() = default;
+  ~FunctionLiteral() {this->parameters.clear();};
 
   Token token;
   std::shared_ptr<IdentifierLiteral> name;
@@ -209,7 +209,7 @@ typedef struct FunctionLiteral : Expression {
 
 typedef struct FunctionStatement : Statement {
   FunctionStatement();
-  ~FunctionStatement() = default;
+  ~FunctionStatement() {this->parameters.clear();};
 
   Token token;
   std::shared_ptr<IdentifierLiteral> name;
@@ -233,7 +233,7 @@ typedef struct HashLiteral : Expression {
 
 typedef struct IfExpression : Expression {
   IfExpression();
-  ~IfExpression() = default;
+  ~IfExpression() {this->conditions.clear(); this->alternatives.clear();};
 
   Token token;
   std::shared_ptr<Expression> condition;

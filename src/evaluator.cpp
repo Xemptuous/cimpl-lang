@@ -1,6 +1,7 @@
 #include "evaluator.hpp"
 #include "builtins.hpp"
 #include <iostream>
+#include <memory>
 
 using namespace std;
 
@@ -333,9 +334,9 @@ shared_ptr<Object> evalHashLiteral(shared_ptr<HashLiteral> expr, shared_ptr<Envi
 shared_ptr<Object> evalIdentifier(shared_ptr<IdentifierLiteral> node, shared_ptr<Environment> env) {
   auto builtin_find = builtins.find(node->value);
   if(builtin_find != builtins.end()) {
-    shared_ptr<Builtin> bi (new Builtin());
+    unique_ptr<Builtin> bi (new Builtin());
     bi->builtin_type = builtin_find->second;
-    env->gc.push_back(bi);
+    // env->gc.push_back(bi);
     return bi;
   }
   

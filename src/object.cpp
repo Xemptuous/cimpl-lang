@@ -22,6 +22,10 @@ Environment::Environment(shared_ptr<Environment> env) {
   else this->outer = env;
 }
 
+Environment::~Environment() {
+  this->gc.clear();
+}
+
 Error::Error(string msg) {
   this->message = msg;
   this->type = ERROR_OBJ;

@@ -2,12 +2,12 @@
 #include <iostream>
 
 using namespace std;
-void start(string);
+void start(string, shared_ptr<Environment>);
 
 int main() {
   system("clear");
   string input;
-  // shared_ptr<Environment> env (new Environment);
+  shared_ptr<Environment> env (new Environment);
 
   while (true) {
   start:
@@ -15,14 +15,13 @@ int main() {
     getline(cin, input);
     if (input == "quit") {
       system("clear");
-      // for (int i = env->gc.size() - 1; i >= 0; i--) 
-      //   delete env->gc[i];
+      env->gc.clear();
       return 0;
     }
     if (input == "clear") {
       system("clear");
       goto start;
     }
-    start(input);
+    start(input, env);
   }
 }

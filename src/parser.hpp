@@ -36,7 +36,7 @@ struct Statement;
 class Parser {
   public:
     Parser(std::string);
-    ~Parser() = default;
+    ~Parser() {this->errors.clear();};
 
     Token currentToken;
     Token peekToken;

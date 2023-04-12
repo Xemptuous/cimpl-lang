@@ -12,18 +12,16 @@ Parser::Parser(string input) {
 
 
 void Parser::checkFunctionReturn(shared_ptr<FunctionStatement> stmt) {
-  shared_ptr<ReturnStatement> returnStmt;
   int found{0};
   for (auto st : stmt->body->statements) {
     if (st->type == returnStatement) {
-      // returnStmt = dynamic_pointer_cast<shared_ptr<ReturnStatement>>(st);
-      // returnStmt = static_cast<ReturnStatement*>(st);
+      shared_ptr<ReturnStatement> returnStmt = dynamic_pointer_cast<ReturnStatement>(st);
       found ++;
-      // if (stmt->datatype != returnStmt->datatype) {
-      //   ostringstream ss;
-      //   ss << "Function return value DataType mismatch.\n";
-      //   this->errors.push_back(ss.str());
-      // }
+      if (stmt->datatype != returnStmt->datatype) {
+        ostringstream ss;
+        ss << "Function return value DataType mismatch.\n";
+        this->errors.push_back(ss.str());
+      }
     }
   } 
   if (!found) {
