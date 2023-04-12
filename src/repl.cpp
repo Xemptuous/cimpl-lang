@@ -4,11 +4,11 @@
 
 using namespace std;
 void printParserErrors(vector<string>);
-Object* evalNode(Node*, shared_ptr<Environment>);
-void setErrorGarbageCollector(shared_ptr<Environment>);
+shared_ptr<Object> evalNode(shared_ptr<Node>, shared_ptr<Environment>);
+void setErrorGarbageCollector(shared_ptr<Environment>*);
 
 
-void start(string input, shared_ptr<Environment> env) {
+void start(string input) {
   unique_ptr<AST> ast (new AST(input));
   ast->parseProgram();
 
@@ -17,20 +17,19 @@ void start(string input, shared_ptr<Environment> env) {
     return;
   }
 
-  shared_ptr<Environment> err_gc ( new Environment() );
-  setErrorGarbageCollector(err_gc);
+  shared_ptr<Environment> env ( new Environment() );
+  setErrorGarbageCollector(&env);
 
-  for (Statement* stmt : ast->Statements) {
-    Object* evaluated = evalNode(stmt, env);
+  for (auto stmt : ast->Statements) {
+    shared_ptr<Object> evaluated = evalNode(stmt, env);
     if (evaluated != nullptr) {
       if (evaluated->type == ERROR_OBJ) {
-        Error* result = static_cast<Error*>(evaluated);
+        shared_ptr<Error> result = static_pointer_cast<Error>(evaluated);
         cout << result->message << '\n';
         continue;
       }
     }
   }
-  // delete ast;
 }
 
 

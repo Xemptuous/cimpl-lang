@@ -74,7 +74,6 @@ const struct Objecttype {
 class Object {
   public:
     Object();
-    ~Object() = default;
 
     int type;
 
@@ -86,7 +85,6 @@ class Object {
 class Array: public Object {
   public:
     Array(vector<shared_ptr<Object>>);
-    ~Array();
 
     vector<shared_ptr<Object>> elements;
 
@@ -148,7 +146,6 @@ class Function : public Object {
       shared_ptr<BlockStatement>, 
       shared_ptr<Environment>
     );
-    ~Function();
 
     vector<shared_ptr<IdentifierLiteral>> parameters;
     shared_ptr<BlockStatement> body;
@@ -173,7 +170,6 @@ class Hash : public Object {
 class HashPair : public Object {
   public:
     HashPair(shared_ptr<Object>, shared_ptr<Object>);
-    ~HashPair();
 
     shared_ptr<Object> key;
     shared_ptr<Object> value;
@@ -194,7 +190,6 @@ class Integer : public Object {
 class Loop : public Object {
   public:
     Loop(int, shared_ptr<BlockStatement>, shared_ptr<Environment>);
-    ~Loop();
 
     shared_ptr<Expression> condition;
     vector<shared_ptr<Expression>> expressions;

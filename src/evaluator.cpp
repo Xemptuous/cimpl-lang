@@ -5,11 +5,15 @@
 using namespace std;
 
 // GLOBALS
-shared_ptr<Boolean> _TRUE_BOOL ( new Boolean(true) );
-shared_ptr<Boolean> _FALSE_BOOL ( new Boolean(false) );
+shared_ptr<Boolean> TRUE_BOOL ( new Boolean(true) );
+shared_ptr<Boolean> FALSE_BOOL ( new Boolean(false) );
 shared_ptr<Null> _nullptr ( new Null{} );
 shared_ptr<Environment> err_gc = nullptr;
 
+
+void setErrorGarbageCollector(shared_ptr<Environment>* env) { 
+  err_gc = *env; 
+};
 
 shared_ptr<Object> applyFunction(shared_ptr<Object> fn, vector<shared_ptr<Object>> args, shared_ptr<Environment> env) {
   if(fn-> type == FUNCTION_OBJ) {
@@ -103,13 +107,13 @@ shared_ptr<Object> evalAssignmentExpression(
 shared_ptr<Object> evalBangOperatorExpression(shared_ptr<Object> _right) {
   switch (_right->type) {
     case BOOLEAN_TRUE:
-      return static_pointer_cast<Boolean>(_FALSE_BOOL);
+      return static_pointer_cast<Object>(FALSE_BOOL);
     case BOOLEAN_FALSE:
-      return static_pointer_cast<Boolean>(_TRUE_BOOL);
+      return static_pointer_cast<Object>(TRUE_BOOL);
     case NULL_OBJ:
-      return static_pointer_cast<Boolean>(_TRUE_BOOL);
+      return static_pointer_cast<Object>(TRUE_BOOL);
     default:
-      return static_pointer_cast<Boolean>(_FALSE_BOOL);
+      return static_pointer_cast<Object>(FALSE_BOOL);
   }
 }
 
@@ -519,7 +523,7 @@ shared_ptr<Object> evalMinusOperatorExpression(shared_ptr<Object> right, shared_
 }
 
 
-shared_ptr<Object> evalNode(shared_ptr<Node> node, shared_ptr<Environment> env) {
+shared_ptr<Object> evalNode(shared_ptr<Node> node, shared_ptr<Environment> env = err_gc) {
   if (node->nodetype == statement) {
     shared_ptr<Statement> stmt = static_pointer_cast<Statement>(node);
     return evalStatements(stmt, env);
@@ -710,8 +714,8 @@ bool isTruthy(shared_ptr<Object> obj) {
 
 shared_ptr<Boolean> nativeToBoolean(bool input) {
   if (input)
-    return static_pointer_cast<Boolean>(_TRUE_BOOL);
-  return static_pointer_cast<Boolean>(_FALSE_BOOL);
+    return static_pointer_cast<Boolean>(TRUE_BOOL);
+  return static_pointer_cast<Boolean>(FALSE_BOOL);
 }
 
 
@@ -720,9 +724,6 @@ shared_ptr<Object> newError(string msg) {
   err_gc->gc.push_back(err);
   return err;
 }
-
-
-void setErrorGarbageCollector(shared_ptr<Environment> env) { err_gc = env; };
 
 
 shared_ptr<Object> unpackLoopBody(shared_ptr<Loop> loop) {

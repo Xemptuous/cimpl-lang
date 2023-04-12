@@ -2,14 +2,12 @@
 #include <iostream>
 
 using namespace std;
-void start(string, shared_ptr<Environment>);
-void setEnvironment(shared_ptr<Environment> env);
-
+void start(string);
 
 int main() {
   system("clear");
   string input;
-  shared_ptr<Environment> env (new Environment);
+  // shared_ptr<Environment> env (new Environment);
 
   while (true) {
   start:
@@ -25,6 +23,6 @@ int main() {
       system("clear");
       goto start;
     }
-    start(input, env);
+    start(input);
   }
 }
