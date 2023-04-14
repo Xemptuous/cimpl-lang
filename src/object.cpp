@@ -24,6 +24,7 @@ Environment::Environment(shared_ptr<Environment> env) {
 
 Environment::~Environment() {
   this->gc.clear();
+  this->store.clear();
 }
 
 Error::Error(string msg) {

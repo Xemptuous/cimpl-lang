@@ -1,7 +1,7 @@
 #include "object.hpp"
 #include <iostream>
 
-using namespace std;
+// using namespace std;
 void start(string, shared_ptr<Environment>);
 
 int main() {
@@ -16,6 +16,7 @@ int main() {
     if (input == "quit") {
       system("clear");
       env->gc.clear();
+      env->store.clear();
       return 0;
     }
     if (input == "clear") {

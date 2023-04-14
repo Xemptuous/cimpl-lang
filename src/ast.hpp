@@ -195,7 +195,10 @@ typedef struct ForExpression : Expression {
 
 typedef struct FunctionLiteral : Expression {
   FunctionLiteral();
-  ~FunctionLiteral() {this->parameters.clear();};
+  ~FunctionLiteral() {
+    this->parameters.clear();
+    this->body->statements.clear();
+  };
 
   Token token;
   std::shared_ptr<IdentifierLiteral> name;
@@ -209,7 +212,10 @@ typedef struct FunctionLiteral : Expression {
 
 typedef struct FunctionStatement : Statement {
   FunctionStatement();
-  ~FunctionStatement() {this->parameters.clear();};
+  ~FunctionStatement() {
+    this->parameters.clear();
+    this->body->statements.clear();
+  };
 
   Token token;
   std::shared_ptr<IdentifierLiteral> name;
@@ -222,7 +228,7 @@ typedef struct FunctionStatement : Statement {
 
 typedef struct HashLiteral : Expression {
   HashLiteral();
-  ~HashLiteral() = default;
+  ~HashLiteral() {this->pairs.clear();}
 
   Token token;
   std::unordered_map<std::shared_ptr<Expression>, std::shared_ptr<Expression>> pairs;
