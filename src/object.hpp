@@ -161,7 +161,6 @@ class Function : public Object {
 
 class Hash : public Object {
   public:
-    ~Hash() {this->pairs.clear();}
     unordered_map<size_t, shared_ptr<HashPair>> pairs{};
 
     inline string inspectType() { return ObjectType.HASH_OBJ; };

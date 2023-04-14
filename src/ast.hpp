@@ -195,10 +195,7 @@ typedef struct ForExpression : Expression {
 
 typedef struct FunctionLiteral : Expression {
   FunctionLiteral();
-  ~FunctionLiteral() {
-    this->parameters.clear();
-    this->body->statements.clear();
-  };
+  ~FunctionLiteral() {this->parameters.clear();};
 
   Token token;
   std::shared_ptr<IdentifierLiteral> name;
@@ -212,10 +209,7 @@ typedef struct FunctionLiteral : Expression {
 
 typedef struct FunctionStatement : Statement {
   FunctionStatement();
-  ~FunctionStatement() {
-    this->parameters.clear();
-    this->body->statements.clear();
-  };
+  ~FunctionStatement() {this->parameters.clear();};
 
   Token token;
   std::shared_ptr<IdentifierLiteral> name;
