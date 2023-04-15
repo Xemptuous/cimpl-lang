@@ -473,6 +473,7 @@ shared_ptr<Object> evalIntegerInfixExpression(
 
 
 shared_ptr<Object> evalLoop(shared_ptr<Loop> loop) {
+  //FIXME: loop body variable scope not limited; sets outer/global scope
   shared_ptr<Object> cond = nullptr;
   if (!(loop->loop_type == forLoop))
     cond = evalNode(loop->condition, loop->env);
@@ -525,6 +526,8 @@ shared_ptr<Object> evalMinusOperatorExpression(shared_ptr<Object> right, shared_
 
 
 shared_ptr<Object> evalNode(shared_ptr<Node> node, shared_ptr<Environment> env = err_gc) {
+  if (env == nullptr)
+    env = err_gc;
   if (node->nodetype == statement) {
     shared_ptr<Statement> stmt = static_pointer_cast<Statement>(node);
     return evalStatements(stmt, env);
