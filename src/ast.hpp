@@ -41,11 +41,11 @@ enum ExpressionType {
 
 
 typedef struct AST {
-  Parser* parser;
-  std::vector<Statement*> Statements;
+  std::unique_ptr<Parser> parser;
+  std::vector<std::shared_ptr<Statement>> Statements;
 
   AST(std::string);
-  ~AST();
+  ~AST() {this->Statements.clear();};
 
   void checkParserErrors();
   void parseProgram();
@@ -89,10 +89,10 @@ typedef struct Expression : Node {
 
 typedef struct ArrayLiteral : Expression {
   ArrayLiteral();
-  ~ArrayLiteral();
+  ~ArrayLiteral() {this->elements.clear();};
 
   Token token;
-  std::vector<Expression*> elements;
+  std::vector<std::shared_ptr<Expression>> elements;
 
 
   std::string printString();
@@ -101,22 +101,22 @@ typedef struct ArrayLiteral : Expression {
 
 typedef struct AssignmentExpressionStatement : Statement {
   AssignmentExpressionStatement();
-  ~AssignmentExpressionStatement();
+  ~AssignmentExpressionStatement() = default;
 
   Token token;
-  IdentifierLiteral* name;
+  std::shared_ptr<IdentifierLiteral> name;
   std::string _operator;
-  Expression* value;
+  std::shared_ptr<Expression> value;
 
 } AssignmentExpressionStatement;
 
 
 typedef struct BlockStatement : Statement {
   BlockStatement();
-  ~BlockStatement();
+  ~BlockStatement() {this->statements.clear();};
 
   Token token;
-  std::vector<Statement*> statements;
+  std::vector<std::shared_ptr<Statement>> statements;
 
   std::string printString();
 } BlockStatement;
@@ -135,11 +135,11 @@ typedef struct BooleanLiteral : Expression {
 
 typedef struct CallExpression : Expression { 
   CallExpression();
-  ~CallExpression();
+  ~CallExpression() {this->arguments.clear();};
 
   Token token;
-  Expression* _function;
-  std::vector<Expression*> arguments;
+  std::shared_ptr<Expression> _function;
+  std::vector<std::shared_ptr<Expression>> arguments;
 
   std::string printString();
 } CallExpression;
@@ -147,21 +147,21 @@ typedef struct CallExpression : Expression {
 
 typedef struct DoExpression : Expression {
   DoExpression();
-  ~DoExpression();
+  ~DoExpression() = default;
 
   Token token;
-  BlockStatement* body;
-  Expression* condition;
+  std::shared_ptr<BlockStatement> body;
+  std::shared_ptr<Expression> condition;
 
 } DoExpression;
 
 
 typedef struct ExpressionStatement : Statement {
   ExpressionStatement();
-  ~ExpressionStatement();
+  ~ExpressionStatement() = default;
 
   Token token;
-  Expression* expression;
+  std::shared_ptr<Expression> expression;
 
   std::string printString();
 } ExpressionStatement;
@@ -180,27 +180,27 @@ typedef struct FloatLiteral : Expression {
 
 typedef struct ForExpression : Expression {
   ForExpression();
-  ~ForExpression();
+  ~ForExpression() {this->expressions.clear(); this->statements.clear();};
 
   Token token;
-  Expression* start;
-  Expression* end;
-  Expression* increment;
-  std::vector<Expression*> expressions;
-  std::vector<Statement*> statements;
-  BlockStatement* body;
+  std::shared_ptr<Expression> start;
+  std::shared_ptr<Expression> end;
+  std::shared_ptr<Expression> increment;
+  std::vector<std::shared_ptr<Expression>> expressions;
+  std::vector<std::shared_ptr<Statement>> statements;
+  std::shared_ptr<BlockStatement> body;
 
 } ForExpression;
 
 
 typedef struct FunctionLiteral : Expression {
   FunctionLiteral();
-  ~FunctionLiteral();
+  ~FunctionLiteral() {this->parameters.clear();};
 
   Token token;
-  IdentifierLiteral* name;
-  std::vector<IdentifierLiteral*> parameters;
-  BlockStatement* body;
+  std::shared_ptr<IdentifierLiteral> name;
+  std::vector<std::shared_ptr<IdentifierLiteral>> parameters;
+  std::shared_ptr<BlockStatement> body;
 
   std::string printString();
   void setExpressionNode(Token);
@@ -209,12 +209,12 @@ typedef struct FunctionLiteral : Expression {
 
 typedef struct FunctionStatement : Statement {
   FunctionStatement();
-  ~FunctionStatement();
+  ~FunctionStatement() {this->parameters.clear();};
 
   Token token;
-  IdentifierLiteral* name;
-  std::vector<IdentifierLiteral*> parameters;
-  BlockStatement* body;
+  std::shared_ptr<IdentifierLiteral> name;
+  std::vector<std::shared_ptr<IdentifierLiteral>> parameters;
+  std::shared_ptr<BlockStatement> body;
 
   std::string printString();
 } FunctionStatement;
@@ -222,10 +222,10 @@ typedef struct FunctionStatement : Statement {
 
 typedef struct HashLiteral : Expression {
   HashLiteral();
-  ~HashLiteral();
+  ~HashLiteral() {this->pairs.clear();}
 
   Token token;
-  std::unordered_map<Expression*, Expression*> pairs;
+  std::unordered_map<std::shared_ptr<Expression>, std::shared_ptr<Expression>> pairs;
 
   std::string printString();
 } HashLiteral;
@@ -233,14 +233,14 @@ typedef struct HashLiteral : Expression {
 
 typedef struct IfExpression : Expression {
   IfExpression();
-  ~IfExpression();
+  ~IfExpression() {this->conditions.clear(); this->alternatives.clear();};
 
   Token token;
-  Expression* condition;
-  BlockStatement* consequence;
-  BlockStatement* alternative;
-  std::vector<Expression*> conditions;
-  std::vector<BlockStatement*> alternatives;
+  std::shared_ptr<Expression> condition;
+  std::shared_ptr<BlockStatement> consequence;
+  std::shared_ptr<BlockStatement> alternative;
+  std::vector<std::shared_ptr<Expression>> conditions;
+  std::vector<std::shared_ptr<BlockStatement>> alternatives;
 
   std::string printString();
 } IfExpression;
@@ -259,11 +259,11 @@ typedef struct IdentifierLiteral : Expression {
 
 typedef struct IdentifierStatement : Statement {
   IdentifierStatement();
-  ~IdentifierStatement();
+  ~IdentifierStatement() = default;
 
   Token token;
-  IdentifierLiteral* name;
-  Expression* value;
+  std::shared_ptr<IdentifierLiteral> name;
+  std::shared_ptr<Expression> value;
 
   std::string printString();
 } IdentifierStatement;
@@ -271,11 +271,11 @@ typedef struct IdentifierStatement : Statement {
 
 typedef struct IndexExpression : Expression {
   IndexExpression();
-  ~IndexExpression();
+  ~IndexExpression() = default;
 
   Token token;
-  Expression* _left;
-  Expression* index;
+  std::shared_ptr<Expression> _left;
+  std::shared_ptr<Expression> index;
 
   std::string printString();
 } IndexExpression;
@@ -283,12 +283,12 @@ typedef struct IndexExpression : Expression {
 
 typedef struct InfixExpression : Expression {
   InfixExpression();
-  ~InfixExpression();
+  ~InfixExpression() = default;
 
   Token token;
   std::string _operator;
-  Expression* _left;
-  Expression* _right;
+  std::shared_ptr<Expression> _left;
+  std::shared_ptr<Expression> _right;
 
   void setExpressionNode(Token);
   std::string printString();
@@ -308,11 +308,11 @@ typedef struct IntegerLiteral : Expression {
 
 typedef struct LetStatement : Statement {
   LetStatement();
-  ~LetStatement();
+  ~LetStatement() = default;
 
   Token token;
-  IdentifierLiteral* name;
-  Expression* value;
+  std::shared_ptr<IdentifierLiteral> name;
+  std::shared_ptr<Expression> value;
 
   std::string printString();
 } LetStatement;
@@ -320,11 +320,11 @@ typedef struct LetStatement : Statement {
 
 typedef struct PostfixExpression : Expression {
   PostfixExpression();
-  ~PostfixExpression();
+  ~PostfixExpression() = default;
 
   Token token;
   std::string _operator;
-  Expression* _left;
+  std::shared_ptr<Expression> _left;
 
   void setExpressionNode(Token);
   std::string printString();
@@ -333,11 +333,11 @@ typedef struct PostfixExpression : Expression {
 
 typedef struct PrefixExpression : Expression {
   PrefixExpression();
-  ~PrefixExpression();
+  ~PrefixExpression() = default;
 
   Token token;
   std::string _operator;
-  Expression* _right;
+  std::shared_ptr<Expression> _right;
 
   void setExpressionNode(Token);
   std::string printString();
@@ -346,10 +346,10 @@ typedef struct PrefixExpression : Expression {
 
 typedef struct ReturnStatement : Statement {
   ReturnStatement();
-  ~ReturnStatement();
+  ~ReturnStatement() = default;
 
   Token token;
-  Expression* returnValue;
+  std::shared_ptr<Expression> returnValue;
 
   std::string printString();
 } ReturnStatement;
@@ -368,11 +368,11 @@ typedef struct StringLiteral : Expression {
 
 typedef struct WhileExpression : Expression {
   WhileExpression();
-  ~WhileExpression();
+  ~WhileExpression() = default;
 
   Token token;
-  Expression* condition;
-  BlockStatement* body;
+  std::shared_ptr<Expression> condition;
+  std::shared_ptr<BlockStatement> body;
 
 } WhileExpression;
 
