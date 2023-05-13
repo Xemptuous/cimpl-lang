@@ -32,5 +32,5 @@ bool isError(shared_ptr<Object>);
 bool isTruthy(shared_ptr<Object>);
 shared_ptr<Boolean> nativeToBoolean(bool);
 shared_ptr<Object> newError(string);
-shared_ptr<Object> unpackLoopBody(shared_ptr<Loop>);
+shared_ptr<Object> unpackLoopBody(shared_ptr<Loop>, shared_ptr<Environment>);
 shared_ptr<Object> unwrapReturnValue(shared_ptr<Object>);

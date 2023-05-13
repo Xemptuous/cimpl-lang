@@ -17,7 +17,7 @@ void setErrorGarbageCollector(shared_ptr<Environment>* env) {
 };
 
 shared_ptr<Object> applyFunction(shared_ptr<Object> fn, vector<shared_ptr<Object>> args, shared_ptr<Environment> env) {
-  if(fn-> type == FUNCTION_OBJ) {
+  if(fn->type == FUNCTION_OBJ) {
     shared_ptr<Function> func;
     try {
       func = dynamic_pointer_cast<Function>(fn);
@@ -265,6 +265,8 @@ shared_ptr<Object> evalExpressions(shared_ptr<Expression> expr, shared_ptr<Envir
       return news;
     }
     case whileExpression: {
+      cout << "whileExpression\n";
+      cout << env.get() << '\n';
       shared_ptr<WhileExpression> wexpr = dynamic_pointer_cast<WhileExpression>(expr);
       shared_ptr<Loop> loop (new Loop(whileLoop, wexpr->body, env));
       loop->condition = wexpr->condition;
@@ -339,6 +341,9 @@ shared_ptr<Object> evalIdentifier(shared_ptr<IdentifierLiteral> node, shared_ptr
     // env->gc.push_back(bi);
     return bi;
   }
+
+  cout << "evalIdentifier\n";
+  cout << env.get() << '\n';
   
   shared_ptr<Object> val = env->get(node->value);
   if (val != nullptr)
@@ -473,35 +478,52 @@ shared_ptr<Object> evalIntegerInfixExpression(
 
 
 shared_ptr<Object> evalLoop(shared_ptr<Loop> loop) {
+  /*
+  TODO: x++ notation is likely result of assignment.
+  declaring variable in outer scope works.
+  pulling variable returns nullptr in inner scope.
+  check x++ syntax and implement a env->get() check before doing it.
+  */
+  cout << "evalLoop: loop->env\n";
+  cout << loop->env.get() << '\n';
   //FIXME: loop body variable scope not limited; sets outer/global scope
+  shared_ptr<Environment> env (new Environment(loop->env));
+  cout << "evalLoop newEnv\n";
+  cout << env.get() << '\n';
   shared_ptr<Object> cond = nullptr;
   if (!(loop->loop_type == forLoop))
-    cond = evalNode(loop->condition, loop->env);
+    cond = evalNode(loop->condition, env);
+    // cond = evalNode(loop->condition, loop->env);
   if (isError(cond)) return cond;
+  cout << "passed initial\n";
 
   shared_ptr<Boolean> b = static_pointer_cast<Boolean>(cond);
   shared_ptr<Object> result = nullptr;
   switch (loop->loop_type) {
     case doLoop: {
       do {
-        result = unpackLoopBody(loop);
-        cond = evalNode(loop->condition, loop->env);
+        result = unpackLoopBody(loop, loop->env);
+        cond = evalNode(loop->condition, env);
         b = static_pointer_cast<Boolean>(cond);
       } while (b->value);
       return result;
     }
     case forLoop: {
       for (int i = loop->start; i < loop->end; i += loop->increment) {
-        result = unpackLoopBody(loop);
+        result = unpackLoopBody(loop, loop->env);
         for (auto stmt : loop->statements)
           dynamic_pointer_cast<Integer>(loop->env->get(stmt->token.literal))->value += loop->increment;
       }
       return result;
     }
     case whileLoop: {
+      // FIXME: x += 1 in while loop throws segv
+      // FIXME: increment not working inside loop
       while (b->value) {
-        result = unpackLoopBody(loop);
-        cond = evalNode(loop->condition, loop->env);
+        result = unpackLoopBody(loop, env);
+        cond = evalNode(loop->condition, env);
+        // result = unpackLoopBody(loop, loop->env);
+        // cond = evalNode(loop->condition, loop->env);
         b = static_pointer_cast<Boolean>(cond);
       }
       return result;
@@ -730,9 +752,9 @@ shared_ptr<Object> newError(string msg) {
 }
 
 
-shared_ptr<Object> unpackLoopBody(shared_ptr<Loop> loop) {
+shared_ptr<Object> unpackLoopBody(shared_ptr<Loop> loop, shared_ptr<Environment> env) {
   for (auto stmt : loop->body->statements) {
-    shared_ptr<Object> result = evalNode(stmt, loop->env);
+    shared_ptr<Object> result = evalNode(stmt, env);
     if (result != nullptr && result->type == RETURN_OBJ)
       return result;
   }

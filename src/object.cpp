@@ -1,4 +1,5 @@
-# include "object.hpp"
+#include "object.hpp"
+#include <iostream>
 
 using namespace std;
 
@@ -18,7 +19,7 @@ Boolean::Boolean(bool b) {
 }
 
 Environment::Environment(shared_ptr<Environment> env) {
-  if (env == nullptr) { this->outer = nullptr; }
+  if (env == nullptr) this->outer = nullptr;
   else this->outer = env;
 }
 
@@ -120,17 +121,25 @@ string Boolean::inspectObject() {
 
 
 shared_ptr<Object> Environment::get(string name) {
+  cout << "Environment::get\n";
   try { 
     shared_ptr<Object> res = this->store[name]; 
+    cout << "  returning store[name]\n";
     return res;
   }
   catch (...) {
+    cout << "  inside catch\n";
     if (this->outer != nullptr) {
       try {
+      cout << "  recursing\n";
         this->outer->get(name);
       }
-      catch (...) { return nullptr; }
+      catch (...) { 
+        cout << "  not in outer; return null\n";
+        return nullptr;
+      }
     }
+    cout << "  outer is null; return null\n";
     return nullptr; 
   }
 }
