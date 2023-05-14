@@ -642,6 +642,8 @@ shared_ptr<Object> evalStatements(shared_ptr<Statement> stmt, shared_ptr<Environ
       if (isError(val))
         return val;
       shared_ptr<Object> oldVal = env->get(ae->name->value);
+      if (oldVal == nullptr)
+        return newError("Cannot assign operator without being initialized with a let statement.");
       if (val->type != oldVal->type)
         return newError("Cannot assign " + oldVal->inspectType() + " and " + val->inspectType());
       shared_ptr<Object> newVal = evalAssignmentExpression(ae->_operator, oldVal, val, env);
