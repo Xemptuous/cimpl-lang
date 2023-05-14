@@ -783,6 +783,8 @@ shared_ptr<Statement> Parser::parseStatement() {
     return this->parseReturnStatement();
   else if (curr == TokenType.IDENT && peek == TokenType.ASSIGN_EQ)
     return this->parseAssignmentExpression();
+  else if (curr == TokenType.IDENT && peek == TokenType.ASSIGN)
+    return this->parseAssignmentExpression();
   else 
     return this->parseExpressionStatement();
   return nullptr;

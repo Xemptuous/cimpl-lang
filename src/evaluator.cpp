@@ -88,12 +88,22 @@ shared_ptr<Object> evalAssignmentExpression(
       env->gc.push_back(newi);
       return newi;
     }
+    else if (op == "ASSIGN" || op == "=") {
+      shared_ptr<Integer> newi (new Integer(v->value));
+      env->gc.push_back(newi);
+      return newi;
+    }
   }
   else if (val->type == STRING_OBJ) {
     shared_ptr<String> olds = static_pointer_cast<String>(oldVal);
     shared_ptr<String> s = static_pointer_cast<String>(val);
     if (op == "+=") {
       shared_ptr<String> news (new String(olds->value + s->value));
+      env->gc.push_back(news);
+      return news;
+    }
+    else if (op == "ASSIGN" || op == "=") {
+      shared_ptr<String> news (new String(s->value));
       env->gc.push_back(news);
       return news;
     }
