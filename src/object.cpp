@@ -121,10 +121,19 @@ string Boolean::inspectObject() {
 
 
 shared_ptr<Object> Environment::get(string name) {
-  cout << "Environment::get\n";
+  cout << "Environment::get value: " << name << '\n';
   try { 
     shared_ptr<Object> res = this->store[name]; 
+    // if (res == nullptr)
+    //   throw std::exception{};
     cout << "  returning store[name]\n";
+    cout << "  name: " << name << '\n';
+    if (this->store[name] == nullptr) {
+      cout << "  val: null\n";
+      throw std::exception{};
+    }
+    else
+      cout << "  val: " << this->store[name]->inspectObject() << '\n';
     return res;
   }
   catch (...) {
@@ -132,7 +141,8 @@ shared_ptr<Object> Environment::get(string name) {
     if (this->outer != nullptr) {
       try {
       cout << "  recursing\n";
-        this->outer->get(name);
+        shared_ptr<Object> res = this->outer->get(name);
+        return res;
       }
       catch (...) { 
         cout << "  not in outer; return null\n";
@@ -145,6 +155,7 @@ shared_ptr<Object> Environment::get(string name) {
 }
 
 shared_ptr<Object> Environment::set(string name, shared_ptr<Object> val) {
+  cout << "setting environment: " << name << " to: " << val->inspectObject() << '\n';
   this->store[name] = val;
   return val;
 }

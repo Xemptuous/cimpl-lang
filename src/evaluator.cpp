@@ -255,8 +255,11 @@ shared_ptr<Object> evalExpressions(shared_ptr<Expression> expr, shared_ptr<Envir
         return newError(p->_left->literal + " is not an integer.");
       shared_ptr<IdentifierLiteral> id = static_pointer_cast<IdentifierLiteral>(p->_left);
       string name = id->value;
+      cout << "postfixExpression env->get\n";
       shared_ptr<Object> val = env->get(name);
       shared_ptr<Object> np = evalPostfixExpression(p->_operator, val, env);
+      cout << "postfixExpression env->set\n";
+      // FIXME: need env->set check for existing variables in loops
       env->set(name, np);
       return np;
     }
@@ -355,6 +358,7 @@ shared_ptr<Object> evalIdentifier(shared_ptr<IdentifierLiteral> node, shared_ptr
   cout << "evalIdentifier\n";
   cout << env.get() << '\n';
   
+  cout << "getting " << node->value << '\n';
   shared_ptr<Object> val = env->get(node->value);
   if (val != nullptr)
     return val;
@@ -633,7 +637,7 @@ shared_ptr<Object> evalStringIndexExpression(shared_ptr<Object> str, shared_ptr<
 }
 
 
-shared_ptr<Object> evalStatements(shared_ptr<Statement> stmt, shared_ptr<Environment> env = nullptr) {
+shared_ptr<Object> evalStatements(shared_ptr<Statement> stmt, shared_ptr<Environment> env) {
   switch (stmt->type) {
     case assignmentExpressionStatement: {
       //FIXME: string += int returns only int
@@ -647,6 +651,7 @@ shared_ptr<Object> evalStatements(shared_ptr<Statement> stmt, shared_ptr<Environ
       if (val->type != oldVal->type)
         return newError("Cannot assign " + oldVal->inspectType() + " and " + val->inspectType());
       shared_ptr<Object> newVal = evalAssignmentExpression(ae->_operator, oldVal, val, env);
+      cout << "AssignmentExpression env->set\n";
       env->set(ae->name->value, newVal);
       break;
     }
@@ -677,7 +682,8 @@ shared_ptr<Object> evalStatements(shared_ptr<Statement> stmt, shared_ptr<Environ
       shared_ptr<Object> val = evalNode(ls->value, env);
       if (isError(val))
         return val;
-      env->set(ls->name->value, val);
+      cout << "letStatement env->set\n";
+      shared_ptr<Object> res = env->set(ls->name->value, val);
       break;
     }
     case returnStatement: {
