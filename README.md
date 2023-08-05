@@ -1,42 +1,152 @@
 # cimple-lang
-A "simple" compiled &amp; interpreted multiple-paradigm language.
+A "simple" compiled and interpreted multiple-paradigm language.
 
-This is a WIP of my first attempt at creating a programming language; first starting with Interpretation, and later adding Compilation.
+Currently only Interpreter is implemented; compiler to come.
 
-Inspiration for this project is based on Thorsten Ball's "Writing an Interpreter in GO"; however, I found GO to be a convoluted language compared to other low-level languages, and so I decided to write it in C++ as a personal learning experience.
+## Usage
 
-### Language
+run the `compile.sh` script to produce the `a.out` file, then simply run with CLI!
 
-The idea for this language is to have a mix of both static and dynamic typing (I personally prefer declaring data types), as well as the option for both interpretation and compilation in its implementation.
+## Syntax
 
-If the code is meant as a prototype, the user can dynamically type the language and run it using the interpreter.
+#### Variable declaration
 
-If the code is meant to be more full-fledged, the user can statically type and compile.
+Familiar `let` statements are used to initialize variables.
 
-#### File Extensions
-Cimple will use `.cmp` as its primary extension, and `.cmh` for its headers (if that design is kept). 
-#### Syntax
+All lines must end with semi-colons.
 
-One of the main drivers in my inspiration was seeing the odd syntax of C's `*` being used for multiplication, pointer declaration, and dereferencing.
-
-I thought it was much simpler to use a symbol such as `^` for "pointer" (bitwise operations aside), and the unused `@` for "at". 
-
-So in essence,
+```js
+let x = 5;
+let foo = "bar";
+let abc123 = "45"
 ```
-// C style:
 
-int a = 5;
-int* ap = &a;
-inc b = *ap * 2;
-```
-Would Become
-```
-// Cimple style:
+### Functions
 
-int a = 5;
-int^ ap = &a;
-int b = @ap * 2
-```
-The idea being that instead of using the same `*` symbol for the 3 actions, we use a different symbol for each.
+Functions are declared with the `fn` keyword, and use braces for the body.
 
-I have also thought of the idea of simply using the @ symbol like: `@&a *= 2` to represent "the value AT ADDRESS a *= 2", although I will have to tackle that when the code gets there. I have notes on options and possibilities, so they will be more fleshed out over time.
+```rs
+fn addNums(a, b) {
+    return a + b;
+}
+
+let x = 1;
+let y = 4;
+let z = addNums(x, y);
+print(z);
+// 5
+```
+
+### Conditionals
+
+These should be a familiar construct:
+```js
+let x = 5;
+
+if (x < 4) {
+    print("too small");
+}
+else if (x > 6) {
+    print("too big");
+}
+else {
+    print("just right");
+}
+
+let y = false;
+if (y) { print("true"); }
+else { print("false"); }
+// "false"
+```
+
+### Loops
+
+##### For loop
+
+For loop ranges are start-inclusive and end-exclusive.
+
+```js
+// 0 inclusive, 10 exclusive
+for (i in 0:10) {
+    print(i);
+}
+// 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+```
+
+Optional step parameter is allowed
+
+```js
+// step by 2
+for (i in 0:10:2) {
+    print(i);
+}
+// 0, 2, 4, 6, 8
+```
+
+Multiple variables can be declared inline as well
+
+```js
+for (i, j in 0:10) { ... }
+```
+
+##### While loop
+
+While loops will look quite familiar:
+```js
+let x = 0;
+while (x < 10) {
+    print(x);
+    x++;
+}
+```
+
+##### Do While
+
+```js
+let x = 0;
+do {
+    print(x);
+    x += 1;
+} while (x < 10);
+```
+
+### Arithmetic Operations
+
+Numbers can be operated upon and modified in various syntaxes:
+```js
+let x = 5;
+x++;
+x--;
+x += 1;
+x -= 1;
+x *= 3;
+x /= 2;
+```
+
+### Arrays and Dicts
+
+Arrays can be assigned and indexed in a fashion similar to python:
+```js
+let arr = [1, 2, 3, 4, 5];
+print(arr[0]) // 1
+print(arr[-1]) // 5 - reverse indexing
+```
+
+Strings can also be accessed by index:
+```js
+let str = "foobar";
+print(x[-3]); // b
+```
+
+Dictionaries can be declared and accessed in a pythonic manner:
+```js
+let d = {
+    "a": 10,
+    "b": 20,
+    "c": 30
+};
+print(d["b"]);
+// 20
+```
+
+Array slicing to come! Syntax will be similar to python

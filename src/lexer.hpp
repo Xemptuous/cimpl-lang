@@ -1,6 +1,6 @@
 #pragma once
+#include "memory"
 #include "token.hpp"
-
 
 class Lexer {
   public:
@@ -10,6 +10,7 @@ class Lexer {
     std::string input;
 
     Token nextToken();
+
   private:
     char ch = input[0];
     int position = 0;
@@ -20,6 +21,7 @@ class Lexer {
     void readChar();
     std::string readBlockComment();
     std::string readComment();
+    std::string readDecimal();
     std::string readIdentifier();
     std::string readNumber();
     std::string readString();
@@ -29,4 +31,3 @@ class Lexer {
 
 std::string lookupIdentifier(std::string);
 Token newToken(std::string, char);
-
