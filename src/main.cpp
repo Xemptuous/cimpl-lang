@@ -1,5 +1,6 @@
 #include "object.hpp"
 
+#include <curses.h>
 #include <stack>
 #include <string>
 #include <vector>
@@ -8,8 +9,7 @@ using namespace std;
 
 int repl(string, shared_ptr<Environment>);
 void printParserErrors(vector<string>);
-Object* evalNode(Node*, shared_ptr<Environment>);
-void setErrorGarbageCollector(shared_ptr<Environment>);
+void setErrorGarbageCollector(shared_ptr<Environment>*);
 void mainLoop();
 void deallocate();
 // string readLine(string&);
@@ -30,6 +30,7 @@ int main() {
     refresh();
     delwin(PAD);
     endwin();
+    // exit_curses(0);
     return 0;
 }
 
@@ -156,7 +157,7 @@ void mainLoop() {
 shared_ptr<Object> evalNode(shared_ptr<Node>, shared_ptr<Environment>);
 
 int repl(string input, shared_ptr<Environment> env) {
-    AST* ast = new AST(input);
+    unique_ptr<AST> ast(new AST(input));
     ast->parseProgram();
 
     if (ast->parser->errors.size() != 0) {
@@ -164,8 +165,7 @@ int repl(string input, shared_ptr<Environment> env) {
         return 0;
     }
 
-    shared_ptr<Environment> err_gc(new Environment());
-    setErrorGarbageCollector(err_gc);
+    setErrorGarbageCollector(&env);
 
     for (auto stmt : ast->Statements) {
         shared_ptr<Object> evaluated = evalNode(stmt, env);
@@ -184,7 +184,6 @@ int repl(string input, shared_ptr<Environment> env) {
             }
         }
     }
-    delete ast;
     return 0;
 }
 

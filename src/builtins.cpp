@@ -23,6 +23,8 @@ shared_ptr<Object> evalBuiltinFunction(
             return built_in_push(args, env);
         case builtin_pop:
             return built_in_pop(args, env);
+        case builtin_quit:
+            return built_in_quit(env);
         default:
             return newError("not a valid function");
     }
@@ -48,6 +50,16 @@ shared_ptr<Object> built_in_len(vector<shared_ptr<Object>> args, shared_ptr<Envi
     }
 
     return nullptr;
+}
+shared_ptr<Object> built_in_print(vector<shared_ptr<Object>> args, shared_ptr<Environment> env) {
+    stringstream ss;
+    for (auto arg : args)
+        ss << arg->inspectObject();
+    // cout << arg->inspectObject() << '\n';
+    shared_ptr<Print> newp(new Print());
+    env->gc.push_back(newp);
+    newp->value = ss.str();
+    return newp;
 }
 
 shared_ptr<Object> built_in_max(vector<shared_ptr<Object>> args, shared_ptr<Environment> env) {
