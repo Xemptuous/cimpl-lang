@@ -346,6 +346,7 @@ shared_ptr<ForExpression> Parser::parseForExpression() {
         if (this->currentToken.type != TokenType.INT) return nullptr;
         increment = this->parseIntegerLiteral();
         if (this->peekToken.type != TokenType.RPAREN) return nullptr;
+        this->nextToken();
     } else {
         ostringstream ss;
         ss << "Could not parse for-loop";
