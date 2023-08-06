@@ -30,7 +30,6 @@ int main() {
     refresh();
     delwin(PAD);
     endwin();
-    // exit_curses(0);
     return 0;
 }
 
@@ -178,8 +177,8 @@ int repl(string input, shared_ptr<Environment> env) {
             }
             if (evaluated->type == ERROR_OBJ) {
                 shared_ptr<Error> result = dynamic_pointer_cast<Error>(evaluated);
-                wprintw(PAD, "%s\n", result->message.c_str());
-                *CURSOR_Y += 1;
+                wprintw(PAD, "\n%s\n", result->message.c_str());
+                *CURSOR_Y += 2;
                 continue;
             }
         }
@@ -192,7 +191,7 @@ void printParserErrors(vector<string> errs) {
     *CURSOR_Y += 2;
     for (auto err : errs) {
         wprintw(PAD, "\t%s\n", err.c_str());
-        *CURSOR_Y += 1;
+        *CURSOR_Y += 2;
     }
 }
 

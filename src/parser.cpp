@@ -133,7 +133,7 @@ shared_ptr<AssignmentExpressionStatement> Parser::parseAssignmentExpression() {
         if (this->currentToken.type == TokenType._EOF) {
             ostringstream ss;
             ss << "No Semicolon present at end of line for " << StatementMap.at(expr->type)
-               << " with value " << expr->value->token.literal;
+               << " with value " << expr->value->token.literal << '\n';
             this->errors.push_back(ss.str());
             return nullptr;
         }
@@ -293,7 +293,7 @@ shared_ptr<FloatLiteral> Parser::parseFloatLiteral() {
         value = stof(this->currentToken.literal);
     } catch (...) {
         ostringstream ss;
-        ss << "Could not parse " << this->currentToken.literal << " as float";
+        ss << "Could not parse " << this->currentToken.literal << " as float\n";
         this->errors.push_back(ss.str());
         return nullptr;
     }
@@ -349,7 +349,7 @@ shared_ptr<ForExpression> Parser::parseForExpression() {
         this->nextToken();
     } else {
         ostringstream ss;
-        ss << "Could not parse for-loop";
+        ss << "Could not parse for-loop\n";
         this->errors.push_back(ss.str());
         return nullptr;
     }
@@ -485,7 +485,7 @@ shared_ptr<IdentifierStatement> Parser::parseIdentifierStatement() {
     if (!expectPeek(TokenType.ASSIGN)) {
         ostringstream ss;
         ss << "line:" << this->linenumber << ": Could not parse " << this->currentToken.literal
-           << "; no assignment operator";
+           << "; no assignment operator\n";
         this->errors.push_back(ss.str());
         return nullptr;
     }
@@ -501,7 +501,7 @@ shared_ptr<IdentifierStatement> Parser::parseIdentifierStatement() {
         if (this->currentToken.type == TokenType._EOF) {
             ostringstream ss;
             ss << "No Semicolon present at end of line for " << StatementMap.at(stmt->type)
-               << " with value " << stmt->value->token.literal;
+               << " with value " << stmt->value->token.literal << '\n';
             this->errors.push_back(ss.str());
             return nullptr;
         }
@@ -597,7 +597,7 @@ shared_ptr<IntegerLiteral> Parser::parseIntegerLiteral() {
         value = stoi(this->currentToken.literal);
     } catch (...) {
         ostringstream ss;
-        ss << "Could not parse " << this->currentToken.literal << " as integer";
+        ss << "Could not parse " << this->currentToken.literal << " as integer\n";
         this->errors.push_back(ss.str());
         return nullptr;
     }
@@ -647,7 +647,7 @@ shared_ptr<LetStatement> Parser::parseLetStatement() {
     // If no identifier found
     if (!expectPeek(TokenType.IDENT)) {
         ostringstream ss;
-        ss << "Could not parse " << this->currentToken.literal << "; no identifier given";
+        ss << "Could not parse " << this->currentToken.literal << "; no identifier given\n";
         this->errors.push_back(ss.str());
         return nullptr;
     }
@@ -657,7 +657,7 @@ shared_ptr<LetStatement> Parser::parseLetStatement() {
 
     if (!expectPeek(TokenType.ASSIGN)) {
         ostringstream ss;
-        ss << "Could not parse " << this->currentToken.literal << "; no assignment operator";
+        ss << "Could not parse " << this->currentToken.literal << "; no assignment operator\n";
         this->errors.push_back(ss.str());
         return nullptr;
     }
@@ -671,7 +671,7 @@ shared_ptr<LetStatement> Parser::parseLetStatement() {
         if (this->currentToken.type == TokenType._EOF) {
             ostringstream ss;
             ss << "No Semicolon present at end of line for " << StatementMap.at(stmt->type)
-               << " with value " << stmt->value->token.literal;
+               << " with value " << stmt->value->token.literal << '\n';
             this->errors.push_back(ss.str());
             return nullptr;
         }
@@ -714,7 +714,7 @@ shared_ptr<ReturnStatement> Parser::parseReturnStatement() {
         if (this->currentToken.type == TokenType._EOF) {
             ostringstream ss;
             ss << "No Semicolon present at end of line for " << StatementMap.at(stmt->type)
-               << " with value " << stmt->returnValue->token.literal;
+               << " with value " << stmt->returnValue->token.literal << '\n';
             this->errors.push_back(ss.str());
             return nullptr;
         }
@@ -769,8 +769,7 @@ shared_ptr<WhileExpression> Parser::parseWhileExpression() {
 
 void Parser::peekErrors(string t) {
     ostringstream ss;
-    ss << "Expected next token to be " << t << ", but got " << this->peekToken.type << " instead"
-       << '\n';
+    ss << "Expected next token to be " << t << ", but got " << this->peekToken.type << " instead\n";
     this->errors.push_back(ss.str());
 }
 
