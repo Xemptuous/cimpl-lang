@@ -65,40 +65,38 @@ void mainLoop() {
         ch = mvgetch(cursor_y, cursor_x);
         prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
         switch (ch) {
-            case KEY_UP:
-                {
-                    if (HISTORY.empty()) break;
-                    wmove(pad, cursor_y, min_x);
-                    wclrtoeol(pad);
-                    MEMORY.push(HISTORY.top());
-                    HISTORY.pop();
-                    string prev = MEMORY.top().first;
-                    maxline_x = MEMORY.top().second;
-                    wmove(pad, cursor_y, min_x);
-                    cursor_x = min_x;
-                    for (int i = 0; i < maxline_x - 1; i++) {
-                        mvwaddch(pad, cursor_y, cursor_x++, prev[i]);
-                    }
-                    prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
-                    break;
+            case KEY_UP: {
+                if (HISTORY.empty()) break;
+                wmove(pad, cursor_y, min_x);
+                wclrtoeol(pad);
+                MEMORY.push(HISTORY.top());
+                HISTORY.pop();
+                string prev = MEMORY.top().first;
+                maxline_x = MEMORY.top().second;
+                wmove(pad, cursor_y, min_x);
+                cursor_x = min_x;
+                for (int i = 0; i < maxline_x - 1; i++) {
+                    mvwaddch(pad, cursor_y, cursor_x++, prev[i]);
                 }
-            case KEY_DOWN:
-                {
-                    if (MEMORY.empty()) break;
-                    wmove(pad, cursor_y, min_x);
-                    wclrtoeol(pad);
-                    HISTORY.push(MEMORY.top());
-                    MEMORY.pop();
-                    string next = HISTORY.top().first;
-                    maxline_x = HISTORY.top().second;
-                    wmove(pad, cursor_y, min_x);
-                    cursor_x = min_x;
-                    for (int i = 0; i < maxline_x - 1; i++) {
-                        mvwaddch(pad, cursor_y, cursor_x++, next[i]);
-                    }
-                    prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
-                    break;
+                prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
+                break;
+            }
+            case KEY_DOWN: {
+                if (MEMORY.empty()) break;
+                wmove(pad, cursor_y, min_x);
+                wclrtoeol(pad);
+                HISTORY.push(MEMORY.top());
+                MEMORY.pop();
+                string next = HISTORY.top().first;
+                maxline_x = HISTORY.top().second;
+                wmove(pad, cursor_y, min_x);
+                cursor_x = min_x;
+                for (int i = 0; i < maxline_x - 1; i++) {
+                    mvwaddch(pad, cursor_y, cursor_x++, next[i]);
                 }
+                prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
+                break;
+            }
             case KEY_LEFT:
                 cursor_x <= min_x ? cursor_x = min_x : cursor_x--;
                 wmove(pad, cursor_y, cursor_x);
@@ -120,29 +118,28 @@ void mainLoop() {
                 prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
                 break;
             case KEY_ENTER:
-            case 10:
-                {
-                    chtype p[150];
-                    string input;
-                    wmove(pad, cursor_y, min_x);
-                    winchnstr(pad, p, maxline_x);
-                    int len = sizeof(p) / sizeof(p[0]);
-                    for (int i = 0; i < len; i++) {
-                        char ch = p[i] & A_CHARTEXT;
-                        input += ch;
-                    }
-                    pair<string, int> pairs(input, maxline_x);
-                    HISTORY.push(pairs);
-                    wprintw(pad, "%s", input.c_str());
-                    int resp = repl(input, env);
-                    if (resp == 1) return;
-                    maxline_x = 1;
-                    cursor_y >= h - 1 ? cursor_y = h - 1 : cursor_y++;
-                    cursor_x = min_x;
-                    wprintw(pad, "\n>>> ");
-                    prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
-                    break;
+            case 10: {
+                chtype p[150];
+                string input;
+                wmove(pad, cursor_y, min_x);
+                winchnstr(pad, p, maxline_x);
+                int len = sizeof(p) / sizeof(p[0]);
+                for (int i = 0; i < len; i++) {
+                    char ch = p[i] & A_CHARTEXT;
+                    input += ch;
                 }
+                pair<string, int> pairs(input, maxline_x);
+                HISTORY.push(pairs);
+                wprintw(pad, "%s", input.c_str());
+                int resp = repl(input, env);
+                if (resp == 1) return;
+                maxline_x = 1;
+                cursor_y >= h - 1 ? cursor_y = h - 1 : cursor_y++;
+                cursor_x = min_x;
+                wprintw(pad, "\n>>> ");
+                prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
+                break;
+            }
             default:
                 mvwinsch(pad, cursor_y, cursor_x, ch);
                 prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);

@@ -97,14 +97,10 @@ shared_ptr<Object> evalAssignmentExpression(
 
 shared_ptr<Object> evalBangOperatorExpression(shared_ptr<Object> _right) {
     switch (_right->type) {
-        case BOOLEAN_TRUE:
-            return static_pointer_cast<Object>(FALSE_BOOL);
-        case BOOLEAN_FALSE:
-            return static_pointer_cast<Object>(TRUE_BOOL);
-        case NULL_OBJ:
-            return static_pointer_cast<Object>(TRUE_BOOL);
-        default:
-            return static_pointer_cast<Object>(FALSE_BOOL);
+        case BOOLEAN_TRUE: return static_pointer_cast<Object>(FALSE_BOOL);
+        case BOOLEAN_FALSE: return static_pointer_cast<Object>(TRUE_BOOL);
+        case NULL_OBJ: return static_pointer_cast<Object>(TRUE_BOOL);
+        default: return static_pointer_cast<Object>(FALSE_BOOL);
     }
 }
 
@@ -126,150 +122,133 @@ evalCallExpressions(vector<shared_ptr<Expression>> expr, shared_ptr<Environment>
 shared_ptr<Object>
 evalExpressions(shared_ptr<Expression> expr, shared_ptr<Environment> env = nullptr) {
     switch (expr->type) {
-        case arrayLiteral:
-            {
-                shared_ptr<ArrayLiteral> a = static_pointer_cast<ArrayLiteral>(expr);
-                vector<shared_ptr<Object>> elements = evalCallExpressions(a->elements, env);
-                if (elements.size() == 1 && isError(elements[0])) return elements[0];
-                shared_ptr<Array> newa(new Array(elements));
-                env->gc.push_back(newa);
-                return newa;
+        case arrayLiteral: {
+            shared_ptr<ArrayLiteral> a = static_pointer_cast<ArrayLiteral>(expr);
+            vector<shared_ptr<Object>> elements = evalCallExpressions(a->elements, env);
+            if (elements.size() == 1 && isError(elements[0])) return elements[0];
+            shared_ptr<Array> newa(new Array(elements));
+            env->gc.push_back(newa);
+            return newa;
+        }
+        case booleanExpression: {
+            shared_ptr<BooleanLiteral> b = static_pointer_cast<BooleanLiteral>(expr);
+            shared_ptr<Boolean> newb = nativeToBoolean(b->value);
+            return newb;
+        }
+        case callExpression: {
+            shared_ptr<CallExpression> ce = static_pointer_cast<CallExpression>(expr);
+            shared_ptr<Object> func = evalNode(ce->_function, env);
+            if (isError(func)) return func;
+            vector<shared_ptr<Object>> args = evalCallExpressions(ce->arguments, env);
+            if (args.size() == 1 && isError(args[0])) return args[0];
+            return applyFunction(func, args, env);
+        }
+        case doExpression: {
+            shared_ptr<DoExpression> de = static_pointer_cast<DoExpression>(expr);
+            shared_ptr<Loop> loop(new Loop(doLoop, de->body, env));
+            env->gc.push_back(loop);
+            loop->condition = de->condition;
+            return evalLoop(loop);
+            break;
+        }
+        case floatLiteral: {
+            shared_ptr<FloatLiteral> f = static_pointer_cast<FloatLiteral>(expr);
+            shared_ptr<Float> newf(new Float(f->value));
+            env->gc.push_back(newf);
+            return newf;
+        }
+        case forExpression: {
+            shared_ptr<ForExpression> fe = dynamic_pointer_cast<ForExpression>(expr);
+            shared_ptr<Loop> loop(new Loop(forLoop, fe->body, env));
+            env->gc.push_back(loop);
+            loop->start = static_pointer_cast<IntegerLiteral>(fe->start)->value;
+            loop->end = static_pointer_cast<IntegerLiteral>(fe->end)->value;
+            loop->increment = static_pointer_cast<IntegerLiteral>(fe->increment)->value;
+            for (auto stmt : fe->statements) {
+                evalNode(stmt, loop->env);
+                loop->statements.push_back(stmt);
             }
-        case booleanExpression:
-            {
-                shared_ptr<BooleanLiteral> b = static_pointer_cast<BooleanLiteral>(expr);
-                shared_ptr<Boolean> newb = nativeToBoolean(b->value);
-                return newb;
-            }
-        case callExpression:
-            {
-                shared_ptr<CallExpression> ce = static_pointer_cast<CallExpression>(expr);
-                shared_ptr<Object> func = evalNode(ce->_function, env);
-                if (isError(func)) return func;
-                vector<shared_ptr<Object>> args = evalCallExpressions(ce->arguments, env);
-                if (args.size() == 1 && isError(args[0])) return args[0];
-                return applyFunction(func, args, env);
-            }
-        case doExpression:
-            {
-                shared_ptr<DoExpression> de = static_pointer_cast<DoExpression>(expr);
-                shared_ptr<Loop> loop(new Loop(doLoop, de->body, env));
-                env->gc.push_back(loop);
-                loop->condition = de->condition;
-                return evalLoop(loop);
-                break;
-            }
-        case floatLiteral:
-            {
-                shared_ptr<FloatLiteral> f = static_pointer_cast<FloatLiteral>(expr);
-                shared_ptr<Float> newf(new Float(f->value));
-                env->gc.push_back(newf);
-                return newf;
-            }
-        case forExpression:
-            {
-                shared_ptr<ForExpression> fe = dynamic_pointer_cast<ForExpression>(expr);
-                shared_ptr<Loop> loop(new Loop(forLoop, fe->body, env));
-                env->gc.push_back(loop);
-                loop->start = static_pointer_cast<IntegerLiteral>(fe->start)->value;
-                loop->end = static_pointer_cast<IntegerLiteral>(fe->end)->value;
-                loop->increment = static_pointer_cast<IntegerLiteral>(fe->increment)->value;
-                for (auto stmt : fe->statements) {
-                    evalNode(stmt, loop->env);
-                    loop->statements.push_back(stmt);
-                }
-                return evalLoop(loop);
-                break;
-            }
-        case functionLiteral:
-            {
-                shared_ptr<FunctionLiteral> fl = static_pointer_cast<FunctionLiteral>(expr);
-                shared_ptr<Function> newf(new Function(fl->parameters, fl->body, env));
-                env->gc.push_back(newf);
-                env->set(fl->name->value, newf);
-                break;
-            }
-        case hashLiteral:
-            {
-                shared_ptr<HashLiteral> h = static_pointer_cast<HashLiteral>(expr);
-                return evalHashLiteral(h, env);
-            }
-        case identifier:
-            {
-                shared_ptr<IdentifierLiteral> i = static_pointer_cast<IdentifierLiteral>(expr);
-                shared_ptr<Object> newi = evalIdentifier(i, env);
-                return newi;
-            }
-        case ifExpression:
-            {
-                shared_ptr<IfExpression> i = static_pointer_cast<IfExpression>(expr);
-                shared_ptr<Object> cond = evalIfExpression(i, env);
-                return cond;
-            }
-        case indexExpression:
-            {
-                shared_ptr<IndexExpression> ie = static_pointer_cast<IndexExpression>(expr);
-                shared_ptr<Object> left = evalNode(ie->_left, env);
-                if (isError(left)) return left;
-                shared_ptr<Object> index = evalNode(ie->index, env);
-                if (isError(index)) return index;
-                return evalIndexExpression(left, index, env);
-            }
-        case infixExpression:
-            {
-                shared_ptr<InfixExpression> i = static_pointer_cast<InfixExpression>(expr);
-                shared_ptr<Object> left = evalNode(i->_left, env);
-                if (isError(left)) return left;
-                shared_ptr<Object> right = evalNode(i->_right, env);
-                if (isError(right)) return right;
-                shared_ptr<Object> ni = evalInfixExpression(i->_operator, left, right, env);
-                return ni;
-            }
-        case integerLiteral:
-            {
-                shared_ptr<IntegerLiteral> i = static_pointer_cast<IntegerLiteral>(expr);
-                shared_ptr<Integer> newi(new Integer(i->value));
-                env->gc.push_back(newi);
-                return newi;
-            }
-        case postfixExpression:
-            {
-                shared_ptr<PostfixExpression> p = static_pointer_cast<PostfixExpression>(expr);
-                shared_ptr<Object> left = evalNode(p->_left, env);
-                if (isError(left)) return left;
-                if (left->type != INTEGER_OBJ)
-                    return newError(p->_left->literal + " is not an integer.");
-                shared_ptr<IdentifierLiteral> id = static_pointer_cast<IdentifierLiteral>(p->_left);
-                string name = id->value;
-                shared_ptr<Object> val = env->get(name);
-                shared_ptr<Object> np = evalPostfixExpression(p->_operator, val, env);
-                env->set(name, np);
-                return np;
-            }
-        case prefixExpression:
-            {
-                shared_ptr<PrefixExpression> p = static_pointer_cast<PrefixExpression>(expr);
-                shared_ptr<Object> right = evalNode(p->_right, env);
-                if (isError(right)) return right;
-                shared_ptr<Object> np = evalPrefixExpression(p->_operator, right, env);
-                return np;
-            }
-        case stringLiteral:
-            {
-                shared_ptr<StringLiteral> s = static_pointer_cast<StringLiteral>(expr);
-                shared_ptr<String> news(new String(s->value));
-                env->gc.push_back(news);
-                return news;
-            }
-        case whileExpression:
-            {
-                shared_ptr<WhileExpression> wexpr = dynamic_pointer_cast<WhileExpression>(expr);
-                shared_ptr<Loop> loop(new Loop(whileLoop, wexpr->body, env));
-                loop->condition = wexpr->condition;
-                env->gc.push_back(loop);
-                return evalLoop(loop);
-                break;
-            }
+            return evalLoop(loop);
+            break;
+        }
+        case functionLiteral: {
+            shared_ptr<FunctionLiteral> fl = static_pointer_cast<FunctionLiteral>(expr);
+            shared_ptr<Function> newf(new Function(fl->parameters, fl->body, env));
+            env->gc.push_back(newf);
+            env->set(fl->name->value, newf);
+            break;
+        }
+        case hashLiteral: {
+            shared_ptr<HashLiteral> h = static_pointer_cast<HashLiteral>(expr);
+            return evalHashLiteral(h, env);
+        }
+        case identifier: {
+            shared_ptr<IdentifierLiteral> i = static_pointer_cast<IdentifierLiteral>(expr);
+            shared_ptr<Object> newi = evalIdentifier(i, env);
+            return newi;
+        }
+        case ifExpression: {
+            shared_ptr<IfExpression> i = static_pointer_cast<IfExpression>(expr);
+            shared_ptr<Object> cond = evalIfExpression(i, env);
+            return cond;
+        }
+        case indexExpression: {
+            shared_ptr<IndexExpression> ie = static_pointer_cast<IndexExpression>(expr);
+            shared_ptr<Object> left = evalNode(ie->_left, env);
+            if (isError(left)) return left;
+            shared_ptr<Object> index = evalNode(ie->index, env);
+            if (isError(index)) return index;
+            return evalIndexExpression(left, index, env);
+        }
+        case infixExpression: {
+            shared_ptr<InfixExpression> i = static_pointer_cast<InfixExpression>(expr);
+            shared_ptr<Object> left = evalNode(i->_left, env);
+            if (isError(left)) return left;
+            shared_ptr<Object> right = evalNode(i->_right, env);
+            if (isError(right)) return right;
+            shared_ptr<Object> ni = evalInfixExpression(i->_operator, left, right, env);
+            return ni;
+        }
+        case integerLiteral: {
+            shared_ptr<IntegerLiteral> i = static_pointer_cast<IntegerLiteral>(expr);
+            shared_ptr<Integer> newi(new Integer(i->value));
+            env->gc.push_back(newi);
+            return newi;
+        }
+        case postfixExpression: {
+            shared_ptr<PostfixExpression> p = static_pointer_cast<PostfixExpression>(expr);
+            shared_ptr<Object> left = evalNode(p->_left, env);
+            if (isError(left)) return left;
+            if (left->type != INTEGER_OBJ)
+                return newError(p->_left->literal + " is not an integer.");
+            shared_ptr<IdentifierLiteral> id = static_pointer_cast<IdentifierLiteral>(p->_left);
+            string name = id->value;
+            shared_ptr<Object> val = env->get(name);
+            shared_ptr<Object> np = evalPostfixExpression(p->_operator, val, env);
+            env->set(name, np);
+            return np;
+        }
+        case prefixExpression: {
+            shared_ptr<PrefixExpression> p = static_pointer_cast<PrefixExpression>(expr);
+            shared_ptr<Object> right = evalNode(p->_right, env);
+            if (isError(right)) return right;
+            shared_ptr<Object> np = evalPrefixExpression(p->_operator, right, env);
+            return np;
+        }
+        case stringLiteral: {
+            shared_ptr<StringLiteral> s = static_pointer_cast<StringLiteral>(expr);
+            shared_ptr<String> news(new String(s->value));
+            env->gc.push_back(news);
+            return news;
+        }
+        case whileExpression: {
+            shared_ptr<WhileExpression> wexpr = dynamic_pointer_cast<WhileExpression>(expr);
+            shared_ptr<Loop> loop(new Loop(whileLoop, wexpr->body, env));
+            loop->condition = wexpr->condition;
+            env->gc.push_back(loop);
+            return evalLoop(loop);
+            break;
+        }
     }
     return nullptr;
 }
@@ -400,50 +379,42 @@ shared_ptr<Object> evalIntegerInfixExpression(
     }
 
     switch (op[0]) {
-        case '+':
-            {
-                shared_ptr<Integer> newi(new Integer(leftVal + rightVal));
-                env->gc.push_back(newi);
-                return newi;
-            }
-        case '-':
-            {
-                shared_ptr<Integer> newi(new Integer(leftVal - rightVal));
-                env->gc.push_back(newi);
-                return newi;
-            }
-        case '*':
-            {
-                shared_ptr<Integer> newi(new Integer(leftVal * rightVal));
-                env->gc.push_back(newi);
-                return newi;
-            }
-        case '/':
-            {
-                shared_ptr<Integer> newi(new Integer(leftVal / rightVal));
-                env->gc.push_back(newi);
-                return newi;
-            }
-        case '<':
-            return nativeToBoolean(leftVal < rightVal);
-        case '>':
-            return nativeToBoolean(leftVal > rightVal);
-        case '=':
-            {
-                if (op[1] == '=') return nativeToBoolean(leftVal == rightVal);
+        case '+': {
+            shared_ptr<Integer> newi(new Integer(leftVal + rightVal));
+            env->gc.push_back(newi);
+            return newi;
+        }
+        case '-': {
+            shared_ptr<Integer> newi(new Integer(leftVal - rightVal));
+            env->gc.push_back(newi);
+            return newi;
+        }
+        case '*': {
+            shared_ptr<Integer> newi(new Integer(leftVal * rightVal));
+            env->gc.push_back(newi);
+            return newi;
+        }
+        case '/': {
+            shared_ptr<Integer> newi(new Integer(leftVal / rightVal));
+            env->gc.push_back(newi);
+            return newi;
+        }
+        case '<': return nativeToBoolean(leftVal < rightVal);
+        case '>': return nativeToBoolean(leftVal > rightVal);
+        case '=': {
+            if (op[1] == '=') return nativeToBoolean(leftVal == rightVal);
 
-                ostringstream ss;
-                ss << "Unknown operator: " << leftVal << op << rightVal;
-                return newError(ss.str());
-            }
-        case '!':
-            {
-                if (op[1] == '=') return nativeToBoolean(leftVal != rightVal);
+            ostringstream ss;
+            ss << "Unknown operator: " << leftVal << op << rightVal;
+            return newError(ss.str());
+        }
+        case '!': {
+            if (op[1] == '=') return nativeToBoolean(leftVal != rightVal);
 
-                ostringstream ss;
-                ss << "Unknown operator: " << leftVal << op << rightVal;
-                return newError(ss.str());
-            }
+            ostringstream ss;
+            ss << "Unknown operator: " << leftVal << op << rightVal;
+            return newError(ss.str());
+        }
         default:
             ostringstream ss;
             ss << "Unknown operator: " << leftVal << op << rightVal;
@@ -460,34 +431,31 @@ shared_ptr<Object> evalLoop(shared_ptr<Loop> loop) {
     shared_ptr<Boolean> b = static_pointer_cast<Boolean>(cond);
     shared_ptr<Object> result = nullptr;
     switch (loop->loop_type) {
-        case doLoop:
-            {
-                do {
-                    result = unpackLoopBody(loop);
-                    cond = evalNode(loop->condition, loop->env);
-                    b = static_pointer_cast<Boolean>(cond);
-                } while (b->value);
-                return result;
+        case doLoop: {
+            do {
+                result = unpackLoopBody(loop);
+                cond = evalNode(loop->condition, loop->env);
+                b = static_pointer_cast<Boolean>(cond);
+            } while (b->value);
+            return result;
+        }
+        case forLoop: {
+            for (int i = loop->start; i < loop->end; i += loop->increment) {
+                result = unpackLoopBody(loop);
+                for (auto stmt : loop->statements)
+                    dynamic_pointer_cast<Integer>(loop->env->get(stmt->token.literal))->value +=
+                        loop->increment;
             }
-        case forLoop:
-            {
-                for (int i = loop->start; i < loop->end; i += loop->increment) {
-                    result = unpackLoopBody(loop);
-                    for (auto stmt : loop->statements)
-                        dynamic_pointer_cast<Integer>(loop->env->get(stmt->token.literal))->value +=
-                            loop->increment;
-                }
-                return result;
+            return result;
+        }
+        case whileLoop: {
+            while (b->value) {
+                result = unpackLoopBody(loop);
+                cond = evalNode(loop->condition, loop->env);
+                b = static_pointer_cast<Boolean>(cond);
             }
-        case whileLoop:
-            {
-                while (b->value) {
-                    result = unpackLoopBody(loop);
-                    cond = evalNode(loop->condition, loop->env);
-                    b = static_pointer_cast<Boolean>(cond);
-                }
-                return result;
-            }
+            return result;
+        }
     }
     return newError("Not a valid loop type.");
 }
@@ -537,10 +505,8 @@ evalPostfixExpression(string op, shared_ptr<Object> left, shared_ptr<Environment
 shared_ptr<Object>
 evalPrefixExpression(string op, shared_ptr<Object> r, shared_ptr<Environment> env) {
     switch (op[0]) {
-        case '!':
-            return evalBangOperatorExpression(r);
-        case '-':
-            return evalMinusOperatorExpression(r, env);
+        case '!': return evalBangOperatorExpression(r);
+        case '-': return evalMinusOperatorExpression(r, env);
         default:
             ostringstream ss;
             ss << "Unknown operator: " << op << r->inspectType();
@@ -580,65 +546,57 @@ shared_ptr<Object> evalStringIndexExpression(
 shared_ptr<Object>
 evalStatements(shared_ptr<Statement> stmt, shared_ptr<Environment> env = nullptr) {
     switch (stmt->type) {
-        case assignmentExpressionStatement:
-            {
-                // FIXME: string += int returns only int
-                shared_ptr<AssignmentExpressionStatement> ae =
-                    static_pointer_cast<AssignmentExpressionStatement>(stmt);
-                shared_ptr<Object> val = evalNode(ae->value, env);
-                if (isError(val)) return val;
-                shared_ptr<Object> oldVal = env->get(ae->name->value);
-                if (val->type != oldVal->type)
-                    return newError(
-                        "Cannot assign " + oldVal->inspectType() + " and " + val->inspectType()
-                    );
-                shared_ptr<Object> newVal =
-                    evalAssignmentExpression(ae->_operator, oldVal, val, env);
-                env->set(ae->name->value, newVal);
-                break;
+        case assignmentExpressionStatement: {
+            // FIXME: string += int returns only int
+            shared_ptr<AssignmentExpressionStatement> ae =
+                static_pointer_cast<AssignmentExpressionStatement>(stmt);
+            shared_ptr<Object> val = evalNode(ae->value, env);
+            if (isError(val)) return val;
+            shared_ptr<Object> oldVal = env->get(ae->name->value);
+            if (val->type != oldVal->type)
+                return newError(
+                    "Cannot assign " + oldVal->inspectType() + " and " + val->inspectType()
+                );
+            shared_ptr<Object> newVal = evalAssignmentExpression(ae->_operator, oldVal, val, env);
+            env->set(ae->name->value, newVal);
+            break;
+        }
+        case blockStatement: {
+            shared_ptr<BlockStatement> bs = static_pointer_cast<BlockStatement>(stmt);
+            for (auto stmt : bs->statements) {
+                shared_ptr<Object> result = evalNode(stmt, env);
+                if (result != nullptr && result->type == RETURN_OBJ) return result;
             }
-        case blockStatement:
-            {
-                shared_ptr<BlockStatement> bs = static_pointer_cast<BlockStatement>(stmt);
-                for (auto stmt : bs->statements) {
-                    shared_ptr<Object> result = evalNode(stmt, env);
-                    if (result != nullptr && result->type == RETURN_OBJ) return result;
-                }
-                return nullptr;
-            }
-        case expressionStatement:
-            {
-                shared_ptr<ExpressionStatement> es = static_pointer_cast<ExpressionStatement>(stmt);
-                return evalNode(es->expression, env);
-            }
-        case functionStatement:
-            {
-                shared_ptr<FunctionStatement> fs = static_pointer_cast<FunctionStatement>(stmt);
-                shared_ptr<Function> newf(new Function(fs->parameters, fs->body, env));
-                env->set(fs->name->value, newf);
-                return newf;
-            }
-        case identifierStatement:
-            {
-                break;
-            }
-        case letStatement:
-            {
-                shared_ptr<LetStatement> ls = static_pointer_cast<LetStatement>(stmt);
-                shared_ptr<Object> val = evalNode(ls->value, env);
-                if (isError(val)) return val;
-                env->set(ls->name->value, val);
-                break;
-            }
-        case returnStatement:
-            {
-                shared_ptr<ReturnStatement> rs = static_pointer_cast<ReturnStatement>(stmt);
-                shared_ptr<Object> val = evalNode(rs->returnValue, env);
-                if (isError(val)) return val;
-                shared_ptr<ReturnValue> newr(new ReturnValue(val));
-                env->gc.push_back(newr);
-                return newr;
-            }
+            return nullptr;
+        }
+        case expressionStatement: {
+            shared_ptr<ExpressionStatement> es = static_pointer_cast<ExpressionStatement>(stmt);
+            return evalNode(es->expression, env);
+        }
+        case functionStatement: {
+            shared_ptr<FunctionStatement> fs = static_pointer_cast<FunctionStatement>(stmt);
+            shared_ptr<Function> newf(new Function(fs->parameters, fs->body, env));
+            env->set(fs->name->value, newf);
+            return newf;
+        }
+        case identifierStatement: {
+            break;
+        }
+        case letStatement: {
+            shared_ptr<LetStatement> ls = static_pointer_cast<LetStatement>(stmt);
+            shared_ptr<Object> val = evalNode(ls->value, env);
+            if (isError(val)) return val;
+            env->set(ls->name->value, val);
+            break;
+        }
+        case returnStatement: {
+            shared_ptr<ReturnStatement> rs = static_pointer_cast<ReturnStatement>(stmt);
+            shared_ptr<Object> val = evalNode(rs->returnValue, env);
+            if (isError(val)) return val;
+            shared_ptr<ReturnValue> newr(new ReturnValue(val));
+            env->gc.push_back(newr);
+            return newr;
+        }
     }
     return nullptr;
 }
@@ -680,14 +638,10 @@ bool isError(shared_ptr<Object> obj) {
 
 bool isTruthy(shared_ptr<Object> obj) {
     switch (obj->type) {
-        case BOOLEAN_TRUE:
-            return true;
-        case BOOLEAN_FALSE:
-            return false;
-        case NULL_OBJ:
-            return false;
-        default:
-            return true;
+        case BOOLEAN_TRUE: return true;
+        case BOOLEAN_FALSE: return false;
+        case NULL_OBJ: return false;
+        default: return true;
     }
 }
 

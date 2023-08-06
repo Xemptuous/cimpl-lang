@@ -11,22 +11,14 @@ shared_ptr<Object> evalBuiltinFunction(
 ) {
     shared_ptr<Builtin> bf = static_pointer_cast<Builtin>(fn);
     switch (bf->builtin_type) {
-        case builtin_len:
-            return built_in_len(args, env);
-        case builtin_print:
-            return built_in_print(args, env);
-        case builtin_max:
-            return built_in_max(args, env);
-        case builtin_min:
-            return built_in_min(args, env);
-        case builtin_push:
-            return built_in_push(args, env);
-        case builtin_pop:
-            return built_in_pop(args, env);
-        case builtin_quit:
-            return built_in_quit(env);
-        default:
-            return newError("not a valid function");
+        case builtin_len: return built_in_len(args, env);
+        case builtin_print: return built_in_print(args, env);
+        case builtin_max: return built_in_max(args, env);
+        case builtin_min: return built_in_min(args, env);
+        case builtin_push: return built_in_push(args, env);
+        case builtin_pop: return built_in_pop(args, env);
+        case builtin_quit: return built_in_quit(env);
+        default: return newError("not a valid function");
     }
 };
 

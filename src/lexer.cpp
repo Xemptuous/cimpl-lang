@@ -78,18 +78,10 @@ Token Lexer::nextToken() {
                 tok = newToken(TokenType.SLASH, this->ch);
             }
             break;
-        case ',':
-            tok = newToken(TokenType.COMMA, this->ch);
-            break;
-        case '.':
-            tok = newToken(TokenType.PERIOD, this->ch);
-            break;
-        case ';':
-            tok = newToken(TokenType.SEMICOLON, this->ch);
-            break;
-        case ':':
-            tok = newToken(TokenType.COLON, this->ch);
-            break;
+        case ',': tok = newToken(TokenType.COMMA, this->ch); break;
+        case '.': tok = newToken(TokenType.PERIOD, this->ch); break;
+        case ';': tok = newToken(TokenType.SEMICOLON, this->ch); break;
+        case ':': tok = newToken(TokenType.COLON, this->ch); break;
         case '!':
             if (this->peekChar() == '=') {
                 this->readChar();
@@ -99,48 +91,27 @@ Token Lexer::nextToken() {
                 tok = newToken(TokenType.BANG, this->ch);
             }
             break;
-        case '(':
-            tok = newToken(TokenType.LPAREN, this->ch);
-            break;
-        case ')':
-            tok = newToken(TokenType.RPAREN, this->ch);
-            break;
-        case '{':
-            tok = newToken(TokenType.LBRACE, this->ch);
-            break;
-        case '}':
-            tok = newToken(TokenType.RBRACE, this->ch);
-            break;
-        case '[':
-            tok = newToken(TokenType.LBRACKET, this->ch);
-            break;
-        case ']':
-            tok = newToken(TokenType.RBRACKET, this->ch);
-            break;
-        case '<':
-            tok = newToken(TokenType.LT, this->ch);
-            break;
-        case '>':
-            tok = newToken(TokenType.GT, this->ch);
-            break;
+        case '(': tok = newToken(TokenType.LPAREN, this->ch); break;
+        case ')': tok = newToken(TokenType.RPAREN, this->ch); break;
+        case '{': tok = newToken(TokenType.LBRACE, this->ch); break;
+        case '}': tok = newToken(TokenType.RBRACE, this->ch); break;
+        case '[': tok = newToken(TokenType.LBRACKET, this->ch); break;
+        case ']': tok = newToken(TokenType.RBRACKET, this->ch); break;
+        case '<': tok = newToken(TokenType.LT, this->ch); break;
+        case '>': tok = newToken(TokenType.GT, this->ch); break;
         case '\0':
             tok.literal = {};
             tok.type = TokenType._EOF;
             break;
-        case '\"':
-            {
-                this->readChar();
-                string str = this->readString();
-                tok.literal = str;
-                tok.type = TokenType._STRING;
-                break;
-            }
-        case '\'':
-            tok = newToken(TokenType.APOSTROPHE, this->ch);
+        case '\"': {
+            this->readChar();
+            string str = this->readString();
+            tok.literal = str;
+            tok.type = TokenType._STRING;
             break;
-        case '\n':
-            tok = newToken(TokenType.NEWLINE, this->ch);
-            break;
+        }
+        case '\'': tok = newToken(TokenType.APOSTROPHE, this->ch); break;
+        case '\n': tok = newToken(TokenType.NEWLINE, this->ch); break;
         default:
             if (isalpha(this->ch) || this->ch == '_') {
                 tok.literal = this->readIdentifier();

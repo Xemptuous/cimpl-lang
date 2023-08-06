@@ -233,15 +233,9 @@ shared_ptr<Expression> Parser::parseExpression(int precedence) {
         this->nextToken();
 
         switch (infix->second) {
-            case INFIX_STD:
-                leftExp = this->parseInfixExpression(leftExp);
-                break;
-            case INFIX_CALL:
-                leftExp = this->parseCallExpression(leftExp);
-                break;
-            case INFIX_INDEX:
-                leftExp = this->parseIndexExpression(leftExp);
-                break;
+            case INFIX_STD: leftExp = this->parseInfixExpression(leftExp); break;
+            case INFIX_CALL: leftExp = this->parseCallExpression(leftExp); break;
+            case INFIX_INDEX: leftExp = this->parseIndexExpression(leftExp); break;
         }
     }
     return leftExp;
@@ -608,34 +602,20 @@ shared_ptr<IntegerLiteral> Parser::parseIntegerLiteral() {
 
 shared_ptr<Expression> Parser::parseLeftPrefix(int prefix) {
     switch (prefix) {
-        case PREFIX_IDENT:
-            return this->parseIdentifier();
-        case PREFIX_INT:
-            return this->parseIntegerLiteral();
-        case PREFIX_FLOAT:
-            return this->parseFloatLiteral();
-        case PREFIX_STRING:
-            return this->parseStringLiteral();
-        case PREFIX_BOOL:
-            return this->parseBooleanLiteral();
-        case PREFIX_IF:
-            return this->parseIfExpression();
-        case PREFIX_GROUPED_EXPR:
-            return this->parseGroupedExpression();
-        case PREFIX_FUNCTION:
-            return this->parseFunctionLiteral();
-        case PREFIX_WHILE:
-            return this->parseWhileExpression();
-        case PREFIX_DO:
-            return this->parseDoExpression();
-        case PREFIX_FOR:
-            return this->parseForExpression();
-        case PREFIX_ARRAY:
-            return this->parseArrayLiteral();
-        case PREFIX_HASH:
-            return this->parseHashLiteral();
-        default:
-            return this->parsePrefixExpression();
+        case PREFIX_IDENT: return this->parseIdentifier();
+        case PREFIX_INT: return this->parseIntegerLiteral();
+        case PREFIX_FLOAT: return this->parseFloatLiteral();
+        case PREFIX_STRING: return this->parseStringLiteral();
+        case PREFIX_BOOL: return this->parseBooleanLiteral();
+        case PREFIX_IF: return this->parseIfExpression();
+        case PREFIX_GROUPED_EXPR: return this->parseGroupedExpression();
+        case PREFIX_FUNCTION: return this->parseFunctionLiteral();
+        case PREFIX_WHILE: return this->parseWhileExpression();
+        case PREFIX_DO: return this->parseDoExpression();
+        case PREFIX_FOR: return this->parseForExpression();
+        case PREFIX_ARRAY: return this->parseArrayLiteral();
+        case PREFIX_HASH: return this->parseHashLiteral();
+        default: return this->parsePrefixExpression();
     }
 }
 
