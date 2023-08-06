@@ -1,5 +1,6 @@
 #include "builtins.hpp"
 
+#include "globals.hpp"
 #include "object.hpp"
 
 #include <iostream>
@@ -47,10 +48,13 @@ shared_ptr<Object> built_in_print(vector<shared_ptr<Object>> args, shared_ptr<En
     stringstream ss;
     for (auto arg : args)
         ss << arg->inspectObject();
-    // cout << arg->inspectObject() << '\n';
     shared_ptr<Print> newp(new Print());
-    env->gc.push_back(newp);
     newp->value = ss.str();
+
+    wprintw(PAD, "\n%s", ss.str().c_str());
+    CURSOR_Y += 1;
+    env->gc.push_back(newp);
+
     return newp;
 }
 

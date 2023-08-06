@@ -1,6 +1,8 @@
+#include "globals.hpp"
 #include "object.hpp"
 
 #include <curses.h>
+#include <iostream>
 #include <stack>
 #include <string>
 #include <vector>
@@ -17,8 +19,10 @@ void deallocate();
 stack<pair<string, int>> HISTORY;
 stack<pair<string, int>> MEMORY;
 WINDOW* PAD = nullptr;
-unsigned int* CURSOR_X = nullptr;
-unsigned int* CURSOR_Y = nullptr;
+int PADPOS{0};
+int PADHEIGHT = 10000;
+unsigned int CURSOR_X{4}, CURSOR_Y{0};
+unsigned int MIN_X{4}, MAXLINE_X{1};
 
 int main() {
     initscr();
@@ -35,116 +39,115 @@ int main() {
 
 void mainLoop() {
     int h{}, w{};
-    int padheight = 10000;
-    int padpos{0};
-    WINDOW* pad = newpad(LINES, COLS);
-    PAD = pad;
+    PAD = newpad(LINES, COLS);
 
-    unsigned int min_x{4}, maxline_x{1};
-    unsigned int cursor_x{4}, cursor_y{0};
-    CURSOR_X = &cursor_x;
-    CURSOR_Y = &cursor_y;
+    // unsigned int MIN_X{4}, MAXLINE_X{1};
+    // unsigned int CURSOR_X{4}, CURSOR_Y{0};
+    // CURSOR_X = &CURSOR_X;
+    // CURSOR_Y = &CURSOR_Y;
 
     getmaxyx(stdscr, h, w);
     cbreak();
     keypad(stdscr, true);
-    clearok(pad, true);
-    scrollok(pad, true);
-    idlok(pad, true);
+    clearok(PAD, true);
+    scrollok(PAD, true);
+    idlok(PAD, true);
     setscrreg(h, w);
 
-    int ch;
-    string input;
-    shared_ptr<Environment> env(new Environment);
-    wprintw(pad, ">>> ");
-    prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
+    wprintw(PAD, ">>> ");
+    prefresh(PAD, PADPOS, 0, 0, 0, LINES - 1, COLS - 1);
     refresh();
-    wrefresh(pad);
+    wrefresh(PAD);
     doupdate();
+
+    shared_ptr<Environment> env(new Environment);
+
+    int ch;
     while (true) {
-        ch = mvgetch(cursor_y, cursor_x);
-        prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
+        ch = mvgetch(CURSOR_Y, CURSOR_X);
+        prefresh(PAD, PADPOS, 0, 0, 0, LINES - 1, COLS - 1);
         switch (ch) {
             case KEY_UP: {
                 if (HISTORY.empty()) break;
-                wmove(pad, cursor_y, min_x);
-                wclrtoeol(pad);
+                wmove(PAD, CURSOR_Y, MIN_X);
+                wclrtoeol(PAD);
                 MEMORY.push(HISTORY.top());
                 HISTORY.pop();
                 string prev = MEMORY.top().first;
-                maxline_x = MEMORY.top().second;
-                wmove(pad, cursor_y, min_x);
-                cursor_x = min_x;
-                for (int i = 0; i < maxline_x - 1; i++) {
-                    mvwaddch(pad, cursor_y, cursor_x++, prev[i]);
+                MAXLINE_X = MEMORY.top().second;
+                wmove(PAD, CURSOR_Y, MIN_X);
+                CURSOR_X = MIN_X;
+                for (int i = 0; i < MAXLINE_X - 1; i++) {
+                    mvwaddch(PAD, CURSOR_Y, CURSOR_X++, prev[i]);
                 }
-                prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
+                prefresh(PAD, PADPOS, 0, 0, 0, LINES - 1, COLS - 1);
                 break;
             }
             case KEY_DOWN: {
                 if (MEMORY.empty()) break;
-                wmove(pad, cursor_y, min_x);
-                wclrtoeol(pad);
+                wmove(PAD, CURSOR_Y, MIN_X);
+                wclrtoeol(PAD);
                 HISTORY.push(MEMORY.top());
                 MEMORY.pop();
                 string next = HISTORY.top().first;
-                maxline_x = HISTORY.top().second;
-                wmove(pad, cursor_y, min_x);
-                cursor_x = min_x;
-                for (int i = 0; i < maxline_x - 1; i++) {
-                    mvwaddch(pad, cursor_y, cursor_x++, next[i]);
+                MAXLINE_X = HISTORY.top().second;
+                wmove(PAD, CURSOR_Y, MIN_X);
+                CURSOR_X = MIN_X;
+                for (int i = 0; i < MAXLINE_X - 1; i++) {
+                    mvwaddch(PAD, CURSOR_Y, CURSOR_X++, next[i]);
                 }
-                prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
+                prefresh(PAD, PADPOS, 0, 0, 0, LINES - 1, COLS - 1);
                 break;
             }
             case KEY_LEFT:
-                cursor_x <= min_x ? cursor_x = min_x : cursor_x--;
-                wmove(pad, cursor_y, cursor_x);
+                CURSOR_X <= MIN_X ? CURSOR_X = MIN_X : CURSOR_X--;
+                wmove(PAD, CURSOR_Y, CURSOR_X);
                 break;
             case KEY_RIGHT:
-                cursor_x >= w - 2 ? cursor_x = w - 2 : cursor_x++;
-                wmove(pad, cursor_y, cursor_x);
+                CURSOR_X >= w - 2 ? CURSOR_X = w - 2 : CURSOR_X++;
+                wmove(PAD, CURSOR_Y, CURSOR_X);
                 break;
             case KEY_BACKSPACE:
             case 127:
             case '\b':
-                if (cursor_x <= min_x) {
-                    cursor_x = min_x;
+                if (CURSOR_X <= MIN_X) {
+                    CURSOR_X = MIN_X;
                     break;
                 }
-                cursor_x--;
-                maxline_x <= 0 ? maxline_x = 0 : maxline_x--;
-                mvwdelch(pad, cursor_y, cursor_x);
-                prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
+                CURSOR_X--;
+                MAXLINE_X <= 0 ? MAXLINE_X = 0 : MAXLINE_X--;
+                mvwdelch(PAD, CURSOR_Y, CURSOR_X);
+                prefresh(PAD, PADPOS, 0, 0, 0, LINES - 1, COLS - 1);
                 break;
             case KEY_ENTER:
             case 10: {
-                chtype p[150];
+                chtype p[300];
                 string input;
-                wmove(pad, cursor_y, min_x);
-                winchnstr(pad, p, maxline_x);
+                wmove(PAD, CURSOR_Y, MIN_X);
+                winchnstr(PAD, p, MAXLINE_X);
+                // get all chars from current line until NULL termination
                 int len = sizeof(p) / sizeof(p[0]);
                 for (int i = 0; i < len; i++) {
                     char ch = p[i] & A_CHARTEXT;
+                    if (ch == '\0') break;
                     input += ch;
                 }
-                pair<string, int> pairs(input, maxline_x);
+                pair<string, int> pairs(input, MAXLINE_X);
                 HISTORY.push(pairs);
-                wprintw(pad, "%s", input.c_str());
-                int resp = repl(input, env);
-                if (resp == 1) return;
-                maxline_x = 1;
-                cursor_y >= h - 1 ? cursor_y = h - 1 : cursor_y++;
-                cursor_x = min_x;
-                wprintw(pad, "\n>>> ");
-                prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
+                wprintw(PAD, "%s", input.c_str());
+                if (repl(input, env) != 0) return;
+                MAXLINE_X = 1;
+                CURSOR_Y >= h - 1 ? CURSOR_Y = h - 1 : CURSOR_Y++;
+                CURSOR_X = MIN_X;
+                wprintw(PAD, "\n>>> ");
+                prefresh(PAD, PADPOS, 0, 0, 0, LINES - 1, COLS - 1);
                 break;
             }
             default:
-                mvwinsch(pad, cursor_y, cursor_x, ch);
-                prefresh(pad, padpos, 0, 0, 0, LINES - 1, COLS - 1);
-                maxline_x++;
-                cursor_x++;
+                mvwinsch(PAD, CURSOR_Y, CURSOR_X, ch);
+                prefresh(PAD, PADPOS, 0, 0, 0, LINES - 1, COLS - 1);
+                MAXLINE_X++;
+                CURSOR_X++;
                 break;
         }
     }
@@ -165,18 +168,15 @@ int repl(string input, shared_ptr<Environment> env) {
 
     for (auto stmt : ast->Statements) {
         shared_ptr<Object> evaluated = evalNode(stmt, env);
-        if (evaluated != nullptr) {
-            if (evaluated->type == QUIT_OBJ) return 1;
-            if (evaluated->type == PRINT_OBJ) {
-                shared_ptr<Print> result = dynamic_pointer_cast<Print>(evaluated);
-                wprintw(PAD, "\n%s", result->value.c_str());
-                *CURSOR_Y += 1;
-            }
-            if (evaluated->type == ERROR_OBJ) {
+        if (evaluated == nullptr) continue;
+        switch (evaluated->type) {
+            case QUIT_OBJ: return 1; break;
+            case ERROR_OBJ: {
                 shared_ptr<Error> result = dynamic_pointer_cast<Error>(evaluated);
                 wprintw(PAD, "\n%s\n", result->message.c_str());
-                *CURSOR_Y += 2;
-                continue;
+                prefresh(PAD, PADPOS, 0, 0, 0, LINES - 1, COLS - 1);
+                CURSOR_Y += 2;
+                break;
             }
         }
     }
@@ -185,10 +185,10 @@ int repl(string input, shared_ptr<Environment> env) {
 
 void printParserErrors(vector<string> errs) {
     wprintw(PAD, "\nparser error:\n");
-    *CURSOR_Y += 2;
+    CURSOR_Y += 2;
     for (auto err : errs) {
         wprintw(PAD, "\t%s\n", err.c_str());
-        *CURSOR_Y += 2;
+        CURSOR_Y += 2;
     }
 }
 
