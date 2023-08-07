@@ -15,7 +15,7 @@ int repl(string input, shared_ptr<Environment> env) {
         shared_ptr<Object> evaluated = evalNode(stmt, env);
         if (evaluated == nullptr) continue;
         switch (evaluated->type) {
-            case QUIT_OBJ: return 1; break;
+            // case QUIT_OBJ: return 1; break;
             case ERROR_OBJ: {
                 shared_ptr<Error> result = dynamic_pointer_cast<Error>(evaluated);
                 wprintw(PAD, "\n%s\n", result->message.c_str());
@@ -35,6 +35,20 @@ void printParserErrors(vector<string> errs) {
         wprintw(PAD, "\t%s\n", err.c_str());
         CURSOR_Y += 2;
     }
+}
+
+void clearScreen() {
+    clear();
+    wclear(PAD);
+    MAXLINE_X = 1;
+    CURSOR_Y  = 0;
+    CURSOR_X  = MIN_X;
+    wprintw(PAD, ">>> ");
+    wmove(PAD, CURSOR_Y, MIN_X);
+    prefresh(PAD, PADPOS, 0, 0, 0, LINES - 1, COLS - 1);
+    refresh();
+    wrefresh(PAD);
+    doupdate();
 }
 
 void mainLoop() {
@@ -68,7 +82,7 @@ void mainLoop() {
                 MEMORY.push(HISTORY.top());
                 HISTORY.pop();
                 string prev = MEMORY.top().first;
-                MAXLINE_X = MEMORY.top().second;
+                MAXLINE_X   = MEMORY.top().second;
                 wmove(PAD, CURSOR_Y, MIN_X);
                 CURSOR_X = MIN_X;
                 for (int i = 0; i < MAXLINE_X - 1; i++) {
@@ -84,7 +98,7 @@ void mainLoop() {
                 HISTORY.push(MEMORY.top());
                 MEMORY.pop();
                 string next = HISTORY.top().first;
-                MAXLINE_X = HISTORY.top().second;
+                MAXLINE_X   = HISTORY.top().second;
                 wmove(PAD, CURSOR_Y, MIN_X);
                 CURSOR_X = MIN_X;
                 for (int i = 0; i < MAXLINE_X - 1; i++) {
@@ -126,6 +140,11 @@ void mainLoop() {
                     if (ch == '\0') break;
                     input += ch;
                 }
+                string result = trim_copy(input);
+                if (result == "clear()") {
+                    clearScreen();
+                    break;
+                } else if (result == "quit()") return;
                 pair<string, int> pairs(input, MAXLINE_X);
                 HISTORY.push(pairs);
                 wprintw(PAD, "%s", input.c_str());
@@ -179,7 +198,7 @@ string parseBlockIndent(string input, shared_ptr<Environment> env) {
                 MEMORY.push(HISTORY.top());
                 HISTORY.pop();
                 string prev = MEMORY.top().first;
-                MAXLINE_X = MEMORY.top().second;
+                MAXLINE_X   = MEMORY.top().second;
                 wmove(PAD, CURSOR_Y, min_x);
                 CURSOR_X = min_x;
                 for (int i = 0; i < MAXLINE_X - 1; i++) {
@@ -195,7 +214,7 @@ string parseBlockIndent(string input, shared_ptr<Environment> env) {
                 HISTORY.push(MEMORY.top());
                 MEMORY.pop();
                 string next = HISTORY.top().first;
-                MAXLINE_X = HISTORY.top().second;
+                MAXLINE_X   = HISTORY.top().second;
                 wmove(PAD, CURSOR_Y, min_x);
                 CURSOR_X = min_x;
                 for (int i = 0; i < MAXLINE_X - 1; i++) {
@@ -258,7 +277,7 @@ string parseBlockIndent(string input, shared_ptr<Environment> env) {
                     wmove(PAD, CURSOR_Y, min_x);
                     winchnstr(PAD, p1, MAXLINE_X);
                     int counter = 0;
-                    int len = sizeof(p) / sizeof(p[0]);
+                    int len     = sizeof(p) / sizeof(p[0]);
                     for (int i = 0; i < len; i++) {
                         char ch = p[i] & A_CHARTEXT;
                         if (ch == ' ' && counter < 4) {

@@ -19,7 +19,7 @@ Token Lexer::nextToken() {
             if (this->peekChar() == '=') {
                 this->readChar();
                 tok.literal = "==";
-                tok.type = lookupIdentifier(tok.literal);
+                tok.type    = lookupIdentifier(tok.literal);
                 break;
             }
             tok = newToken(TokenType.ASSIGN, this->ch);
@@ -28,11 +28,11 @@ Token Lexer::nextToken() {
             if (this->peekChar() == '+') {
                 this->readChar();
                 tok.literal = "++";
-                tok.type = lookupIdentifier(tok.literal);
+                tok.type    = lookupIdentifier(tok.literal);
             } else if (this->peekChar() == '=') {
                 this->readChar();
                 tok.literal = "+=";
-                tok.type = lookupIdentifier(tok.literal);
+                tok.type    = lookupIdentifier(tok.literal);
             } else {
                 tok = newToken(TokenType.PLUS, this->ch);
             }
@@ -41,11 +41,11 @@ Token Lexer::nextToken() {
             if (this->peekChar() == '-') {
                 this->readChar();
                 tok.literal = "--";
-                tok.type = lookupIdentifier(tok.literal);
+                tok.type    = lookupIdentifier(tok.literal);
             } else if (this->peekChar() == '=') {
                 this->readChar();
                 tok.literal = "-=";
-                tok.type = lookupIdentifier(tok.literal);
+                tok.type    = lookupIdentifier(tok.literal);
             } else {
                 tok = newToken(TokenType.MINUS, this->ch);
             }
@@ -54,7 +54,7 @@ Token Lexer::nextToken() {
             if (this->peekChar() == '=') {
                 this->readChar();
                 tok.literal = "*=";
-                tok.type = lookupIdentifier(tok.literal);
+                tok.type    = lookupIdentifier(tok.literal);
                 break;
             }
             tok = newToken(TokenType.ASTERISK, this->ch);
@@ -63,17 +63,17 @@ Token Lexer::nextToken() {
             if (this->peekChar() == '=') {
                 this->readChar();
                 tok.literal = "/=";
-                tok.type = lookupIdentifier(tok.literal);
+                tok.type    = lookupIdentifier(tok.literal);
             } else if (this->peekChar() == '/') {
                 this->readChar();
                 string comment = this->readComment();
-                tok.type = TokenType.COMMENT;
-                tok.literal = comment;
+                tok.type       = TokenType.COMMENT;
+                tok.literal    = comment;
             } else if (this->peekChar() == '*') {
                 this->readChar();
                 string comment = this->readBlockComment();
-                tok.type = TokenType.BLOCK_COMMENT;
-                tok.literal = comment;
+                tok.type       = TokenType.BLOCK_COMMENT;
+                tok.literal    = comment;
             } else {
                 tok = newToken(TokenType.SLASH, this->ch);
             }
@@ -86,7 +86,7 @@ Token Lexer::nextToken() {
             if (this->peekChar() == '=') {
                 this->readChar();
                 tok.literal = "!=";
-                tok.type = lookupIdentifier(tok.literal);
+                tok.type    = lookupIdentifier(tok.literal);
             } else {
                 tok = newToken(TokenType.BANG, this->ch);
             }
@@ -101,13 +101,13 @@ Token Lexer::nextToken() {
         case '>': tok = newToken(TokenType.GT, this->ch); break;
         case '\0':
             tok.literal = {};
-            tok.type = TokenType._EOF;
+            tok.type    = TokenType._EOF;
             break;
         case '\"': {
             this->readChar();
-            string str = this->readString();
+            string str  = this->readString();
             tok.literal = str;
-            tok.type = TokenType._STRING;
+            tok.type    = TokenType._STRING;
             break;
         }
         case '\'': tok = newToken(TokenType.APOSTROPHE, this->ch); break;
@@ -115,7 +115,7 @@ Token Lexer::nextToken() {
         default:
             if (isalpha(this->ch) || this->ch == '_') {
                 tok.literal = this->readIdentifier();
-                tok.type = lookupIdentifier(tok.literal);
+                tok.type    = lookupIdentifier(tok.literal);
                 return tok;
             } else if (isdigit(this->ch)) {
                 tok = this->evaluateNumber();
@@ -132,7 +132,7 @@ Token Lexer::nextToken() {
 Token Lexer::evaluateNumber() {
     Token tok;
     string result = this->readNumber();
-    tok.literal = result;
+    tok.literal   = result;
     // if number has decimal
     if (result.find('.') != string::npos) {
         int c = count(result.begin(), result.end(), '.');
@@ -166,7 +166,7 @@ string Lexer::readBlockComment() {
         }
         this->readChar();
     }
-    int diff = this->position - position;
+    int diff      = this->position - position;
     string result = this->input.substr(position, diff - 1);
     return result;
 }
@@ -186,7 +186,7 @@ string Lexer::readComment() {
     int position = this->position + 1;
     while (this->ch != '\0' && this->ch != '\n')
         this->readChar();
-    int diff = this->position - position;
+    int diff      = this->position - position;
     string result = this->input.substr(position, diff + 2);
     return result;
 }
@@ -195,7 +195,7 @@ string Lexer::readIdentifier() {
     int position = this->position;
     while (isalpha(this->ch) || this->ch == '_')
         this->readChar();
-    int diff = this->position - position;
+    int diff      = this->position - position;
     string result = this->input.substr(position, diff);
     return result;
 }
@@ -204,7 +204,7 @@ string Lexer::readNumber() {
     int position = this->position;
     while (isdigit(this->ch) || this->ch == '.')
         this->readChar();
-    int diff = this->position - position;
+    int diff      = this->position - position;
     string result = this->input.substr(position, diff);
     return result;
 }
@@ -213,7 +213,7 @@ string Lexer::readString() {
     int position = this->position;
     while (this->ch != '\"' && this->ch != '\0')
         this->readChar();
-    int diff = this->position - position;
+    int diff      = this->position - position;
     string result = this->input.substr(position, diff);
     return result;
 }

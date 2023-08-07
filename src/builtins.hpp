@@ -15,7 +15,6 @@ std::shared_ptr<Object>
     built_in_pop(std::vector<std::shared_ptr<Object>>, std::shared_ptr<Environment>);
 std::shared_ptr<Object>
     built_in_push(std::vector<std::shared_ptr<Object>>, std::shared_ptr<Environment>);
-std::shared_ptr<Object> built_in_quit(std::shared_ptr<Environment>);
 std::shared_ptr<Object> newError(std::string);
 
 typedef struct Builtin : Object {
@@ -35,9 +34,13 @@ enum BuiltinFunctions {
     builtin_min,
     builtin_pop,
     builtin_push,
-    builtin_quit
 };
 
 const std::unordered_map<std::string, int> builtins{
-    {"len", builtin_len}, {"print", builtin_print}, {"max", builtin_max},  {"min", builtin_min},
-    {"pop", builtin_pop}, {"push", builtin_push},   {"quit", builtin_quit}};
+    {"len",   builtin_len  },
+    {"print", builtin_print},
+    {"max",   builtin_max  },
+    {"min",   builtin_min  },
+    {"pop",   builtin_pop  },
+    {"push",  builtin_push }
+};

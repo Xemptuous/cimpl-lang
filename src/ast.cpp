@@ -13,149 +13,149 @@ Expression::Expression() { this->nodetype = expression; }
 
 ArrayLiteral::ArrayLiteral() {
     this->nodetype = expression;
-    this->type = arrayLiteral;
+    this->type     = arrayLiteral;
 }
 
 AssignmentExpressionStatement::AssignmentExpressionStatement() {
-    this->name = nullptr;
-    this->value = nullptr;
-    this->type = assignmentExpressionStatement;
+    this->name     = nullptr;
+    this->value    = nullptr;
+    this->type     = assignmentExpressionStatement;
     this->nodetype = statement;
 }
 
 BlockStatement::BlockStatement() {
-    this->type = blockStatement;
+    this->type     = blockStatement;
     this->nodetype = statement;
 }
 
 BooleanLiteral::BooleanLiteral() {
-    this->type = booleanExpression;
+    this->type     = booleanExpression;
     this->nodetype = expression;
 }
 
 CallExpression::CallExpression() {
-    this->nodetype = expression;
-    this->type = callExpression;
+    this->nodetype  = expression;
+    this->type      = callExpression;
     this->_function = nullptr;
 }
 
 DoExpression::DoExpression() {
-    this->nodetype = expression;
-    this->type = doExpression;
-    this->body = nullptr;
+    this->nodetype  = expression;
+    this->type      = doExpression;
+    this->body      = nullptr;
     this->condition = nullptr;
 }
 
 ExpressionStatement::ExpressionStatement() {
-    this->nodetype = statement;
-    this->type = expressionStatement;
+    this->nodetype   = statement;
+    this->type       = expressionStatement;
     this->expression = nullptr;
 }
 
 ForExpression::ForExpression() {
     this->nodetype = expression;
-    this->type = forExpression;
-    this->body = nullptr;
+    this->type     = forExpression;
+    this->body     = nullptr;
 }
 
 FloatLiteral::FloatLiteral() {
-    this->type = floatLiteral;
+    this->type     = floatLiteral;
     this->nodetype = expression;
 }
 
 FunctionLiteral::FunctionLiteral() {
-    this->type = functionLiteral;
+    this->type     = functionLiteral;
     this->nodetype = expression;
-    this->name = nullptr;
-    this->body = nullptr;
+    this->name     = nullptr;
+    this->body     = nullptr;
 }
 
 FunctionStatement::FunctionStatement() {
-    this->type = functionStatement;
+    this->type     = functionStatement;
     this->nodetype = expression;
-    this->name = nullptr;
-    this->body = nullptr;
+    this->name     = nullptr;
+    this->body     = nullptr;
 }
 
 HashLiteral::HashLiteral() {
     this->nodetype = expression;
-    this->type = hashLiteral;
+    this->type     = hashLiteral;
 }
 
 IfExpression::IfExpression() {
-    this->type = ifExpression;
-    this->nodetype = expression;
-    this->condition = nullptr;
+    this->type        = ifExpression;
+    this->nodetype    = expression;
+    this->condition   = nullptr;
     this->consequence = nullptr;
     this->alternative = nullptr;
 }
 
 IdentifierLiteral::IdentifierLiteral() {
     this->nodetype = expression;
-    this->type = identifier;
+    this->type     = identifier;
 }
 
 IdentifierStatement::IdentifierStatement() {
-    this->name = nullptr;
-    this->value = nullptr;
-    this->type = identifierStatement;
+    this->name     = nullptr;
+    this->value    = nullptr;
+    this->type     = identifierStatement;
     this->nodetype = statement;
 }
 
 IndexExpression::IndexExpression() {
     this->nodetype = expression;
-    this->type = indexExpression;
-    this->_left = nullptr;
-    this->index = nullptr;
+    this->type     = indexExpression;
+    this->_left    = nullptr;
+    this->index    = nullptr;
 }
 
 InfixExpression::InfixExpression() {
-    this->_left = nullptr;
-    this->_right = nullptr;
-    this->type = infixExpression;
+    this->_left    = nullptr;
+    this->_right   = nullptr;
+    this->type     = infixExpression;
     this->nodetype = expression;
 }
 
 IntegerLiteral::IntegerLiteral() {
-    this->type = integerLiteral;
+    this->type     = integerLiteral;
     this->nodetype = expression;
 }
 
 LetStatement::LetStatement() {
-    this->name = nullptr;
-    this->value = nullptr;
-    this->type = letStatement;
+    this->name     = nullptr;
+    this->value    = nullptr;
+    this->type     = letStatement;
     this->nodetype = statement;
 }
 
 PostfixExpression::PostfixExpression() {
-    this->_left = nullptr;
-    this->type = postfixExpression;
+    this->_left    = nullptr;
+    this->type     = postfixExpression;
     this->nodetype = expression;
 }
 
 PrefixExpression::PrefixExpression() {
-    this->_right = nullptr;
-    this->type = prefixExpression;
+    this->_right   = nullptr;
+    this->type     = prefixExpression;
     this->nodetype = expression;
 }
 
 ReturnStatement::ReturnStatement() {
     this->returnValue = nullptr;
-    this->type = returnStatement;
-    this->nodetype = statement;
+    this->type        = returnStatement;
+    this->nodetype    = statement;
 }
 
 StringLiteral::StringLiteral() {
-    this->type = stringLiteral;
+    this->type     = stringLiteral;
     this->nodetype = expression;
 }
 
 WhileExpression::WhileExpression() {
-    this->nodetype = expression;
-    this->type = whileExpression;
+    this->nodetype  = expression;
+    this->type      = whileExpression;
     this->condition = nullptr;
-    this->body = nullptr;
+    this->body      = nullptr;
 }
 
 void AST::checkParserErrors() {
@@ -222,31 +222,31 @@ void InfixExpression::setExpressionNode(Token tok) {
 }
 
 void IntegerLiteral::setExpressionNode(Token tok) {
-    this->token = tok;
+    this->token    = tok;
     this->datatype = INT;
 }
 
 void PostfixExpression::setExpressionNode(Token tok) {
-    this->token = tok;
+    this->token     = tok;
     this->_operator = tok.literal;
     this->setDataType(tok.literal);
 }
 
 void StringLiteral::setExpressionNode(Token tok) {
-    this->token = tok;
-    this->value = tok.literal;
+    this->token    = tok;
+    this->value    = tok.literal;
     this->datatype = _STRING;
 }
 
 void BooleanLiteral::setExpressionNode(Token tok) {
-    this->token = tok;
+    this->token    = tok;
     this->datatype = BOOLEAN;
     if (tok.type == TokenType._TRUE) this->value = true;
     else if (tok.type == TokenType._FALSE) this->value = false;
 }
 
 void FloatLiteral::setExpressionNode(Token tok) {
-    this->token = tok;
+    this->token    = tok;
     this->datatype = FLOAT;
 }
 

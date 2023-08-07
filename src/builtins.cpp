@@ -18,7 +18,7 @@ shared_ptr<Object> evalBuiltinFunction(
         case builtin_min: return built_in_min(args, env);
         case builtin_push: return built_in_push(args, env);
         case builtin_pop: return built_in_pop(args, env);
-        case builtin_quit: return built_in_quit(env);
+        // case builtin_quit: return built_in_quit(env);
         default: return newError("not a valid function");
     }
 };
@@ -64,7 +64,7 @@ shared_ptr<Object> built_in_max(vector<shared_ptr<Object>> args, shared_ptr<Envi
 
     for (auto arg : args) {
         shared_ptr<Integer> i = static_pointer_cast<Integer>(arg);
-        int num = stoi(i->inspectObject());
+        int num               = stoi(i->inspectObject());
         num > result ? result = num : result = result;
     }
     shared_ptr<String> news(new String(to_string(result)));
@@ -78,7 +78,7 @@ shared_ptr<Object> built_in_min(vector<shared_ptr<Object>> args, shared_ptr<Envi
 
     for (auto arg : args) {
         shared_ptr<Integer> i = static_pointer_cast<Integer>(arg);
-        int num = stoi(i->inspectObject());
+        int num               = stoi(i->inspectObject());
         num < result ? result = num : result = result;
     }
     shared_ptr<String> news(new String(to_string(result)));
@@ -114,10 +114,4 @@ shared_ptr<Object> built_in_pop(vector<shared_ptr<Object>> args, shared_ptr<Envi
     shared_ptr<Array> arr(new Array(arg));
     env->gc.push_back(arr);
     return arr;
-}
-
-shared_ptr<Object> built_in_quit(shared_ptr<Environment> env) {
-    shared_ptr<Quit> newq(new Quit());
-    env->gc.push_back(newq);
-    return newq;
 }

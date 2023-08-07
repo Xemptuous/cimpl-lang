@@ -103,7 +103,7 @@ void Parser::nextToken() {
         this->peekToken = this->lexer->nextToken();
     }
     this->currentToken = this->peekToken;
-    this->peekToken = this->lexer->nextToken();
+    this->peekToken    = this->lexer->nextToken();
 }
 
 shared_ptr<ArrayLiteral> Parser::parseArrayLiteral() {
@@ -120,14 +120,14 @@ shared_ptr<AssignmentExpressionStatement> Parser::parseAssignmentExpression() {
     expr->name = this->parseIdentifier();
     this->nextToken();
     expr->_operator = this->currentToken.literal;
-    int precedence = this->currentPrecedence();
+    int precedence  = this->currentPrecedence();
     this->nextToken();
     expr->value = this->parseExpression(precedence);
 
     // Read to end of line/file
     while (1) {
-        if (this->currentToken.type == TokenType.SEMICOLON ||
-            this->currentToken.type == TokenType.RBRACE) {
+        if (this->currentToken.type == TokenType.SEMICOLON
+            || this->currentToken.type == TokenType.RBRACE) {
             break;
         }
         if (this->currentToken.type == TokenType._EOF) {
@@ -316,7 +316,7 @@ shared_ptr<ForExpression> Parser::parseForExpression() {
     if (!(expectPeek(TokenType.INT))) return nullptr;
 
     shared_ptr<Expression> start = this->parseIntegerLiteral();
-    loop->start = start;
+    loop->start                  = start;
     for (auto stmt : statements) {
         stmt->value = start;
         loop->statements.push_back(stmt);
@@ -324,17 +324,17 @@ shared_ptr<ForExpression> Parser::parseForExpression() {
     if (!(expectPeek(TokenType.COLON))) return nullptr;
     if (!(expectPeek(TokenType.INT))) return nullptr;
 
-    shared_ptr<Expression> end = this->parseIntegerLiteral();
+    shared_ptr<Expression> end       = this->parseIntegerLiteral();
     shared_ptr<Expression> increment = nullptr;
-    loop->end = end;
+    loop->end                        = end;
     this->nextToken();
 
     if (this->currentToken.type == TokenType.RPAREN) {
         shared_ptr<IntegerLiteral> inc(new IntegerLiteral);
-        inc->token.type = TokenType.INT;
+        inc->token.type    = TokenType.INT;
         inc->token.literal = "1";
-        inc->value = 1;
-        increment = inc;
+        inc->value         = 1;
+        increment          = inc;
     } else if (this->currentToken.type == TokenType.COLON) {
         this->nextToken();
         if (this->currentToken.type != TokenType.INT) return nullptr;
@@ -440,7 +440,7 @@ shared_ptr<HashLiteral> Parser::parseHashLiteral() {
 
         this->nextToken();
         shared_ptr<Expression> value = this->parseExpression(Precedences.LOWEST);
-        hash->pairs[key] = value;
+        hash->pairs[key]             = value;
 
         if (this->peekToken.type != TokenType.RBRACE && !expectPeek(TokenType.COMMA))
             return nullptr;

@@ -27,7 +27,7 @@ applyFunction(shared_ptr<Object> fn, vector<shared_ptr<Object>> args, shared_ptr
             return newError(ss.str());
         }
         shared_ptr<Environment> newEnv = extendFunction(func, args);
-        shared_ptr<Object> evaluated = evalNode(func->body, newEnv);
+        shared_ptr<Object> evaluated   = evalNode(func->body, newEnv);
         if (evaluated == nullptr) return nullptr;
         return unwrapReturnValue(evaluated);
     } else if (fn->type == BUILTIN_OBJ) return evalBuiltinFunction(fn, args, env);
@@ -39,8 +39,8 @@ shared_ptr<Object> evalArrayIndexExpression(
 ) {
     shared_ptr<Array> arrayObject = static_pointer_cast<Array>(arr);
     shared_ptr<Integer> intObject = static_pointer_cast<Integer>(index);
-    int idx = intObject->value;
-    int max = arrayObject->elements.size();
+    int idx                       = intObject->value;
+    int max                       = arrayObject->elements.size();
     // evaluate negative (reverse) index
     if (idx < 0) {
         if (idx + max < 0) {
@@ -63,7 +63,7 @@ shared_ptr<Object> evalAssignmentExpression(
 ) {
     if (val->type == INTEGER_OBJ) {
         shared_ptr<Integer> oldv = static_pointer_cast<Integer>(oldVal);
-        shared_ptr<Integer> v = static_pointer_cast<Integer>(val);
+        shared_ptr<Integer> v    = static_pointer_cast<Integer>(val);
         if (op == "+=") {
             shared_ptr<Integer> newi(new Integer(oldv->value + v->value));
             env->gc.push_back(newi);
@@ -83,7 +83,7 @@ shared_ptr<Object> evalAssignmentExpression(
         }
     } else if (val->type == STRING_OBJ) {
         shared_ptr<String> olds = static_pointer_cast<String>(oldVal);
-        shared_ptr<String> s = static_pointer_cast<String>(val);
+        shared_ptr<String> s    = static_pointer_cast<String>(val);
         if (op == "+=") {
             shared_ptr<String> news(new String(olds->value + s->value));
             env->gc.push_back(news);
@@ -123,7 +123,7 @@ shared_ptr<Object>
 evalExpressions(shared_ptr<Expression> expr, shared_ptr<Environment> env = nullptr) {
     switch (expr->type) {
         case arrayLiteral: {
-            shared_ptr<ArrayLiteral> a = static_pointer_cast<ArrayLiteral>(expr);
+            shared_ptr<ArrayLiteral> a          = static_pointer_cast<ArrayLiteral>(expr);
             vector<shared_ptr<Object>> elements = evalCallExpressions(a->elements, env);
             if (elements.size() == 1 && isError(elements[0])) return elements[0];
             shared_ptr<Array> newa(new Array(elements));
@@ -132,12 +132,12 @@ evalExpressions(shared_ptr<Expression> expr, shared_ptr<Environment> env = nullp
         }
         case booleanExpression: {
             shared_ptr<BooleanLiteral> b = static_pointer_cast<BooleanLiteral>(expr);
-            shared_ptr<Boolean> newb = nativeToBoolean(b->value);
+            shared_ptr<Boolean> newb     = nativeToBoolean(b->value);
             return newb;
         }
         case callExpression: {
             shared_ptr<CallExpression> ce = static_pointer_cast<CallExpression>(expr);
-            shared_ptr<Object> func = evalNode(ce->_function, env);
+            shared_ptr<Object> func       = evalNode(ce->_function, env);
             if (isError(func)) return func;
             vector<shared_ptr<Object>> args = evalCallExpressions(ce->arguments, env);
             if (args.size() == 1 && isError(args[0])) return args[0];
@@ -161,8 +161,8 @@ evalExpressions(shared_ptr<Expression> expr, shared_ptr<Environment> env = nullp
             shared_ptr<ForExpression> fe = dynamic_pointer_cast<ForExpression>(expr);
             shared_ptr<Loop> loop(new Loop(forLoop, fe->body, env));
             env->gc.push_back(loop);
-            loop->start = static_pointer_cast<IntegerLiteral>(fe->start)->value;
-            loop->end = static_pointer_cast<IntegerLiteral>(fe->end)->value;
+            loop->start     = static_pointer_cast<IntegerLiteral>(fe->start)->value;
+            loop->end       = static_pointer_cast<IntegerLiteral>(fe->end)->value;
             loop->increment = static_pointer_cast<IntegerLiteral>(fe->increment)->value;
             for (auto stmt : fe->statements) {
                 evalNode(stmt, loop->env);
@@ -184,17 +184,17 @@ evalExpressions(shared_ptr<Expression> expr, shared_ptr<Environment> env = nullp
         }
         case identifier: {
             shared_ptr<IdentifierLiteral> i = static_pointer_cast<IdentifierLiteral>(expr);
-            shared_ptr<Object> newi = evalIdentifier(i, env);
+            shared_ptr<Object> newi         = evalIdentifier(i, env);
             return newi;
         }
         case ifExpression: {
             shared_ptr<IfExpression> i = static_pointer_cast<IfExpression>(expr);
-            shared_ptr<Object> cond = evalIfExpression(i, env);
+            shared_ptr<Object> cond    = evalIfExpression(i, env);
             return cond;
         }
         case indexExpression: {
             shared_ptr<IndexExpression> ie = static_pointer_cast<IndexExpression>(expr);
-            shared_ptr<Object> left = evalNode(ie->_left, env);
+            shared_ptr<Object> left        = evalNode(ie->_left, env);
             if (isError(left)) return left;
             shared_ptr<Object> index = evalNode(ie->index, env);
             if (isError(index)) return index;
@@ -202,7 +202,7 @@ evalExpressions(shared_ptr<Expression> expr, shared_ptr<Environment> env = nullp
         }
         case infixExpression: {
             shared_ptr<InfixExpression> i = static_pointer_cast<InfixExpression>(expr);
-            shared_ptr<Object> left = evalNode(i->_left, env);
+            shared_ptr<Object> left       = evalNode(i->_left, env);
             if (isError(left)) return left;
             shared_ptr<Object> right = evalNode(i->_right, env);
             if (isError(right)) return right;
@@ -217,20 +217,20 @@ evalExpressions(shared_ptr<Expression> expr, shared_ptr<Environment> env = nullp
         }
         case postfixExpression: {
             shared_ptr<PostfixExpression> p = static_pointer_cast<PostfixExpression>(expr);
-            shared_ptr<Object> left = evalNode(p->_left, env);
+            shared_ptr<Object> left         = evalNode(p->_left, env);
             if (isError(left)) return left;
             if (left->type != INTEGER_OBJ)
                 return newError(p->_left->literal + " is not an integer.");
             shared_ptr<IdentifierLiteral> id = static_pointer_cast<IdentifierLiteral>(p->_left);
-            string name = id->value;
-            shared_ptr<Object> val = env->get(name);
-            shared_ptr<Object> np = evalPostfixExpression(p->_operator, val, env);
+            string name                      = id->value;
+            shared_ptr<Object> val           = env->get(name);
+            shared_ptr<Object> np            = evalPostfixExpression(p->_operator, val, env);
             env->set(name, np);
             return np;
         }
         case prefixExpression: {
             shared_ptr<PrefixExpression> p = static_pointer_cast<PrefixExpression>(expr);
-            shared_ptr<Object> right = evalNode(p->_right, env);
+            shared_ptr<Object> right       = evalNode(p->_right, env);
             if (isError(right)) return right;
             shared_ptr<Object> np = evalPrefixExpression(p->_operator, right, env);
             return np;
@@ -337,11 +337,11 @@ shared_ptr<Object> evalIfExpression(shared_ptr<IfExpression> expr, shared_ptr<En
 shared_ptr<Object> evalIndexExpression(
     shared_ptr<Object> left, shared_ptr<Object> index, shared_ptr<Environment> env
 ) {
-    if (left->inspectType() == ObjectType.ARRAY_OBJ &&
-        index->inspectType() == ObjectType.INTEGER_OBJ)
+    if (left->inspectType() == ObjectType.ARRAY_OBJ
+        && index->inspectType() == ObjectType.INTEGER_OBJ)
         return evalArrayIndexExpression(left, index, env);
-    if (left->inspectType() == ObjectType.STRING_OBJ &&
-        index->inspectType() == ObjectType.INTEGER_OBJ)
+    if (left->inspectType() == ObjectType.STRING_OBJ
+        && index->inspectType() == ObjectType.INTEGER_OBJ)
         return evalStringIndexExpression(left, index, env);
     if (left->inspectType() == ObjectType.HASH_OBJ) return evalHashIndexExpression(left, index);
     else return newError("index operator not supported: " + left->inspectType());
@@ -369,7 +369,7 @@ shared_ptr<Object> evalInfixExpression(
 shared_ptr<Object> evalIntegerInfixExpression(
     string op, shared_ptr<Object> l, shared_ptr<Object> r, shared_ptr<Environment> env
 ) {
-    int leftVal = static_pointer_cast<Integer>(l)->value;
+    int leftVal  = static_pointer_cast<Integer>(l)->value;
     int rightVal = static_pointer_cast<Integer>(r)->value;
 
     if (op.length() > 2) {
@@ -428,14 +428,14 @@ shared_ptr<Object> evalLoop(shared_ptr<Loop> loop) {
     if (!(loop->loop_type == forLoop)) cond = evalNode(loop->condition, loop->env);
     if (isError(cond)) return cond;
 
-    shared_ptr<Boolean> b = static_pointer_cast<Boolean>(cond);
+    shared_ptr<Boolean> b     = static_pointer_cast<Boolean>(cond);
     shared_ptr<Object> result = nullptr;
     switch (loop->loop_type) {
         case doLoop: {
             do {
                 result = unpackLoopBody(loop);
-                cond = evalNode(loop->condition, loop->env);
-                b = static_pointer_cast<Boolean>(cond);
+                cond   = evalNode(loop->condition, loop->env);
+                b      = static_pointer_cast<Boolean>(cond);
             } while (b->value);
             return result;
         }
@@ -451,8 +451,8 @@ shared_ptr<Object> evalLoop(shared_ptr<Loop> loop) {
         case whileLoop: {
             while (b->value) {
                 result = unpackLoopBody(loop);
-                cond = evalNode(loop->condition, loop->env);
-                b = static_pointer_cast<Boolean>(cond);
+                cond   = evalNode(loop->condition, loop->env);
+                b      = static_pointer_cast<Boolean>(cond);
             }
             return result;
         }
@@ -518,9 +518,9 @@ shared_ptr<Object> evalStringIndexExpression(
     shared_ptr<Object> str, shared_ptr<Object> index, shared_ptr<Environment> env
 ) {
     shared_ptr<String> stringObject = static_pointer_cast<String>(str);
-    shared_ptr<Integer> intObject = static_pointer_cast<Integer>(index);
-    int idx = intObject->value;
-    int max = stringObject->value.length();
+    shared_ptr<Integer> intObject   = static_pointer_cast<Integer>(index);
+    int idx                         = intObject->value;
+    int max                         = stringObject->value.length();
     if (idx < 0) {
         if (idx + max < 0) {
             ostringstream ss;
@@ -584,14 +584,14 @@ evalStatements(shared_ptr<Statement> stmt, shared_ptr<Environment> env = nullptr
         }
         case letStatement: {
             shared_ptr<LetStatement> ls = static_pointer_cast<LetStatement>(stmt);
-            shared_ptr<Object> val = evalNode(ls->value, env);
+            shared_ptr<Object> val      = evalNode(ls->value, env);
             if (isError(val)) return val;
             env->set(ls->name->value, val);
             break;
         }
         case returnStatement: {
             shared_ptr<ReturnStatement> rs = static_pointer_cast<ReturnStatement>(stmt);
-            shared_ptr<Object> val = evalNode(rs->returnValue, env);
+            shared_ptr<Object> val         = evalNode(rs->returnValue, env);
             if (isError(val)) return val;
             shared_ptr<ReturnValue> newr(new ReturnValue(val));
             env->gc.push_back(newr);
