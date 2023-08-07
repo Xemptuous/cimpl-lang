@@ -357,9 +357,55 @@ shared_ptr<Object> evalInfixExpression(
     else if (op == "==") return nativeToBoolean(l->inspectObject() == r->inspectObject());
     else if (op == "!=") return nativeToBoolean(l->inspectObject() != r->inspectObject());
     else if (l->type != r->type) {
-        ostringstream ss;
-        ss << "Type mismatch: " << l->inspectType() << op << r->inspectType();
-        return newError(ss.str());
+        if (l->type == STRING_OBJ) {
+            switch (r->type) {
+                case INTEGER_OBJ: {
+                    shared_ptr<Integer> i = static_pointer_cast<Integer>(r);
+                    shared_ptr<String> news(new String(to_string(i->value)));
+                    env->gc.push_back(news);
+                    return evalStringInfixExpression(op, l, news, env);
+                }
+                case FLOAT_OBJ: {
+                    shared_ptr<Float> f = static_pointer_cast<Float>(r);
+                    shared_ptr<String> news(new String(to_string(f->value)));
+                    env->gc.push_back(news);
+                    return evalStringInfixExpression(op, l, news, env);
+                }
+                case BOOLEAN_OBJ: {
+                    shared_ptr<Boolean> b = static_pointer_cast<Boolean>(r);
+                    shared_ptr<String> news(new String(to_string(b->value)));
+                    env->gc.push_back(news);
+                    return evalStringInfixExpression(op, l, news, env);
+                }
+                default: break;
+            }
+        } else if (r->type == STRING_OBJ) {
+            switch (l->type) {
+                case INTEGER_OBJ: {
+                    shared_ptr<Integer> i = static_pointer_cast<Integer>(l);
+                    shared_ptr<String> news(new String(to_string(i->value)));
+                    env->gc.push_back(news);
+                    return evalStringInfixExpression(op, news, r, env);
+                }
+                case FLOAT_OBJ: {
+                    shared_ptr<Float> f = static_pointer_cast<Float>(l);
+                    shared_ptr<String> news(new String(to_string(f->value)));
+                    env->gc.push_back(news);
+                    return evalStringInfixExpression(op, news, r, env);
+                }
+                case BOOLEAN_OBJ: {
+                    shared_ptr<Boolean> b = static_pointer_cast<Boolean>(l);
+                    shared_ptr<String> news(new String(to_string(b->value)));
+                    env->gc.push_back(news);
+                    return evalStringInfixExpression(op, news, r, env);
+                }
+                default: break;
+            }
+        } else {
+            ostringstream ss;
+            ss << "Type mismatch: " << l->inspectType() << op << r->inspectType();
+            return newError(ss.str());
+        }
     }
     ostringstream ss;
     ss << "Unknown operator: " << l->inspectType() << op << r->inspectType();
