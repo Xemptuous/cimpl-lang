@@ -36,6 +36,11 @@ enum BuiltinFunctions {
     builtin_push,
 };
 
-const std::unordered_map<std::string, int> builtins{{"len", builtin_len}, {"print", builtin_print},
-                                                    {"max", builtin_max}, {"min", builtin_min},
-                                                    {"pop", builtin_pop}, {"push", builtin_push}};
+const std::unordered_map<std::string, int> builtins{
+    {"len",   builtin_len  },
+    {"print", builtin_print},
+    {"max",   builtin_max  },
+    {"min",   builtin_min  },
+    {"pop",   builtin_pop  },
+    {"push",  builtin_push }
+};

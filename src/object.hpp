@@ -2,6 +2,7 @@
 #include "ast.hpp"
 
 #include <functional>
+#include <ncurses.h>
 #include <sstream>
 
 using namespace std;
@@ -17,6 +18,8 @@ class HashKey;
 class HashPair;
 class Integer;
 class Null;
+class Print;
+class Quit;
 class ReturnValue;
 class String;
 
@@ -35,6 +38,8 @@ enum ObjectEnum {
     LOOP_OBJ,
     NULL_OBJ,
     OBJECT_OBJ,
+    PRINT_OBJ,
+    QUIT_OBJ,
     RETURN_OBJ,
     STRING_OBJ,
 };
@@ -47,20 +52,22 @@ enum FunctionEnum {
 enum LoopEnum { doLoop, whileLoop, forLoop };
 
 const struct Objecttype {
-    string ARRAY_OBJ = {"ARRAY"};
-    string BOOLEAN_OBJ = {"BOOLEAN"};
-    string BUILTIN_OBJ = {"BUILTIN"};
-    string ERROR_OBJ = {"ERROR"};
-    string FLOAT_OBJ = {"FLOAT"};
+    string ARRAY_OBJ    = {"ARRAY"};
+    string BOOLEAN_OBJ  = {"BOOLEAN"};
+    string BUILTIN_OBJ  = {"BUILTIN"};
+    string ERROR_OBJ    = {"ERROR"};
+    string FLOAT_OBJ    = {"FLOAT"};
     string FUNCTION_OBJ = {"FUNCTION"};
-    string HASH_OBJ = {"HASH"};
-    string IDENT_OBJ = {"IDENT"};
-    string INTEGER_OBJ = {"INTEGER"};
-    string LOOP_OBJ = {"LOOP"};
-    string NULL_OBJ = {"NULL"};
-    string OBJECT_OBJ = {"OBJECT"};
-    string RETURN_OBJ = {"RETURN"};
-    string STRING_OBJ = {"STRING"};
+    string HASH_OBJ     = {"HASH"};
+    string IDENT_OBJ    = {"IDENT"};
+    string INTEGER_OBJ  = {"INTEGER"};
+    string LOOP_OBJ     = {"LOOP"};
+    string NULL_OBJ     = {"NULL"};
+    string OBJECT_OBJ   = {"OBJECT"};
+    string PRINT_OBJ    = {"PRINT"};
+    string QUIT_OBJ     = {"QUIT"};
+    string RETURN_OBJ   = {"RETURN"};
+    string STRING_OBJ   = {"STRING"};
 } ObjectType;
 
 class Object {
@@ -186,6 +193,17 @@ class Null : public Object {
 
     string inspectType();
     string inspectObject();
+};
+
+class Print : public Object {
+  public:
+    Print();
+    string value;
+};
+
+class Quit : public Object {
+  public:
+    Quit();
 };
 
 class ReturnValue : public Object {

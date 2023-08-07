@@ -12,8 +12,8 @@ class Lexer {
     Token nextToken();
 
   private:
-    char ch = input[0];
-    int position = 0;
+    char ch          = input[0];
+    int position     = 0;
     int readPosition = 0;
 
     Token evaluateNumber();

@@ -353,24 +353,36 @@ typedef struct WhileExpression : Expression {
 } WhileExpression;
 
 const std::unordered_map<int, std::string> StatementMap = {
-    {0, "Identifier Statement"},
-    {1, "Function Statement"},
-    {2, "Let Statement"},
-    {3, "Return Statement"},
-    {4, "Expression Statement"},
-    {5, "Block Statement"},
+    {0, "Identifier Statement"           },
+    {1, "Function Statement"             },
+    {2, "Let Statement"                  },
+    {3, "Return Statement"               },
+    {4, "Expression Statement"           },
+    {5, "Block Statement"                },
     {6, "Assignment Expression Statement"},
 };
 
 const std::unordered_map<int, std::string> ExpressionMap = {
-    {0, "Integer Literal"},  {1, "Float Literal"},     {2, "Boolean Literal"},
-    {3, "String Literal"},   {4, "IdentifierLiteral"}, {5, "Prefix Expression"},
-    {6, "Infix Expression"}, {7, "If Expression"},     {8, "Function Literal"},
-    {9, "Call Expression"},  {10, "Array Literal"},    {11, "Index Expression"},
+    {0,  "Integer Literal"  },
+    {1,  "Float Literal"    },
+    {2,  "Boolean Literal"  },
+    {3,  "String Literal"   },
+    {4,  "IdentifierLiteral"},
+    {5,  "Prefix Expression"},
+    {6,  "Infix Expression" },
+    {7,  "If Expression"    },
+    {8,  "Function Literal" },
+    {9,  "Call Expression"  },
+    {10, "Array Literal"    },
+    {11, "Index Expression" },
 };
 
 const std::unordered_map<int, std::string> DatatypeMap = {
-    {0, "int"}, {1, "float"}, {2, "boolean"}, {3, "string"}, {4, "void"},
+    {0, "int"    },
+    {1, "float"  },
+    {2, "boolean"},
+    {3, "string" },
+    {4, "void"   },
 };
 
 const struct Precedences {
@@ -385,13 +397,21 @@ const struct Precedences {
 } Precedences{};
 
 const std::unordered_map<std::string, int> precedencesMap = {
-    {TokenType.EQ, Precedences.EQUALS},        {TokenType.NOT_EQ, Precedences.EQUALS},
-    {TokenType.LT, Precedences.LESSGREATER},   {TokenType.GT, Precedences.LESSGREATER},
-    {TokenType.PLUS, Precedences.SUM},         {TokenType.INCREMENT, Precedences.SUM},
-    {TokenType.PLUS_EQ, Precedences.SUM},      {TokenType.MINUS, Precedences.SUM},
-    {TokenType.DECREMENT, Precedences.SUM},    {TokenType.MINUS_EQ, Precedences.SUM},
-    {TokenType.SLASH, Precedences.PRODUCT},    {TokenType.DIV_EQ, Precedences.PRODUCT},
-    {TokenType.ASTERISK, Precedences.PRODUCT}, {TokenType.MULT_EQ, Precedences.PRODUCT},
-    {TokenType.LPAREN, Precedences.CALL},      {TokenType.PERIOD, Precedences.CALL},
-    {TokenType.LBRACKET, Precedences.INDEX},
+    {TokenType.EQ,        Precedences.EQUALS     },
+    {TokenType.NOT_EQ,    Precedences.EQUALS     },
+    {TokenType.LT,        Precedences.LESSGREATER},
+    {TokenType.GT,        Precedences.LESSGREATER},
+    {TokenType.PLUS,      Precedences.SUM        },
+    {TokenType.INCREMENT, Precedences.SUM        },
+    {TokenType.PLUS_EQ,   Precedences.SUM        },
+    {TokenType.MINUS,     Precedences.SUM        },
+    {TokenType.DECREMENT, Precedences.SUM        },
+    {TokenType.MINUS_EQ,  Precedences.SUM        },
+    {TokenType.SLASH,     Precedences.PRODUCT    },
+    {TokenType.DIV_EQ,    Precedences.PRODUCT    },
+    {TokenType.ASTERISK,  Precedences.PRODUCT    },
+    {TokenType.MULT_EQ,   Precedences.PRODUCT    },
+    {TokenType.LPAREN,    Precedences.CALL       },
+    {TokenType.PERIOD,    Precedences.CALL       },
+    {TokenType.LBRACKET,  Precedences.INDEX      },
 };

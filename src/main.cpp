@@ -1,29 +1,28 @@
+#include "globals.hpp"
 #include "object.hpp"
+#include "repl.hpp"
+#include "util.hpp"
 
-#include <iostream>
+using namespace std;
 
-// using namespace std;
-void start(string, shared_ptr<Environment>);
+stack<pair<string, int>> HISTORY;
+stack<pair<string, int>> MEMORY;
+WINDOW* PAD = nullptr;
+int PADPOS{0};
+int PADHEIGHT = 10000;
+unsigned int CURSOR_X{4}, CURSOR_Y{0};
+unsigned int MIN_X{4}, MAXLINE_X{1};
+int WIN_HEIGHT{}, WIN_WIDTH{};
+int INDENT_LEVEL{0}, INDENT_SPACES{4};
 
 int main() {
-    system("clear");
-    string input;
-    shared_ptr<Environment> env(new Environment);
+    initscr();
 
-    while (true) {
-    start:
-        cout << ">> ";
-        getline(cin, input);
-        if (input == "quit") {
-            system("clear");
-            env->gc.clear();
-            env->store.clear();
-            return 0;
-        }
-        if (input == "clear") {
-            system("clear");
-            goto start;
-        }
-        start(input, env);
-    }
+    mainLoop();
+
+    clear();
+    refresh();
+    delwin(PAD);
+    endwin();
+    return 0;
 }

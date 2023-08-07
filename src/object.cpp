@@ -6,7 +6,7 @@ Object::Object() { this->type = OBJECT_OBJ; };
 
 Array::Array(vector<shared_ptr<Object>> el) {
     this->elements = el;
-    this->type = ARRAY_OBJ;
+    this->type     = ARRAY_OBJ;
 }
 
 Boolean::Boolean(bool b) {
@@ -27,51 +27,55 @@ Environment::~Environment() {
 
 Error::Error(string msg) {
     this->message = msg;
-    this->type = ERROR_OBJ;
+    this->type    = ERROR_OBJ;
 }
 
 Float::Float(float fl) {
     this->value = fl;
-    this->type = FLOAT_OBJ;
+    this->type  = FLOAT_OBJ;
 }
 
 Function::Function(
     vector<shared_ptr<IdentifierLiteral>> params, shared_ptr<BlockStatement> body,
     shared_ptr<Environment> env
 ) {
-    this->type = FUNCTION_OBJ;
-    this->parameters = params;
-    this->body = body;
-    this->env = env;
+    this->type          = FUNCTION_OBJ;
+    this->parameters    = params;
+    this->body          = body;
+    this->env           = env;
     this->function_type = standardFunction;
 }
 
 HashPair::HashPair(shared_ptr<Object> key, shared_ptr<Object> val) {
-    this->key = key;
+    this->key   = key;
     this->value = val;
 }
 
 Integer::Integer(int val) {
     this->value = val;
-    this->type = INTEGER_OBJ;
+    this->type  = INTEGER_OBJ;
 }
 
 Loop::Loop(int loop, shared_ptr<BlockStatement> body, shared_ptr<Environment> env) {
     this->loop_type = loop;
-    this->body = body;
-    this->env = env;
+    this->body      = body;
+    this->env       = env;
 }
 
 Null::Null() { this->type = NULL_OBJ; }
 
+Print::Print() { this->type = PRINT_OBJ; }
+
+Quit::Quit() { this->type = QUIT_OBJ; }
+
 ReturnValue::ReturnValue(shared_ptr<Object> obj) {
     this->value = obj;
-    this->type = RETURN_OBJ;
+    this->type  = RETURN_OBJ;
 }
 
 String::String(string str) {
     this->value = str;
-    this->type = STRING_OBJ;
+    this->type  = STRING_OBJ;
 }
 
 /**********
