@@ -97,8 +97,14 @@ void mainLoop() {
                 wclrtoeol(PAD);
                 HISTORY.push(MEMORY.top());
                 MEMORY.pop();
-                string next = HISTORY.top().first;
-                MAXLINE_X   = HISTORY.top().second;
+                string next;
+                if (!MEMORY.empty()) {
+                    next      = MEMORY.top().first;
+                    MAXLINE_X = MEMORY.top().second;
+                } else {
+                    next      = HISTORY.top().first;
+                    MAXLINE_X = HISTORY.top().second;
+                }
                 wmove(PAD, CURSOR_Y, MIN_X);
                 CURSOR_X = MIN_X;
                 for (int i = 0; i < MAXLINE_X - 1; i++) {
