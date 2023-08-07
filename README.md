@@ -7,6 +7,19 @@ Currently only Interpreter is implemented; compiler to come.
 
 run the `compile.sh` script to produce the `a.out` file, then simply run with CLI!
 
+## Interpreter CLI
+
+The command-line interface written with ncurses offers functionality similar to Python's CLI interpreter, but with additional features to accomodate Cimpl.
+
+The normal paradigms exist:
+    * using Key_Up and Key_Down to move between histories
+    * deleting and replacing chars
+    * etc.
+
+However, an expanded form of the `indentation` mechanism exists. e.g., when ending a line with an opening `{` l_brace, the next line will indent (4 spaces by default), and the line will dednt when a `}` r_brace is present as the last char. It is recommended to enter these closing braces on their own line.
+
+Once the braces close back down to the root level, the code will be executed.
+
 ## Syntax
 
 #### Variable declaration
@@ -150,3 +163,15 @@ print(d["b"]);
 ```
 
 Array slicing to come! Syntax will be similar to python
+
+### Type Conversions
+
+By default, types will attempt to be cast to strings. 
+
+E.g., when doing a statement like:
+
+```py
+print("a" + 1);
+```
+
+the "1" will be coerced into a string, resulting in "a1"
