@@ -4,7 +4,7 @@
 
 class Lexer {
   public:
-    Lexer(std::string);
+    Lexer(std::string*);
     ~Lexer() = default;
 
     std::string input;

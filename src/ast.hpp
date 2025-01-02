@@ -42,7 +42,7 @@ typedef struct AST {
     std::unique_ptr<Parser> parser;
     std::vector<std::shared_ptr<Statement>> Statements;
 
-    AST(std::string);
+    AST(std::string&);
     ~AST() { this->Statements.clear(); };
 
     void checkParserErrors();

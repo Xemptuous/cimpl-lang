@@ -5,8 +5,8 @@
 
 using namespace std;
 
-Lexer::Lexer(string input) {
-    this->input = input;
+Lexer::Lexer(string* input) {
+    this->input = *input;
     this->readChar();
 }
 

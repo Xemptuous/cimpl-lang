@@ -1,6 +1,6 @@
 #include "repl.hpp"
 
-int repl(string input, shared_ptr<Environment> env) {
+int repl(string& input, shared_ptr<Environment> env) {
     unique_ptr<AST> ast(new AST(input));
     ast->parseProgram();
 
@@ -21,6 +21,37 @@ int repl(string input, shared_ptr<Environment> env) {
                 wprintw(PAD, "\n%s\n", result->message.c_str());
                 prefresh(PAD, PADPOS, 0, 0, 0, LINES - 1, COLS - 1);
                 CURSOR_Y += 2;
+                break;
+            }
+        }
+    }
+    return 0;
+}
+
+int repl_file(string& input, shared_ptr<Environment> env) {
+    unique_ptr<AST> ast(new AST(input));
+    ast->parseProgram();
+
+    if (ast->parser->errors.size() != 0) {
+        printParserErrors(ast->parser->errors);
+        return 0;
+    }
+
+    setErrorGarbageCollector(&env);
+
+    for (auto stmt : ast->Statements) {
+        shared_ptr<Object> evaluated = evalNode(stmt, env);
+        if (evaluated == nullptr) continue;
+        switch (evaluated->type) {
+            // case QUIT_OBJ: return 1; break;
+            case PRINT_OBJ: {
+                shared_ptr<Print> print = dynamic_pointer_cast<Print>(evaluated);
+                cout << print->value << '\n';
+                break;
+            }
+            case ERROR_OBJ: {
+                shared_ptr<Error> result = dynamic_pointer_cast<Error>(evaluated);
+                cout << result->message.c_str() << '\n';
                 break;
             }
         }
@@ -51,7 +82,7 @@ void clearScreen() {
     doupdate();
 }
 
-void mainLoop() {
+void mainReplLoop() {
     PAD = newpad(LINES, COLS);
 
     getmaxyx(stdscr, WIN_HEIGHT, WIN_WIDTH);
@@ -150,7 +181,7 @@ void mainLoop() {
                 if (result == "clear()") {
                     clearScreen();
                     break;
-                } else if (result == "quit()") return;
+                } else if (result == "quit()" || result == "exit()") return;
                 pair<string, int> pairs(input, MAXLINE_X);
                 HISTORY.push(pairs);
                 wprintw(PAD, "%s", input.c_str());
@@ -183,7 +214,7 @@ void mainLoop() {
     }
 }
 
-string parseBlockIndent(string input, shared_ptr<Environment> env) {
+string parseBlockIndent(string& input, shared_ptr<Environment> env) {
     stack<string> statements;
     queue<string> queue;
     queue.push(input);

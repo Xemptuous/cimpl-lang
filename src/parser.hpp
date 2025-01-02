@@ -34,7 +34,7 @@ struct Statement;
 
 class Parser {
   public:
-    Parser(std::string);
+    Parser(std::string&);
     ~Parser() { this->errors.clear(); };
 
     Token currentToken;

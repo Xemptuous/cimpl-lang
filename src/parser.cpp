@@ -4,8 +4,8 @@
 #include <sstream>
 using namespace std;
 
-Parser::Parser(string input) {
-    this->lexer = unique_ptr<Lexer>(new Lexer(input));
+Parser::Parser(string& input) {
+    this->lexer = unique_ptr<Lexer>(new Lexer(&input));
     // reading two tokens so currentToken and peekToken both get set
     this->nextToken();
     this->nextToken();

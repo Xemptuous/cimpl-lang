@@ -6,7 +6,7 @@
 
 using namespace std;
 
-AST::AST(string input) { this->parser = unique_ptr<Parser>(new Parser(input)); }
+AST::AST(string& input) { this->parser = unique_ptr<Parser>(new Parser(input)); }
 
 Statement::Statement() { this->nodetype = statement; }
 Expression::Expression() { this->nodetype = expression; }
