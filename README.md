@@ -1,11 +1,17 @@
-# cimple-lang
+# cimpl-lang
 A "simple" compiled and interpreted multiple-paradigm language.
 
 Currently only Interpreter is implemented; compiler to come.
 
 ## Usage
 
-run the `compile.sh` script to produce the `a.out` file, then simply run with CLI!
+```sh
+cmake -B build # optionally append `-G Ninja`
+make -C build  # or `ninja -C build` if using Ninja
+./build/bin/cimpl # for REPL
+```
+
+With no args given, will run in interactive prompt mode. Takes args to evaluate files.
 
 ## Interpreter CLI
 
