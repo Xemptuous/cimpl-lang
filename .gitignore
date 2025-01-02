@@ -33,7 +33,11 @@
 
 # Logs
 *.log
-*.txt
 
 # backups
 *.bak
+
+
+CMakeFiles/
+CMakeCache.txt
+/build
