@@ -6,10 +6,16 @@
 
 using namespace std;
 
-AST::AST(string& input) { this->parser = unique_ptr<Parser>(new Parser(input)); }
+AST::AST(string& input) {
+    this->parser = unique_ptr<Parser>(new Parser(input));
+}
 
-Statement::Statement() { this->nodetype = statement; }
-Expression::Expression() { this->nodetype = expression; }
+Statement::Statement() {
+    this->nodetype = statement;
+}
+Expression::Expression() {
+    this->nodetype = expression;
+}
 
 ArrayLiteral::ArrayLiteral() {
     this->nodetype = expression;
@@ -164,7 +170,7 @@ void AST::checkParserErrors() {
 }
 
 void AST::parseProgram() {
-    while (this->parser->currentToken.type != TokenType._EOF) {
+    while (this->parser->currentToken.type != ::_EOF) {
         shared_ptr<Statement> stmt = this->parser->parseStatement();
 
         if (stmt != nullptr) {
@@ -181,7 +187,7 @@ void Statement::setDataType(string lit) {
     if (lit == "int") this->datatype = INT;
     else if (lit == "float") this->datatype = FLOAT;
     else if (lit == "bool") this->datatype = BOOLEAN;
-    else if (lit == "string") this->datatype = _STRING;
+    else if (lit == "string") this->datatype = STRING;
     else if (lit == "void") this->datatype = VOID;
 }
 
@@ -189,7 +195,7 @@ void Expression::setDataType(string lit) {
     if (lit == "int") this->datatype = INT;
     else if (lit == "float") this->datatype = FLOAT;
     else if (lit == "bool") this->datatype = BOOLEAN;
-    else if (lit == "string") this->datatype = _STRING;
+    else if (lit == "string") this->datatype = STRING;
     else if (lit == "void") this->datatype = VOID;
 }
 
@@ -235,14 +241,14 @@ void PostfixExpression::setExpressionNode(Token tok) {
 void StringLiteral::setExpressionNode(Token tok) {
     this->token    = tok;
     this->value    = tok.literal;
-    this->datatype = _STRING;
+    this->datatype = STRING;
 }
 
 void BooleanLiteral::setExpressionNode(Token tok) {
     this->token    = tok;
     this->datatype = BOOLEAN;
-    if (tok.type == TokenType._TRUE) this->value = true;
-    else if (tok.type == TokenType._FALSE) this->value = false;
+    if (tok.type == ::TRUE) this->value = true;
+    else if (tok.type == ::FALSE) this->value = false;
 }
 
 void FloatLiteral::setExpressionNode(Token tok) {

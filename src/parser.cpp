@@ -60,7 +60,7 @@ void Parser::checkIdentifierDataType(shared_ptr<IdentifierStatement> stmt) {
                 this->errors.push_back(ss.str());
             }
             break;
-        case _STRING:
+        case STRING:
             if (DatatypeMap.at(stmt->value->type) != "string") {
                 ostringstream ss;
                 ss << "Mismatched DataType: " << DatatypeMap.at(stmt->value->type)
@@ -78,16 +78,18 @@ void Parser::checkIdentifierDataType(shared_ptr<IdentifierStatement> stmt) {
 }
 
 int Parser::currentPrecedence() {
-    int p;
-    try {
-        p = precedencesMap.at(this->currentToken.type);
-        return p;
-    } catch (out_of_range&) {
-        return Precedences.LOWEST;
-    }
+    if (precedencesMap.find(currentToken.type) != precedencesMap.end())
+        return precedencesMap.at(currentToken.type);
+    return ::LOWEST;
 }
 
-bool Parser::expectPeek(string tokentype) {
+int Parser::peekPrecedence() {
+    if (precedencesMap.find(peekToken.type) != precedencesMap.end())
+        return precedencesMap.at(peekToken.type);
+    return ::LOWEST;
+}
+
+bool Parser::expectPeek(TokenType tokentype) {
     // checks the expected token, and if found, advances parser
     if (this->peekToken.type == tokentype) {
         this->nextToken();
@@ -98,7 +100,7 @@ bool Parser::expectPeek(string tokentype) {
 }
 
 void Parser::nextToken() {
-    if (this->peekToken.type == TokenType.NEWLINE) {
+    if (this->peekToken.type == ::NEWLINE) {
         this->linenumber++;
         this->peekToken = this->lexer->nextToken();
     }
@@ -109,7 +111,7 @@ void Parser::nextToken() {
 shared_ptr<ArrayLiteral> Parser::parseArrayLiteral() {
     shared_ptr<ArrayLiteral> arr(new ArrayLiteral);
     arr->setExpressionNode(this->currentToken);
-    arr->elements = this->parseExpressionList(TokenType.RBRACKET);
+    arr->elements = this->parseExpressionList(::RBRACKET);
     return arr;
 }
 
@@ -126,11 +128,10 @@ shared_ptr<AssignmentExpressionStatement> Parser::parseAssignmentExpression() {
 
     // Read to end of line/file
     while (1) {
-        if (this->currentToken.type == TokenType.SEMICOLON
-            || this->currentToken.type == TokenType.RBRACE) {
+        if (this->currentToken.type == ::SEMICOLON || this->currentToken.type == ::RBRACE) {
             break;
         }
-        if (this->currentToken.type == TokenType._EOF) {
+        if (this->currentToken.type == ::_EOF) {
             ostringstream ss;
             ss << "No Semicolon present at end of line for " << StatementMap.at(expr->type)
                << " with value " << expr->value->token.literal << '\n';
@@ -148,8 +149,7 @@ shared_ptr<BlockStatement> Parser::parseBlockStatement() {
 
     this->nextToken();
 
-    while (this->currentToken.type != TokenType.RBRACE && this->currentToken.type != TokenType._EOF
-    ) {
+    while (this->currentToken.type != ::RBRACE && this->currentToken.type != ::_EOF) {
         shared_ptr<Statement> stmt = this->parseStatement();
 
         if (stmt != nullptr) block->statements.push_back(stmt);
@@ -169,7 +169,7 @@ shared_ptr<CallExpression> Parser::parseCallExpression(shared_ptr<Expression> fu
     shared_ptr<CallExpression> expr(new CallExpression);
     expr->setExpressionNode(this->currentToken);
     expr->_function = func;
-    expr->arguments = this->parseExpressionList(TokenType.RPAREN);
+    expr->arguments = this->parseExpressionList(::RPAREN);
     return expr;
 }
 
@@ -177,24 +177,24 @@ shared_ptr<DoExpression> Parser::parseDoExpression() {
     shared_ptr<DoExpression> expr(new DoExpression);
     expr->setExpressionNode(this->currentToken);
 
-    if (!expectPeek(TokenType.LBRACE)) {
+    if (!expectPeek(::LBRACE)) {
         return nullptr;
     }
 
     expr->body = this->parseBlockStatement();
 
-    if (!expectPeek(TokenType.WHILE)) {
+    if (!expectPeek(::WHILE)) {
         return nullptr;
     }
 
-    if (!expectPeek(TokenType.LPAREN)) {
+    if (!expectPeek(::LPAREN)) {
         return nullptr;
     }
     this->nextToken();
 
-    expr->condition = this->parseExpression(Precedences.LOWEST);
+    expr->condition = this->parseExpression(::LOWEST);
 
-    if (!expectPeek(TokenType.RPAREN)) {
+    if (!expectPeek(::RPAREN)) {
         return nullptr;
     }
 
@@ -219,7 +219,7 @@ shared_ptr<Expression> Parser::parseExpression(int precedence) {
     }
     leftExp->setDataType(leftExp->token.literal);
 
-    while (this->peekToken.type != TokenType.SEMICOLON && precedence < this->peekPrecedence()) {
+    while (this->peekToken.type != ::SEMICOLON && precedence < this->peekPrecedence()) {
         auto infix = infixFunctions.find(this->peekToken.type);
         if (infix == infixFunctions.end()) {
             auto postfix = postfixFunctions.find(this->peekToken.type);
@@ -233,15 +233,15 @@ shared_ptr<Expression> Parser::parseExpression(int precedence) {
         this->nextToken();
 
         switch (infix->second) {
-            case INFIX_STD: leftExp = this->parseInfixExpression(leftExp); break;
-            case INFIX_CALL: leftExp = this->parseCallExpression(leftExp); break;
+            case INFIX_STD:   leftExp = this->parseInfixExpression(leftExp); break;
+            case INFIX_CALL:  leftExp = this->parseCallExpression(leftExp); break;
             case INFIX_INDEX: leftExp = this->parseIndexExpression(leftExp); break;
         }
     }
     return leftExp;
 }
 
-vector<shared_ptr<Expression>> Parser::parseExpressionList(string end) {
+vector<shared_ptr<Expression>> Parser::parseExpressionList(TokenType end) {
     vector<shared_ptr<Expression>> list{};
 
     if (this->peekToken.type == end) {
@@ -250,12 +250,12 @@ vector<shared_ptr<Expression>> Parser::parseExpressionList(string end) {
     }
 
     this->nextToken();
-    list.push_back(this->parseExpression(Precedences.LOWEST));
+    list.push_back(this->parseExpression(::LOWEST));
 
-    while (this->peekToken.type == TokenType.COMMA) {
+    while (this->peekToken.type == ::COMMA) {
         this->nextToken();
         this->nextToken();
-        list.push_back(this->parseExpression(Precedences.LOWEST));
+        list.push_back(this->parseExpression(::LOWEST));
     }
 
     if (!expectPeek(end)) {
@@ -270,9 +270,9 @@ vector<shared_ptr<Expression>> Parser::parseExpressionList(string end) {
 shared_ptr<ExpressionStatement> Parser::parseExpressionStatement() {
     shared_ptr<ExpressionStatement> stmt(new ExpressionStatement);
     stmt->setStatementNode(this->currentToken);
-    stmt->expression = this->parseExpression(Precedences.LOWEST);
+    stmt->expression = this->parseExpression(::LOWEST);
 
-    if (this->peekToken.type == TokenType.SEMICOLON || this->peekToken.type == TokenType._EOF) {
+    if (this->peekToken.type == ::SEMICOLON || this->peekToken.type == ::_EOF) {
         this->nextToken();
     }
     return stmt;
@@ -300,12 +300,12 @@ shared_ptr<ForExpression> Parser::parseForExpression() {
     shared_ptr<ForExpression> loop(new ForExpression);
     loop->setExpressionNode(this->currentToken);
 
-    if (!expectPeek(TokenType.LPAREN)) return nullptr;
+    if (!expectPeek(::LPAREN)) return nullptr;
 
     this->nextToken();
 
     vector<shared_ptr<LetStatement>> statements{};
-    while (this->currentToken.type != TokenType.IN) {
+    while (this->currentToken.type != ::IN) {
         shared_ptr<LetStatement> stmt(new LetStatement);
         stmt->setStatementNode(this->currentToken);
         stmt->name = this->parseIdentifier();
@@ -313,7 +313,7 @@ shared_ptr<ForExpression> Parser::parseForExpression() {
         this->nextToken();
     }
 
-    if (!(expectPeek(TokenType.INT))) return nullptr;
+    if (!(expectPeek(::INT))) return nullptr;
 
     shared_ptr<Expression> start = this->parseIntegerLiteral();
     loop->start                  = start;
@@ -321,25 +321,25 @@ shared_ptr<ForExpression> Parser::parseForExpression() {
         stmt->value = start;
         loop->statements.push_back(stmt);
     }
-    if (!(expectPeek(TokenType.COLON))) return nullptr;
-    if (!(expectPeek(TokenType.INT))) return nullptr;
+    if (!(expectPeek(::COLON))) return nullptr;
+    if (!(expectPeek(::INT))) return nullptr;
 
     shared_ptr<Expression> end       = this->parseIntegerLiteral();
     shared_ptr<Expression> increment = nullptr;
     loop->end                        = end;
     this->nextToken();
 
-    if (this->currentToken.type == TokenType.RPAREN) {
+    if (this->currentToken.type == ::RPAREN) {
         shared_ptr<IntegerLiteral> inc(new IntegerLiteral);
-        inc->token.type    = TokenType.INT;
+        inc->token.type    = ::INT;
         inc->token.literal = "1";
         inc->value         = 1;
         increment          = inc;
-    } else if (this->currentToken.type == TokenType.COLON) {
+    } else if (this->currentToken.type == ::COLON) {
         this->nextToken();
-        if (this->currentToken.type != TokenType.INT) return nullptr;
+        if (this->currentToken.type != ::INT) return nullptr;
         increment = this->parseIntegerLiteral();
-        if (this->peekToken.type != TokenType.RPAREN) return nullptr;
+        if (this->peekToken.type != ::RPAREN) return nullptr;
         this->nextToken();
     } else {
         ostringstream ss;
@@ -349,7 +349,7 @@ shared_ptr<ForExpression> Parser::parseForExpression() {
     }
     loop->increment = increment;
 
-    if (!(expectPeek(TokenType.LBRACE))) return nullptr;
+    if (!(expectPeek(::LBRACE))) return nullptr;
 
     loop->body = this->parseBlockStatement();
 
@@ -360,13 +360,13 @@ shared_ptr<FunctionLiteral> Parser::parseFunctionLiteral() {
     shared_ptr<FunctionLiteral> expr(new FunctionLiteral);
     expr->setExpressionNode(this->currentToken);
 
-    if (!expectPeek(TokenType.IDENT)) return nullptr;
+    if (!expectPeek(::IDENT)) return nullptr;
     expr->name = parseIdentifier();
 
-    if (!expectPeek(TokenType.LPAREN)) return nullptr;
+    if (!expectPeek(::LPAREN)) return nullptr;
     expr->parameters = this->parseFunctionParameters();
 
-    if (!expectPeek(TokenType.LBRACE)) return nullptr;
+    if (!expectPeek(::LBRACE)) return nullptr;
     expr->body = this->parseBlockStatement();
 
     return expr;
@@ -379,14 +379,14 @@ shared_ptr<FunctionStatement> Parser::parseFunctionStatement() {
 
     this->nextToken();
 
-    if (!expectPeek(TokenType.IDENT)) return nullptr;
+    if (!expectPeek(::IDENT)) return nullptr;
     stmt->name = parseIdentifier();
     this->nextToken();
 
-    if (!expectPeek(TokenType.LPAREN)) return nullptr;
+    if (!expectPeek(::LPAREN)) return nullptr;
     stmt->parameters = this->parseFunctionParameters();
 
-    if (!expectPeek(TokenType.LBRACE)) return nullptr;
+    if (!expectPeek(::LBRACE)) return nullptr;
     stmt->body = this->parseBlockStatement();
     // make sure return datatype is the same as funtion datatype
     this->checkFunctionReturn(stmt);
@@ -396,7 +396,7 @@ shared_ptr<FunctionStatement> Parser::parseFunctionStatement() {
 
 vector<shared_ptr<IdentifierLiteral>> Parser::parseFunctionParameters() {
     vector<shared_ptr<IdentifierLiteral>> identifiers{};
-    if (this->peekToken.type == TokenType.RPAREN) {
+    if (this->peekToken.type == ::RPAREN) {
         this->nextToken();
         return identifiers;
     }
@@ -406,7 +406,7 @@ vector<shared_ptr<IdentifierLiteral>> Parser::parseFunctionParameters() {
     ident->setExpressionNode(this->currentToken);
     identifiers.push_back(ident);
 
-    while (this->peekToken.type == TokenType.COMMA) {
+    while (this->peekToken.type == ::COMMA) {
         this->nextToken();
         this->nextToken();
         shared_ptr<IdentifierLiteral> ident(new IdentifierLiteral);
@@ -414,7 +414,7 @@ vector<shared_ptr<IdentifierLiteral>> Parser::parseFunctionParameters() {
         identifiers.push_back(ident);
     }
 
-    if (!expectPeek(TokenType.RPAREN)) {
+    if (!expectPeek(::RPAREN)) {
         ostringstream ss;
         ss << "Parenthesis never closed for function\n";
         this->errors.push_back(ss.str());
@@ -427,26 +427,25 @@ shared_ptr<HashLiteral> Parser::parseHashLiteral() {
     shared_ptr<HashLiteral> hash(new HashLiteral);
     hash->setExpressionNode(this->currentToken);
 
-    while (this->peekToken.type != TokenType.RBRACE) {
-        if (this->currentToken.type == TokenType._EOF) {
+    while (this->peekToken.type != ::RBRACE) {
+        if (this->currentToken.type == ::_EOF) {
             ostringstream ss;
             ss << "Brace never closed\n";
             this->errors.push_back(ss.str());
         }
         this->nextToken();
-        shared_ptr<Expression> key = this->parseExpression(Precedences.LOWEST);
+        shared_ptr<Expression> key = this->parseExpression(::LOWEST);
 
-        if (!expectPeek(TokenType.COLON)) return nullptr;
+        if (!expectPeek(::COLON)) return nullptr;
 
         this->nextToken();
-        shared_ptr<Expression> value = this->parseExpression(Precedences.LOWEST);
+        shared_ptr<Expression> value = this->parseExpression(::LOWEST);
         hash->pairs[key]             = value;
 
-        if (this->peekToken.type != TokenType.RBRACE && !expectPeek(TokenType.COMMA))
-            return nullptr;
+        if (this->peekToken.type != ::RBRACE && !expectPeek(::COMMA)) return nullptr;
     }
 
-    if (!expectPeek(TokenType.RBRACE)) return nullptr;
+    if (!expectPeek(::RBRACE)) return nullptr;
     return hash;
 }
 
@@ -458,8 +457,8 @@ shared_ptr<IdentifierLiteral> Parser::parseIdentifier() {
 
 shared_ptr<Expression> Parser::parseGroupedExpression() {
     this->nextToken();
-    shared_ptr<Expression> expr = this->parseExpression(Precedences.LOWEST);
-    if (!expectPeek(TokenType.RPAREN)) {
+    shared_ptr<Expression> expr = this->parseExpression(::LOWEST);
+    if (!expectPeek(::RPAREN)) {
         return nullptr;
     }
     return expr;
@@ -476,7 +475,7 @@ shared_ptr<IdentifierStatement> Parser::parseIdentifierStatement() {
     // Getting the identifier
     stmt->name = this->parseIdentifier();
 
-    if (!expectPeek(TokenType.ASSIGN)) {
+    if (!expectPeek(::ASSIGN)) {
         ostringstream ss;
         ss << "line:" << this->linenumber << ": Could not parse " << this->currentToken.literal
            << "; no assignment operator\n";
@@ -486,13 +485,13 @@ shared_ptr<IdentifierStatement> Parser::parseIdentifierStatement() {
 
     // Setting expression value
     this->nextToken();
-    stmt->value = this->parseExpression(Precedences.LOWEST);
+    stmt->value = this->parseExpression(::LOWEST);
 
     this->checkIdentifierDataType(stmt);
 
     // Read to end of line/file
-    while (this->currentToken.type != TokenType.SEMICOLON) {
-        if (this->currentToken.type == TokenType._EOF) {
+    while (this->currentToken.type != ::SEMICOLON) {
+        if (this->currentToken.type == ::_EOF) {
             ostringstream ss;
             ss << "No Semicolon present at end of line for " << StatementMap.at(stmt->type)
                << " with value " << stmt->value->token.literal << '\n';
@@ -509,41 +508,41 @@ shared_ptr<IfExpression> Parser::parseIfExpression() {
     shared_ptr<IfExpression> expr(new IfExpression);
     expr->setExpressionNode(this->currentToken);
 
-    if (!expectPeek(TokenType.LPAREN)) {
+    if (!expectPeek(::LPAREN)) {
         return nullptr;
     }
 
     this->nextToken();
-    expr->condition = this->parseExpression(Precedences.LOWEST);
+    expr->condition = this->parseExpression(::LOWEST);
 
-    if (!expectPeek(TokenType.RPAREN)) {
+    if (!expectPeek(::RPAREN)) {
         return nullptr;
     }
 
-    if (!expectPeek(TokenType.LBRACE)) {
+    if (!expectPeek(::LBRACE)) {
         return nullptr;
     }
     expr->consequence = this->parseBlockStatement();
 
     // loop for any else-if conditions
-    while (this->peekToken.type == TokenType.ELSE) {
+    while (this->peekToken.type == ::ELSE) {
         this->nextToken();
-        if (this->peekToken.type == TokenType.IF) {
+        if (this->peekToken.type == ::IF) {
             this->nextToken();
-            if (!expectPeek(TokenType.LPAREN)) {
+            if (!expectPeek(::LPAREN)) {
                 return nullptr;
             }
             this->nextToken();
-            expr->conditions.push_back(this->parseExpression(Precedences.LOWEST));
-            if (!expectPeek(TokenType.RPAREN)) {
+            expr->conditions.push_back(this->parseExpression(::LOWEST));
+            if (!expectPeek(::RPAREN)) {
                 return nullptr;
             }
-            if (!expectPeek(TokenType.LBRACE)) {
+            if (!expectPeek(::LBRACE)) {
                 return nullptr;
             }
             expr->alternatives.push_back(this->parseBlockStatement());
         } else {
-            if (!expectPeek(TokenType.LBRACE)) {
+            if (!expectPeek(::LBRACE)) {
                 return nullptr;
             }
             expr->alternative = this->parseBlockStatement();
@@ -558,9 +557,9 @@ shared_ptr<Expression> Parser::parseIndexExpression(shared_ptr<Expression> _left
     expr->_left = _left;
 
     this->nextToken();
-    expr->index = this->parseExpression(Precedences.LOWEST);
+    expr->index = this->parseExpression(::LOWEST);
 
-    if (!expectPeek(TokenType.RBRACKET)) {
+    if (!expectPeek(::RBRACKET)) {
         ostringstream ss;
         ss << "Index Bracket never closed\n";
         this->errors.push_back(ss.str());
@@ -602,20 +601,20 @@ shared_ptr<IntegerLiteral> Parser::parseIntegerLiteral() {
 
 shared_ptr<Expression> Parser::parseLeftPrefix(int prefix) {
     switch (prefix) {
-        case PREFIX_IDENT: return this->parseIdentifier();
-        case PREFIX_INT: return this->parseIntegerLiteral();
-        case PREFIX_FLOAT: return this->parseFloatLiteral();
-        case PREFIX_STRING: return this->parseStringLiteral();
-        case PREFIX_BOOL: return this->parseBooleanLiteral();
-        case PREFIX_IF: return this->parseIfExpression();
-        case PREFIX_GROUPED_EXPR: return this->parseGroupedExpression();
-        case PREFIX_FUNCTION: return this->parseFunctionLiteral();
-        case PREFIX_WHILE: return this->parseWhileExpression();
-        case PREFIX_DO: return this->parseDoExpression();
-        case PREFIX_FOR: return this->parseForExpression();
-        case PREFIX_ARRAY: return this->parseArrayLiteral();
-        case PREFIX_HASH: return this->parseHashLiteral();
-        default: return this->parsePrefixExpression();
+        case PREFIX_IDENT:        return parseIdentifier();
+        case PREFIX_INT:          return parseIntegerLiteral();
+        case PREFIX_FLOAT:        return parseFloatLiteral();
+        case PREFIX_STRING:       return parseStringLiteral();
+        case PREFIX_BOOL:         return parseBooleanLiteral();
+        case PREFIX_IF:           return parseIfExpression();
+        case PREFIX_GROUPED_EXPR: return parseGroupedExpression();
+        case PREFIX_FUNCTION:     return parseFunctionLiteral();
+        case PREFIX_WHILE:        return parseWhileExpression();
+        case PREFIX_DO:           return parseDoExpression();
+        case PREFIX_FOR:          return parseForExpression();
+        case PREFIX_ARRAY:        return parseArrayLiteral();
+        case PREFIX_HASH:         return parseHashLiteral();
+        default:                  return parsePrefixExpression();
     }
 }
 
@@ -625,7 +624,7 @@ shared_ptr<LetStatement> Parser::parseLetStatement() {
     stmt->setStatementNode(this->currentToken);
 
     // If no identifier found
-    if (!expectPeek(TokenType.IDENT)) {
+    if (!expectPeek(::IDENT)) {
         ostringstream ss;
         ss << "Could not parse " << this->currentToken.literal << "; no identifier given\n";
         this->errors.push_back(ss.str());
@@ -635,7 +634,7 @@ shared_ptr<LetStatement> Parser::parseLetStatement() {
     // Getting the identifier
     stmt->name = this->parseIdentifier();
 
-    if (!expectPeek(TokenType.ASSIGN)) {
+    if (!expectPeek(::ASSIGN)) {
         ostringstream ss;
         ss << "Could not parse " << this->currentToken.literal << "; no assignment operator\n";
         this->errors.push_back(ss.str());
@@ -644,11 +643,11 @@ shared_ptr<LetStatement> Parser::parseLetStatement() {
 
     // Setting expression value
     this->nextToken();
-    stmt->value = this->parseExpression(Precedences.LOWEST);
+    stmt->value = this->parseExpression(::LOWEST);
 
     // Read to end of line/file
-    while (this->currentToken.type != TokenType.SEMICOLON) {
-        if (this->currentToken.type == TokenType._EOF) {
+    while (this->currentToken.type != ::SEMICOLON) {
+        if (this->currentToken.type == ::_EOF) {
             ostringstream ss;
             ss << "No Semicolon present at end of line for " << StatementMap.at(stmt->type)
                << " with value " << stmt->value->token.literal << '\n';
@@ -674,7 +673,7 @@ shared_ptr<PrefixExpression> Parser::parsePrefixExpression() {
 
     this->nextToken();
 
-    expr->_right = this->parseExpression(Precedences.PREFIX);
+    expr->_right = this->parseExpression(::PREFIX);
     return expr;
 }
 
@@ -683,15 +682,15 @@ shared_ptr<ReturnStatement> Parser::parseReturnStatement() {
     stmt->setStatementNode(this->currentToken);
     this->nextToken();
 
-    stmt->returnValue = this->parseExpression(Precedences.LOWEST);
+    stmt->returnValue = this->parseExpression(::LOWEST);
     if (stmt->returnValue == nullptr) {
         stmt->datatype = VOID;
     } else {
         stmt->datatype = stmt->returnValue->datatype;
     }
 
-    while (this->currentToken.type != TokenType.SEMICOLON) {
-        if (this->currentToken.type == TokenType._EOF) {
+    while (this->currentToken.type != ::SEMICOLON) {
+        if (this->currentToken.type == ::_EOF) {
             ostringstream ss;
             ss << "No Semicolon present at end of line for " << StatementMap.at(stmt->type)
                << " with value " << stmt->returnValue->token.literal << '\n';
@@ -704,17 +703,16 @@ shared_ptr<ReturnStatement> Parser::parseReturnStatement() {
 }
 
 shared_ptr<Statement> Parser::parseStatement() {
-    string curr = this->currentToken.type;
-    string peek = this->peekToken.type;
+    TokenType curr = this->currentToken.type;
+    TokenType peek = this->peekToken.type;
     // if starts with optional datatype declaration
-    if (curr == TokenType.DATATYPE) {
-        if (peek == TokenType.IDENT) return this->parseIdentifierStatement();
-        if (peek == TokenType.FUNCTION) return this->parseFunctionStatement();
-    } else if (curr == TokenType.LET) return this->parseLetStatement();
-    else if (curr == TokenType.RETURN) return this->parseReturnStatement();
-    else if (curr == TokenType.IDENT && peek == TokenType.ASSIGN_EQ)
-        return this->parseAssignmentExpression();
-    else return this->parseExpressionStatement();
+    if (curr == ::DATATYPE) {
+        if (peek == ::IDENT) return parseIdentifierStatement();
+        if (peek == ::FUNCTION) return parseFunctionStatement();
+    } else if (curr == ::LET) return parseLetStatement();
+    else if (curr == ::RETURN) return parseReturnStatement();
+    else if (curr == ::IDENT && peek == ::ASSIGN_EQ) return parseAssignmentExpression();
+    else return parseExpressionStatement();
     return nullptr;
 }
 
@@ -728,18 +726,18 @@ shared_ptr<WhileExpression> Parser::parseWhileExpression() {
     shared_ptr<WhileExpression> expr(new WhileExpression);
     expr->setExpressionNode(this->currentToken);
 
-    if (!expectPeek(TokenType.LPAREN)) {
+    if (!expectPeek(::LPAREN)) {
         return nullptr;
     }
 
     this->nextToken();
-    expr->condition = this->parseExpression(Precedences.LOWEST);
+    expr->condition = this->parseExpression(::LOWEST);
 
-    if (!expectPeek(TokenType.RPAREN)) {
+    if (!expectPeek(::RPAREN)) {
         return nullptr;
     }
 
-    if (!expectPeek(TokenType.LBRACE)) {
+    if (!expectPeek(::LBRACE)) {
         return nullptr;
     }
     expr->body = this->parseBlockStatement();
@@ -747,18 +745,8 @@ shared_ptr<WhileExpression> Parser::parseWhileExpression() {
     return expr;
 }
 
-void Parser::peekErrors(string t) {
+void Parser::peekErrors(TokenType t) {
     ostringstream ss;
     ss << "Expected next token to be " << t << ", but got " << this->peekToken.type << " instead\n";
     this->errors.push_back(ss.str());
-}
-
-int Parser::peekPrecedence() {
-    int p;
-    try {
-        p = precedencesMap.at(this->peekToken.type);
-        return p;
-    } catch (out_of_range&) {
-        return Precedences.LOWEST;
-    }
 }

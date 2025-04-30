@@ -2,32 +2,29 @@
 #include "memory"
 #include "token.hpp"
 
+using namespace std;
+
 class Lexer {
   public:
-    Lexer(std::string*);
+    Lexer(string*);
     ~Lexer() = default;
 
-    std::string input;
+    string input;
 
     Token nextToken();
 
   private:
-    char ch          = input[0];
-    int position     = 0;
-    int readPosition = 0;
+    char ch  = input[0];
+    int curr = 0;
+    int peek = 0;
 
-    Token evaluateNumber();
-    char peekChar();
-    void readChar();
-    std::string readBlockComment();
-    std::string readComment();
-    std::string readDecimal();
-    std::string readIdentifier();
-    std::string readNumber();
-    std::string readString();
+    void advance();
+    string readBlockComment();
+    string readComment();
+    string readIdentifier();
+    pair<TokenType, string> readNumber();
+    string readString();
+    string readChar();
     void skipWhitespace();
     void testNextToken();
 };
-
-std::string lookupIdentifier(std::string);
-Token newToken(std::string, char);

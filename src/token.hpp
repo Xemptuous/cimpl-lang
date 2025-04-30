@@ -3,114 +3,127 @@
 #include <string>
 #include <unordered_map>
 
-enum DATATYPE {
+enum TokenType {
+    ILLEGAL,
+    NEWLINE,
+    _EOF,
+
+    // Identifiers + Literals
+    IDENT,
+    DATATYPE,
+
+    // Data Types
+    BOOLEAN,
     INT,
     FLOAT,
-    BOOLEAN,
-    _STRING,
+    STRING,
+    CHAR,
     VOID,
+
+    // Keywords
+    LET,
+    FUNCTION,
+    TRUE,
+    FALSE,
+    IF,
+    ELSE,
+    ELSEIF,
+    RETURN,
+    DO,
+    WHILE,
+    FOR,
+    IN,
+
+    // Operators
+    EQ,
+    NOT_EQ,
+    ASSIGN,
+    PLUS,
+    MINUS,
+    ASTERISK,
+    SLASH,
+    INCREMENT,
+    DECREMENT,
+    ASSIGN_EQ,
+    PLUS_EQ,
+    MINUS_EQ,
+    MULT_EQ,
+    DIV_EQ,
+
+    // Delimiters
+    COMMA,
+    PERIOD,
+    COLON,
+    SEMICOLON,
+    BANG,
+    LPAREN,
+    RPAREN,
+    LBRACE,
+    RBRACE,
+    LBRACKET,
+    RBRACKET,
+    LT,
+    GT,
+    APOSTROPHE,
+    QUOTE,
+
+    // Comments
+    COMMENT,
+    BLOCK_COMMENT,
 };
 
 typedef struct Token {
-    std::string type;
-    std::string literal;
+    TokenType type      = ::ILLEGAL;
+    std::string literal = "";
+
+    Token() = default;
+    Token(TokenType tt, std::string lit) : literal(lit), type(tt) {};
 } Token;
 
-const struct Tokentype {
-    std::string ILLEGAL = {"ILLEGAL"};
-    std::string NEWLINE = {"NEWLINE"};
-    std::string _EOF    = {"_EOF"};
+const std::unordered_map<std::string, TokenType> KEYWORD_MAP = {
+    {"fn",      ::FUNCTION     },
+    {"let",     ::LET          },
+    {"true",    ::TRUE         },
+    {"false",   ::FALSE        },
+    {"if",      ::IF           },
+    {"else",    ::ELSE         },
+    {"else if", ::ELSEIF       },
+    {"return",  ::RETURN       },
+    {"do",      ::DO           },
+    {"while",   ::WHILE        },
+    {"for",     ::FOR          },
+    {"in",      ::IN           },
+    {"==",      ::EQ           },
+    {"!=",      ::NOT_EQ       },
+    {"//",      ::COMMENT      },
+    {"/*",      ::BLOCK_COMMENT},
+    {"++",      ::INCREMENT    },
+    {"--",      ::DECREMENT    },
+    {"+=",      ::PLUS_EQ      },
+    {"-=",      ::MINUS_EQ     },
+    {"*=",      ::MULT_EQ      },
+    {"/=",      ::DIV_EQ       },
+    {"int",     ::DATATYPE     },
+    {"long",    ::DATATYPE     },
+    {"float",   ::DATATYPE     },
+    {"bool",    ::DATATYPE     },
+    {"string",  ::DATATYPE     },
+    {"void",    ::DATATYPE     },
+};
 
-    // Identifiers + Literals
-    std::string IDENT    = {"IDENT"};
-    std::string DATATYPE = {"DATATYPE"};
-
-    // Data Types
-    std::string BOOLEAN = {"BOOLEAN"};
-    std::string INT     = {"INT"};
-    std::string FLOAT   = {"FLOAT"};
-    std::string _STRING = {"_STRING"};
-    std::string VOID    = {"VOID"};
-
-    // Keywords
-    std::string LET      = {"LET"};
-    std::string FUNCTION = {"FUNCTION"};
-    std::string _TRUE    = {"TRUE"};
-    std::string _FALSE   = {"FALSE"};
-    std::string IF       = {"IF"};
-    std::string ELSE     = {"ELSE"};
-    std::string ELSEIF   = {"ELSEIF"};
-    std::string RETURN   = {"RETURN"};
-    std::string DO       = {"DO"};
-    std::string WHILE    = {"WHILE"};
-    std::string FOR      = {"FOR"};
-    std::string IN       = {"IN"};
-
-    // Operators
-    std::string EQ        = {"EQ"};
-    std::string NOT_EQ    = {"NOT_EQ"};
-    std::string ASSIGN    = {"ASSIGN"};
-    std::string PLUS      = {"PLUS"};
-    std::string MINUS     = {"MINUS"};
-    std::string ASTERISK  = {"ASTERISK"};
-    std::string SLASH     = {"SLASH"};
-    std::string INCREMENT = {"INCREMENT"};
-    std::string DECREMENT = {"DECREMENT"};
-    std::string ASSIGN_EQ = {"ASSIGN_EQ"};
-    std::string PLUS_EQ   = {"ASSIGN_EQ"};
-    std::string MINUS_EQ  = {"ASSIGN_EQ"};
-    std::string MULT_EQ   = {"ASSIGN_EQ"};
-    std::string DIV_EQ    = {"ASSIGN_EQ"};
-
-    // Delimiters
-    std::string COMMA      = {"COMMA"};
-    std::string PERIOD     = {"PERIOD"};
-    std::string COLON      = {"COLON"};
-    std::string SEMICOLON  = {"SEMICOLON"};
-    std::string BANG       = {"BANG"};
-    std::string LPAREN     = {"LPAREN"};
-    std::string RPAREN     = {"RPAREN"};
-    std::string LBRACE     = {"LBRACE"};
-    std::string RBRACE     = {"RBRACE"};
-    std::string LBRACKET   = {"LBRACKET"};
-    std::string RBRACKET   = {"RBRACKET"};
-    std::string LT         = {"LT"};
-    std::string GT         = {"GT"};
-    std::string APOSTROPHE = {"APOSTROPHE"};
-    std::string QUOTE      = {"QUOTE"};
-
-    // Comments
-    std::string COMMENT       = {"COMMENT"};
-    std::string BLOCK_COMMENT = {"BLOCK_COMMENT"};
-} TokenType{};
-
-const std::unordered_map<std::string, std::string> keywords = {
-    {"fn",      TokenType.FUNCTION     },
-    {"let",     TokenType.LET          },
-    {"true",    TokenType._TRUE        },
-    {"false",   TokenType._FALSE       },
-    {"if",      TokenType.IF           },
-    {"else",    TokenType.ELSE         },
-    {"else if", TokenType.ELSEIF       },
-    {"return",  TokenType.RETURN       },
-    {"do",      TokenType.DO           },
-    {"while",   TokenType.WHILE        },
-    {"for",     TokenType.FOR          },
-    {"in",      TokenType.IN           },
-    {"==",      TokenType.EQ           },
-    {"!=",      TokenType.NOT_EQ       },
-    {"//",      TokenType.COMMENT      },
-    {"/*",      TokenType.BLOCK_COMMENT},
-    {"++",      TokenType.INCREMENT    },
-    {"--",      TokenType.DECREMENT    },
-    {"+=",      TokenType.PLUS_EQ      },
-    {"-=",      TokenType.MINUS_EQ     },
-    {"*=",      TokenType.MULT_EQ      },
-    {"/=",      TokenType.DIV_EQ       },
-    {"int",     TokenType.DATATYPE     },
-    {"long",    TokenType.DATATYPE     },
-    {"float",   TokenType.DATATYPE     },
-    {"bool",    TokenType.DATATYPE     },
-    {"string",  TokenType.DATATYPE     },
-    {"void",    TokenType.DATATYPE     },
+const std::unordered_map<std::string, TokenType> DOUBLE_TOKEN_MAP = {
+    {"fn", ::FUNCTION     },
+    {"if", ::IF           },
+    {"do", ::DO           },
+    {"in", ::IN           },
+    {"==", ::EQ           },
+    {"!=", ::NOT_EQ       },
+    {"//", ::COMMENT      },
+    {"/*", ::BLOCK_COMMENT},
+    {"++", ::INCREMENT    },
+    {"--", ::DECREMENT    },
+    {"+=", ::PLUS_EQ      },
+    {"-=", ::MINUS_EQ     },
+    {"*=", ::MULT_EQ      },
+    {"/=", ::DIV_EQ       },
 };

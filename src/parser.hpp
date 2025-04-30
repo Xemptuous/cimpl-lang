@@ -42,10 +42,10 @@ class Parser {
     int linenumber{1};
     std::vector<std::string> errors;
 
-    bool expectPeek(std::string);
+    bool expectPeek(TokenType);
     void nextToken();
     std::shared_ptr<Statement> parseStatement();
-    void peekErrors(std::string);
+    void peekErrors(TokenType);
 
   private:
     std::shared_ptr<Lexer> lexer;
@@ -62,7 +62,7 @@ class Parser {
     std::shared_ptr<CallExpression> parseCallExpression(std::shared_ptr<Expression>);
     std::shared_ptr<DoExpression> parseDoExpression();
     std::shared_ptr<Expression> parseExpression(int);
-    std::vector<std::shared_ptr<Expression>> parseExpressionList(std::string);
+    std::vector<std::shared_ptr<Expression>> parseExpressionList(TokenType);
     std::shared_ptr<FloatLiteral> parseFloatLiteral();
     std::shared_ptr<ForExpression> parseForExpression();
     std::shared_ptr<LetStatement> parseForLetStatement();
@@ -110,27 +110,27 @@ enum prefix {
     PREFIX_HASH,
 };
 
-const std::unordered_map<std::string, int> prefixFunctions = {
-    {TokenType.IDENT,    PREFIX_IDENT       },
-    {TokenType.INT,      PREFIX_INT         },
-    {TokenType.FLOAT,    PREFIX_FLOAT       },
-    {TokenType._STRING,  PREFIX_STRING      },
-    {TokenType.BANG,     PREFIX_STD         },
-    {TokenType.MINUS,    PREFIX_STD         },
-    {TokenType._TRUE,    PREFIX_BOOL        },
-    {TokenType._FALSE,   PREFIX_BOOL        },
-    {TokenType.LPAREN,   PREFIX_GROUPED_EXPR},
-    {TokenType.IF,       PREFIX_IF          },
-    {TokenType.FUNCTION, PREFIX_FUNCTION    },
-    {TokenType.DO,       PREFIX_DO          },
-    {TokenType.WHILE,    PREFIX_WHILE       },
-    {TokenType.FOR,      PREFIX_FOR         },
-    {TokenType.PLUS_EQ,  PREFIX_ASSIGN      },
-    {TokenType.MINUS_EQ, PREFIX_ASSIGN      },
-    {TokenType.MULT_EQ,  PREFIX_ASSIGN      },
-    {TokenType.DIV_EQ,   PREFIX_ASSIGN      },
-    {TokenType.LBRACKET, PREFIX_ARRAY       },
-    {TokenType.LBRACE,   PREFIX_HASH        },
+const std::unordered_map<TokenType, int> prefixFunctions = {
+    {::IDENT,    PREFIX_IDENT       },
+    {::INT,      PREFIX_INT         },
+    {::FLOAT,    PREFIX_FLOAT       },
+    {::STRING,   PREFIX_STRING      },
+    {::BANG,     PREFIX_STD         },
+    {::MINUS,    PREFIX_STD         },
+    {::TRUE,     PREFIX_BOOL        },
+    {::FALSE,    PREFIX_BOOL        },
+    {::LPAREN,   PREFIX_GROUPED_EXPR},
+    {::IF,       PREFIX_IF          },
+    {::FUNCTION, PREFIX_FUNCTION    },
+    {::DO,       PREFIX_DO          },
+    {::WHILE,    PREFIX_WHILE       },
+    {::FOR,      PREFIX_FOR         },
+    {::PLUS_EQ,  PREFIX_ASSIGN      },
+    {::MINUS_EQ, PREFIX_ASSIGN      },
+    {::MULT_EQ,  PREFIX_ASSIGN      },
+    {::DIV_EQ,   PREFIX_ASSIGN      },
+    {::LBRACKET, PREFIX_ARRAY       },
+    {::LBRACE,   PREFIX_HASH        },
 };
 
 // Infix Functions
@@ -140,22 +140,22 @@ enum infix {
     INFIX_INDEX,
 };
 
-const std::unordered_map<std::string, int> infixFunctions = {
-    {TokenType.PLUS,     INFIX_STD  },
-    {TokenType.MINUS,    INFIX_STD  },
-    {TokenType.SLASH,    INFIX_STD  },
-    {TokenType.ASTERISK, INFIX_STD  },
-    {TokenType.EQ,       INFIX_STD  },
-    {TokenType.NOT_EQ,   INFIX_STD  },
-    {TokenType.LT,       INFIX_STD  },
-    {TokenType.GT,       INFIX_STD  },
-    {TokenType.LPAREN,   INFIX_CALL },
-    {TokenType.LBRACKET, INFIX_INDEX},
+const std::unordered_map<TokenType, int> infixFunctions = {
+    {::PLUS,     INFIX_STD  },
+    {::MINUS,    INFIX_STD  },
+    {::SLASH,    INFIX_STD  },
+    {::ASTERISK, INFIX_STD  },
+    {::EQ,       INFIX_STD  },
+    {::NOT_EQ,   INFIX_STD  },
+    {::LT,       INFIX_STD  },
+    {::GT,       INFIX_STD  },
+    {::LPAREN,   INFIX_CALL },
+    {::LBRACKET, INFIX_INDEX},
 };
 
 enum postfix { POSTFIX };
 
-const std::unordered_map<std::string, int> postfixFunctions = {
-    {TokenType.INCREMENT, POSTFIX},
-    {TokenType.DECREMENT, POSTFIX},
+const std::unordered_map<TokenType, int> postfixFunctions = {
+    {::INCREMENT, POSTFIX},
+    {::DECREMENT, POSTFIX},
 };

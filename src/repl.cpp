@@ -165,7 +165,7 @@ void mainReplLoop() {
                 prefresh(PAD, PADPOS, 0, 0, 0, LINES - 1, COLS - 1);
                 break;
             case KEY_ENTER:
-            case 10: {
+            case 10:        {
                 chtype p[300];
                 string input;
                 wmove(PAD, CURSOR_Y, MIN_X);
@@ -281,7 +281,7 @@ string parseBlockIndent(string& input, shared_ptr<Environment> env) {
                 prefresh(PAD, PADPOS, 0, 0, 0, LINES - 1, COLS - 1);
                 break;
             case KEY_ENTER:
-            case 10: {
+            case 10:        {
                 chtype p[300];
                 string input;
                 wmove(PAD, CURSOR_Y, min_x);
@@ -304,7 +304,7 @@ string parseBlockIndent(string& input, shared_ptr<Environment> env) {
                 if (input[input.size() - 1] == '{' || input[input.size() - 2] == '{') {
                     INDENT_LEVEL++;
                     min_x += INDENT_SPACES;
-                    ss = printIndentPrompt(INDENT_LEVEL);
+                    ss     = printIndentPrompt(INDENT_LEVEL);
                 } else if (input == "}") {
                     INDENT_LEVEL--;
                     min_x -= INDENT_SPACES;
@@ -365,7 +365,7 @@ ostringstream printIndentPrompt(int n) {
 //
 //   vector<string> tokenVector;
 //
-//   while (tok.type != TokenType._EOF)
+//   while (tok.type != ::_EOF)
 //   {
 //       string curr = "{Type:" + tok.type + " Literal: " + tok.literal + '\n';
 //       tokenVector.push_back(curr);

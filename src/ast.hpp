@@ -385,33 +385,33 @@ const std::unordered_map<int, std::string> DatatypeMap = {
     {4, "void"   },
 };
 
-const struct Precedences {
-    int LOWEST{1};
-    int EQUALS{2};
-    int LESSGREATER{3};
-    int SUM{4};
-    int PRODUCT{5};
-    int PREFIX{6};
-    int CALL{7};
-    int INDEX{8};
-} Precedences{};
+enum Precedences {
+    LOWEST      = 1,
+    EQUALS      = 2,
+    LESSGREATER = 3,
+    SUM         = 4,
+    PRODUCT     = 5,
+    PREFIX      = 6,
+    CALL        = 7,
+    INDEX       = 8,
+};
 
-const std::unordered_map<std::string, int> precedencesMap = {
-    {TokenType.EQ,        Precedences.EQUALS     },
-    {TokenType.NOT_EQ,    Precedences.EQUALS     },
-    {TokenType.LT,        Precedences.LESSGREATER},
-    {TokenType.GT,        Precedences.LESSGREATER},
-    {TokenType.PLUS,      Precedences.SUM        },
-    {TokenType.INCREMENT, Precedences.SUM        },
-    {TokenType.PLUS_EQ,   Precedences.SUM        },
-    {TokenType.MINUS,     Precedences.SUM        },
-    {TokenType.DECREMENT, Precedences.SUM        },
-    {TokenType.MINUS_EQ,  Precedences.SUM        },
-    {TokenType.SLASH,     Precedences.PRODUCT    },
-    {TokenType.DIV_EQ,    Precedences.PRODUCT    },
-    {TokenType.ASTERISK,  Precedences.PRODUCT    },
-    {TokenType.MULT_EQ,   Precedences.PRODUCT    },
-    {TokenType.LPAREN,    Precedences.CALL       },
-    {TokenType.PERIOD,    Precedences.CALL       },
-    {TokenType.LBRACKET,  Precedences.INDEX      },
+const std::unordered_map<TokenType, Precedences> precedencesMap = {
+    {::EQ,        ::EQUALS     },
+    {::NOT_EQ,    ::EQUALS     },
+    {::LT,        ::LESSGREATER},
+    {::GT,        ::LESSGREATER},
+    {::PLUS,      ::SUM        },
+    {::INCREMENT, ::SUM        },
+    {::PLUS_EQ,   ::SUM        },
+    {::MINUS,     ::SUM        },
+    {::DECREMENT, ::SUM        },
+    {::MINUS_EQ,  ::SUM        },
+    {::SLASH,     ::PRODUCT    },
+    {::DIV_EQ,    ::PRODUCT    },
+    {::ASTERISK,  ::PRODUCT    },
+    {::MULT_EQ,   ::PRODUCT    },
+    {::LPAREN,    ::CALL       },
+    {::PERIOD,    ::CALL       },
+    {::LBRACKET,  ::INDEX      },
 };
