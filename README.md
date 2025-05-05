@@ -17,6 +17,8 @@ With no args given, will run an interactive REPL with ncurses.
 
 Args will be files to be evaluated.
 
+Compiler to come soon
+
 ## Interpreter CLI
 
 The command-line interface written with ncurses offers functionality similar to Python's CLI interpreter, but with additional features to accomodate Cimpl.
